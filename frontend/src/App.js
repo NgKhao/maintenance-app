@@ -32,6 +32,8 @@ import ContractsPage from './pages/ContractsPage';
 import './App.css';
 import { NavLink } from 'react-router-dom';
 import TechnicianSchedulesPage from './pages/TechnicianSchedulesPage';
+import BookSchedulePage from './pages/BookSchedulePage';
+import AdminSchedulesPage from './pages/AdminSchedulesPage';
 
 function App() {
   const [authed, setAuthed] = useState(false);
@@ -194,6 +196,11 @@ const AppLayout = ({ user, sidebarOpen, setSidebarOpen, onLogout }) => {
                   icon={<HiDocumentText />}
                   path='/contract-requests'
                 />
+                <SidebarButton
+                  label='Quản lý lịch'
+                  icon={<HiClock />}
+                  path='/admin-schedules'
+                />
               </>
             ) : role === 'technician' ? (
               <>
@@ -231,6 +238,11 @@ const AppLayout = ({ user, sidebarOpen, setSidebarOpen, onLogout }) => {
                   path='/schedules'
                 />
                 <SidebarButton
+                  label='Đặt lịch bảo trì'
+                  icon={<HiBell />}
+                  path='/book-schedule'
+                />
+                <SidebarButton
                   label='Nhắc nhở'
                   icon={<HiBell />}
                   path='/reminders'
@@ -251,6 +263,7 @@ const AppLayout = ({ user, sidebarOpen, setSidebarOpen, onLogout }) => {
                   path='/contract-requests'
                   element={<ContractRequestsPage user={user} />}
                 />
+                <Route path='/admin-schedules' element={<AdminSchedulesPage />} />
               </>
             )}
             {role === 'technician' && (
@@ -277,6 +290,7 @@ const AppLayout = ({ user, sidebarOpen, setSidebarOpen, onLogout }) => {
                   element={<ServiceRegistrationPage />}
                 />
                 <Route path='/contracts' element={<ContractsPage />} />
+                <Route path='/book-schedule' element={<BookSchedulePage />} />
               </>
             )}
 

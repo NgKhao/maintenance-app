@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-function TechnicianSchedulesPage() {
+function AdminSchedulesPage() {
     const [schedules, setSchedules] = useState([]);
+    const [technicians, setTechnicians] = useState([]);
+    const [filter, setFilter] = useState('all');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const [showStatusModal, setShowStatusModal] = useState(false);
+    const [showAssignModal, setShowAssignModal] = useState(false);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
-    
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     const fetchSchedules = useCallback(async () => {
         try {
-            const response = await fetch(`http://localhost:8000/api/technician_approve.php?technician_id=${user.id}`);
+            const url = filter === 'all' 
+                ? 'http://localhost:8000/api/admin_schedules.php'
+                : `http://localhost:8000/api/admin_schedules.php?status=${filter}`;
+            
+            const response = await fetch(url);
             const data = await response.json();
             
             if (response.ok) {
@@ -23,47 +27,61 @@ function TechnicianSchedulesPage() {
             console.error('Fetch schedules error:', error);
             setMessage('Lỗi kết nối server');
         }
-    }, [user.id]);
+    }, [filter]);
 
     useEffect(() => {
-        if (user.id) {
-            fetchSchedules();
-        }
-    }, [user.id, fetchSchedules]);
+        fetchSchedules();
+        fetchTechnicians();
+    }, [filter, fetchSchedules]);
 
-    const handleUpdateStatus = async (e) => {
+    const fetchTechnicians = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/api/admin_schedules.php', {
+                method: 'PUT'
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                setTechnicians(data);
+            }
+        } catch (error) {
+            console.error('Fetch technicians error:', error);
+        }
+    };
+
+    const handleAssign = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMessage('');
 
         const formData = new FormData(e.target);
-        const updateData = {
+        const assignData = {
             schedule_id: selectedSchedule.id,
-            status: formData.get('status'),
-            note: formData.get('note')
+            technician_id: formData.get('technician_id'),
+            scheduled_date: formData.get('scheduled_date')
         };
 
         try {
-            const response = await fetch('http://localhost:8000/api/technician_approve.php', {
+            const response = await fetch('http://localhost:8000/api/admin_schedules.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(updateData),
+                body: JSON.stringify(assignData),
             });
 
             const data = await response.json();
 
             if (response.ok) {
                 setMessage(data.message);
-                setShowStatusModal(false);
+                setShowAssignModal(false);
                 setSelectedSchedule(null);
                 fetchSchedules();
             } else {
-                setMessage(data.error || 'Lỗi cập nhật');
+                setMessage(data.error || 'Lỗi phân công');
             }
         } catch (error) {
-            console.error('Update status error:', error);
+            console.error('Assign error:', error);
             setMessage('Lỗi kết nối server');
         } finally {
             setLoading(false);
@@ -72,14 +90,15 @@ function TechnicianSchedulesPage() {
 
     const getStatusBadge = (status) => {
         const statusConfig = {
-            assigned: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Mới phân công' },
+            pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Chờ phân công' },
+            assigned: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Đã phân công' },
             confirmed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Đã xác nhận' },
             rejected: { bg: 'bg-red-100', text: 'text-red-800', label: 'Đã từ chối' },
             in_progress: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Đang thực hiện' },
             completed: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Hoàn thành' }
         };
         
-        const config = statusConfig[status] || statusConfig.assigned;
+        const config = statusConfig[status] || statusConfig.pending;
         return (
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
                 {config.label}
@@ -87,56 +106,26 @@ function TechnicianSchedulesPage() {
         );
     };
 
-    const getActionButton = (schedule) => {
-        switch (schedule.status) {
-            case 'assigned':
-                return (
-                    <button
-                        onClick={() => {
-                            setSelectedSchedule(schedule);
-                            setShowStatusModal(true);
-                        }}
-                        className="text-blue-600 hover:text-blue-900"
-                    >
-                        Xác nhận/Từ chối
-                    </button>
-                );
-            case 'confirmed':
-                return (
-                    <button
-                        onClick={() => {
-                            setSelectedSchedule(schedule);
-                            setShowStatusModal(true);
-                        }}
-                        className="text-purple-600 hover:text-purple-900"
-                    >
-                        Bắt đầu thực hiện
-                    </button>
-                );
-            case 'in_progress':
-                return (
-                    <button
-                        onClick={() => {
-                            setSelectedSchedule(schedule);
-                            setShowStatusModal(true);
-                        }}
-                        className="text-green-600 hover:text-green-900"
-                    >
-                        Hoàn thành
-                    </button>
-                );
-            default:
-                return (
-                    <span className="text-gray-500">
-                        {schedule.status === 'completed' ? 'Đã hoàn thành' : 'Đã từ chối'}
-                    </span>
-                );
-        }
-    };
-
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold mb-6">Lịch Làm Việc Của Tôi</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold">Quản Lý Lịch Bảo Trì</h1>
+                
+                <div className="flex gap-4">
+                    <select
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg"
+                    >
+                        <option value="all">Tất cả</option>
+                        <option value="pending">Chờ phân công</option>
+                        <option value="assigned">Đã phân công</option>
+                        <option value="confirmed">Đã xác nhận</option>
+                        <option value="in_progress">Đang thực hiện</option>
+                        <option value="completed">Hoàn thành</option>
+                    </select>
+                </div>
+            </div>
 
             {message && (
                 <div className={`p-4 rounded mb-4 ${
@@ -154,8 +143,8 @@ function TechnicianSchedulesPage() {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Khách hàng</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thiết bị</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày hẹn</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gói dịch vụ</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày mong muốn</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kỹ thuật viên</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thao tác</th>
                         </tr>
@@ -167,37 +156,41 @@ function TechnicianSchedulesPage() {
                                     <div>
                                         <div className="text-sm font-medium text-gray-900">{schedule.customer_name}</div>
                                         <div className="text-sm text-gray-500">{schedule.customer_phone}</div>
-                                        <div className="text-sm text-gray-500">{schedule.customer_address}</div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div>
                                         <div className="text-sm font-medium text-gray-900">{schedule.device_name}</div>
                                         <div className="text-sm text-gray-500">{schedule.serial_number}</div>
-                                        {schedule.device_note && (
-                                            <div className="text-sm text-blue-600" title={schedule.device_note}>
-                                                Có ghi chú kỹ thuật
-                                            </div>
-                                        )}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {new Date(schedule.scheduled_date).toLocaleDateString('vi-VN')}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {schedule.package_name}
+                                    {schedule.technician_name || 'Chưa phân công'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {getStatusBadge(schedule.status)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    {getActionButton(schedule)}
+                                    {schedule.status === 'pending' && (
+                                        <button
+                                            onClick={() => {
+                                                setSelectedSchedule(schedule);
+                                                setShowAssignModal(true);
+                                            }}
+                                            className="text-blue-600 hover:text-blue-900"
+                                        >
+                                            Phân công
+                                        </button>
+                                    )}
                                     {schedule.customer_note && (
                                         <button
                                             className="text-gray-600 hover:text-gray-900 ml-3"
                                             title={schedule.customer_note}
                                         >
-                                            Xem ghi chú KH
+                                            Xem ghi chú
                                         </button>
                                     )}
                                 </td>
@@ -208,57 +201,56 @@ function TechnicianSchedulesPage() {
                 
                 {schedules.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
-                        Không có lịch làm việc nào
+                        Không có lịch bảo trì nào
                     </div>
                 )}
             </div>
 
-            {/* Modal cập nhật trạng thái */}
-            {showStatusModal && selectedSchedule && (
+            {/* Modal phân công kỹ thuật viên */}
+            {showAssignModal && selectedSchedule && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4">Cập nhật trạng thái công việc</h3>
+                        <h3 className="text-lg font-semibold mb-4">Phân công kỹ thuật viên</h3>
                         
-                        <div className="mb-4 p-3 bg-gray-50 rounded">
-                            <p><strong>Khách hàng:</strong> {selectedSchedule.customer_name}</p>
-                            <p><strong>Thiết bị:</strong> {selectedSchedule.device_name}</p>
-                            <p><strong>Ngày hẹn:</strong> {new Date(selectedSchedule.scheduled_date).toLocaleDateString('vi-VN')}</p>
-                        </div>
-                        
-                        <form onSubmit={handleUpdateStatus} className="space-y-4">
+                        <form onSubmit={handleAssign} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Trạng thái mới *
+                                    Khách hàng: {selectedSchedule.customer_name}
+                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Thiết bị: {selectedSchedule.device_name}
+                                </label>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Chọn kỹ thuật viên *
                                 </label>
                                 <select
-                                    name="status"
+                                    name="technician_id"
                                     className="w-full p-3 border border-gray-300 rounded-lg"
                                     required
                                 >
-                                    {selectedSchedule.status === 'assigned' && (
-                                        <>
-                                            <option value="confirmed">Xác nhận nhận việc</option>
-                                            <option value="rejected">Từ chối</option>
-                                        </>
-                                    )}
-                                    {selectedSchedule.status === 'confirmed' && (
-                                        <option value="in_progress">Bắt đầu thực hiện</option>
-                                    )}
-                                    {selectedSchedule.status === 'in_progress' && (
-                                        <option value="completed">Hoàn thành</option>
-                                    )}
+                                    <option value="">-- Chọn kỹ thuật viên --</option>
+                                    {technicians.map(tech => (
+                                        <option key={tech.id} value={tech.id}>
+                                            {tech.name} - {tech.phone}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Ghi chú
+                                    Ngày hẹn *
                                 </label>
-                                <textarea
-                                    name="note"
+                                <input
+                                    type="date"
+                                    name="scheduled_date"
+                                    defaultValue={selectedSchedule.scheduled_date}
+                                    min={new Date().toISOString().split('T')[0]}
                                     className="w-full p-3 border border-gray-300 rounded-lg"
-                                    rows="3"
-                                    placeholder="Ghi chú về công việc, tình trạng thiết bị..."
+                                    required
                                 />
                             </div>
 
@@ -268,12 +260,12 @@ function TechnicianSchedulesPage() {
                                     disabled={loading}
                                     className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                                 >
-                                    {loading ? 'Đang cập nhật...' : 'Cập nhật'}
+                                    {loading ? 'Đang phân công...' : 'Phân công'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        setShowStatusModal(false);
+                                        setShowAssignModal(false);
                                         setSelectedSchedule(null);
                                     }}
                                     className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
@@ -289,4 +281,4 @@ function TechnicianSchedulesPage() {
     );
 }
 
-export default TechnicianSchedulesPage;
+export default AdminSchedulesPage;
