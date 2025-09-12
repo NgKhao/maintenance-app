@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3308
--- Thời gian đã tạo: Th9 11, 2025 lúc 10:15 AM
+-- Thời gian đã tạo: Th9 12, 2025 lúc 12:01 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -40,8 +40,9 @@ CREATE TABLE `contractendrequests` (
 --
 
 INSERT INTO `contractendrequests` (`id`, `order_id`, `request_date`, `status`, `note`) VALUES
-(1, 1, '2025-09-10 12:01:13', 'pending', 'Yêu cầu kết thúc trước hạn'),
-(2, 2, '2025-09-10 12:01:13', 'approved', 'Hợp đồng kết thúc sớm do chuyển nhà');
+(1, 1, '2025-09-10 12:01:13', 'pending', 'Khách hàng chuyển địa chỉ mới, yêu cầu kết thúc hợp đồng'),
+(2, 2, '2025-09-10 12:01:13', 'approved', 'Hợp đồng kết thúc sớm do chuyển nhà'),
+(3, 3, '2025-09-12 09:59:24', 'pending', 'Yêu cầu kết thúc do không hài lòng với dịch vụ');
 
 -- --------------------------------------------------------
 
@@ -69,7 +70,11 @@ INSERT INTO `devices` (`id`, `user_id`, `name`, `serial_number`, `status`, `crea
 (3, 3, 'Tủ lạnh', 'FR30001', 'issue', '2025-09-10 12:01:13', NULL),
 (4, 4, 'Điều hòa phòng ngủ', 'AC10002', 'maintenance', '2025-09-10 12:01:13', NULL),
 (6, 2, 'bayy', '1111111', 'maintenance', '2025-09-11 04:18:47', NULL),
-(7, 6, 'xe hơi', '1111111111', 'normal', '2025-09-11 07:04:16', NULL);
+(7, 6, 'xe hơi', '1111111111', 'normal', '2025-09-11 07:04:16', NULL),
+(8, 3, 'Máy lạnh phòng ngủ', 'AC10003', 'normal', '2025-09-12 09:59:24', NULL),
+(9, 4, 'Máy rửa chén', 'DW40001', 'normal', '2025-09-12 09:59:24', NULL),
+(10, 2, 'Lò vi sóng', 'MW50001', 'issue', '2025-09-12 09:59:24', 'Cần kiểm tra chức năng hẹn giờ'),
+(11, 3, 'Quạt trần phòng khách', 'CF60001', 'maintenance', '2025-09-12 09:59:24', 'Đã thay bộ điều khiển');
 
 -- --------------------------------------------------------
 
@@ -127,7 +132,7 @@ INSERT INTO `maintenancereminders` (`id`, `schedule_id`, `reminder_date`, `sent_
 CREATE TABLE `maintenanceschedules` (
   `id` int(11) NOT NULL,
   `order_id` int(11) NOT NULL,
-  `technician_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `device_id` int(11) NOT NULL,
   `scheduled_date` datetime NOT NULL,
   `status` enum('pending','assigned','confirmed','rejected','in_progress','completed','cancelled') DEFAULT 'pending',
@@ -139,11 +144,16 @@ CREATE TABLE `maintenanceschedules` (
 -- Đang đổ dữ liệu cho bảng `maintenanceschedules`
 --
 
-INSERT INTO `maintenanceschedules` (`id`, `order_id`, `technician_id`, `device_id`, `scheduled_date`, `status`, `note`, `created_at`) VALUES
-(1, 1, 1, 1, '2025-09-15 09:00:00', 'pending', 'Bảo trì định kỳ', '2025-09-10 12:01:13'),
-(2, 1, 2, 2, '2025-09-16 14:00:00', 'pending', 'Kiểm tra máy giặt', '2025-09-10 12:01:13'),
-(3, 2, 3, 3, '2025-09-20 10:00:00', 'pending', 'Tủ lạnh bị hỏng', '2025-09-10 12:01:13'),
-(4, 3, 1, 4, '2025-09-25 15:00:00', 'pending', 'Điều hòa phòng ngủ', '2025-09-10 12:01:13');
+INSERT INTO `maintenanceschedules` (`id`, `order_id`, `user_id`, `device_id`, `scheduled_date`, `status`, `note`, `created_at`) VALUES
+(1, 1, 8, 1, '2025-09-15 09:00:00', 'pending', 'Bảo trì định kỳ', '2025-09-10 12:01:13'),
+(2, 1, 9, 2, '2025-09-16 14:00:00', 'pending', 'Kiểm tra máy giặt', '2025-09-10 12:01:13'),
+(3, 2, 10, 3, '2025-09-20 10:00:00', 'pending', 'Tủ lạnh bị hỏng', '2025-09-10 12:01:13'),
+(4, 3, 9, 4, '2025-09-25 15:00:00', 'pending', 'Điều hòa phòng ngủ', '2025-09-10 12:01:13'),
+(7, 5, 1, 7, '2025-09-13 00:00:00', 'assigned', 'vỡ kính trước xe', '2025-09-12 07:41:48'),
+(8, 2, 7, 8, '2025-09-22 10:00:00', 'confirmed', 'Bảo trì máy lạnh phòng ngủ', '2025-09-12 09:59:24'),
+(9, 1, 8, 9, '2025-09-28 14:30:00', 'assigned', 'Kiểm tra máy rửa chén', '2025-09-12 09:59:24'),
+(10, 2, 9, 10, '2025-10-02 09:00:00', 'pending', 'Sửa chữa lò vi sóng', '2025-09-12 09:59:24'),
+(11, 3, 7, 11, '2025-10-05 11:00:00', 'in_progress', 'Bảo trì quạt trần', '2025-09-12 09:59:24');
 
 -- --------------------------------------------------------
 
@@ -175,31 +185,6 @@ INSERT INTO `orders` (`id`, `user_id`, `package_id`, `payment_status`, `start_da
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `technicians`
---
-
-CREATE TABLE `technicians` (
-  `id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `phone` varchar(20) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
-  `status` enum('active','inactive') DEFAULT 'active',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `user_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Đang đổ dữ liệu cho bảng `technicians`
---
-
-INSERT INTO `technicians` (`id`, `name`, `phone`, `email`, `status`, `created_at`, `user_id`) VALUES
-(1, 'Nguyen Van D', '0909123456', 'tech1@example.com', '', '2025-09-10 12:01:13', 6),
-(2, 'Tran Thi E', '0909765432', 'tech2@example.com', '', '2025-09-10 12:01:13', NULL),
-(3, 'Pham Van F', '0909345678', 'tech3@example.com', '', '2025-09-10 12:01:13', NULL);
-
--- --------------------------------------------------------
-
---
 -- Cấu trúc bảng cho bảng `users`
 --
 
@@ -209,6 +194,7 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('user','technician','admin') DEFAULT 'user',
+  `active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `phone` varchar(20) DEFAULT NULL,
   `address` text DEFAULT NULL
@@ -218,14 +204,17 @@ CREATE TABLE `users` (
 -- Đang đổ dữ liệu cho bảng `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `created_at`, `phone`, `address`) VALUES
-(1, 'Admin', 'admin@example.com', '0192023a7bbd73250516f069df18b500', 'admin', '2025-09-10 12:01:13', NULL, NULL),
-(2, 'Nguyen Van A', 'user1@example.com', 'e10adc3949ba59abbe56e057f20f883e', 'user', '2025-09-10 12:01:13', '0909111111', '123 Đường ABC, Quận 1, TP.HCM'),
-(3, 'Tran Thi B', 'user2@example.com', 'e10adc3949ba59abbe56e057f20f883e', 'user', '2025-09-10 12:01:13', '0909222222', '456 Đường XYZ, Quận 2, TP.HCM'),
-(4, 'Le Van C', 'user3@example.com', 'e10adc3949ba59abbe56e057f20f883e', 'user', '2025-09-10 12:01:13', '0909333333', '789 Đường DEF, Quận 3, TP.HCM'),
-(5, 'aaaa', '222@gmail.com', '$2y$10$irt5dCRaPi/Z2nsJ5B/wi.LxIfT0VYp57Vws1STf8LVie/htlNati', 'user', '2025-09-10 12:05:59', NULL, NULL),
-(6, 'tttttt', 'bsbnk141@gmail.com', '$2y$10$Hg0OXx6Qu40fQw1ncA7EHeHSlNEFc1KZF1hccWW4nXkcmkwmvHt5i', 'user', '2025-09-11 07:03:04', NULL, NULL),
-(7, 'jon', '111@gmail.com', '$2y$10$aL7wOelpNXZxQi.SUpTLf.Kz09foZMoMridkU5cdiqE6Us57Fy.Dy', 'technician', '2025-09-11 07:25:50', NULL, NULL);
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `active`, `created_at`, `phone`, `address`) VALUES
+(1, 'Admin', 'admin@example.com', '0192023a7bbd73250516f069df18b500', 'admin', 1, '2025-09-10 12:01:13', NULL, NULL),
+(2, 'Nguyen Van A', 'user1@example.com', 'e10adc3949ba59abbe56e057f20f883e', 'user', 1, '2025-09-10 12:01:13', '0909111111', '123 Đường ABC, Quận 1, TP.HCM'),
+(3, 'Tran Thi B', 'user2@example.com', 'e10adc3949ba59abbe56e057f20f883e', 'user', 1, '2025-09-10 12:01:13', '0909222222', '456 Đường XYZ, Quận 2, TP.HCM'),
+(4, 'Le Van C', 'user3@example.com', 'e10adc3949ba59abbe56e057f20f883e', 'user', 1, '2025-09-10 12:01:13', '0909333333', '789 Đường DEF, Quận 3, TP.HCM'),
+(5, 'aaaa', '222@gmail.com', '$2y$10$irt5dCRaPi/Z2nsJ5B/wi.LxIfT0VYp57Vws1STf8LVie/htlNati', 'user', 1, '2025-09-10 12:05:59', NULL, NULL),
+(6, 'tttttt', 'bsbnk141@gmail.com', '$2y$10$Hg0OXx6Qu40fQw1ncA7EHeHSlNEFc1KZF1hccWW4nXkcmkwmvHt5i', 'user', 1, '2025-09-11 07:03:04', NULL, NULL),
+(7, 'jon', '111@gmail.com', '$2y$10$aL7wOelpNXZxQi.SUpTLf.Kz09foZMoMridkU5cdiqE6Us57Fy.Dy', 'technician', 1, '2025-09-11 07:25:50', NULL, NULL),
+(8, 'Tech John Smith', 'john.tech@example.com', '$2y$10$aL7wOelpNXZxQi.SUpTLf.Kz09foZMoMridkU5cdiqE6Us57Fy.Dy', 'technician', 1, '2025-09-12 09:55:17', '0909444444', '456 Tech Street, District 1, HCMC'),
+(9, 'Tech Sarah Johnson', 'sarah.tech@example.com', '$2y$10$aL7wOelpNXZxQi.SUpTLf.Kz09foZMoMridkU5cdiqE6Us57Fy.Dy', 'technician', 1, '2025-09-12 09:55:17', '0909555555', '789 Service Ave, District 2, HCMC'),
+(10, 'Tech Mike Wilson', 'mike.tech@example.com', '$2y$10$aL7wOelpNXZxQi.SUpTLf.Kz09foZMoMridkU5cdiqE6Us57Fy.Dy', 'technician', 1, '2025-09-12 09:55:17', '0909666666', '321 Repair Blvd, District 3, HCMC');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -265,8 +254,8 @@ ALTER TABLE `maintenancereminders`
 ALTER TABLE `maintenanceschedules`
   ADD PRIMARY KEY (`id`),
   ADD KEY `order_id` (`order_id`),
-  ADD KEY `technician_id` (`technician_id`),
-  ADD KEY `device_id` (`device_id`);
+  ADD KEY `device_id` (`device_id`),
+  ADD KEY `maintenanceschedules_ibfk_2` (`user_id`);
 
 --
 -- Chỉ mục cho bảng `orders`
@@ -275,13 +264,6 @@ ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `package_id` (`package_id`);
-
---
--- Chỉ mục cho bảng `technicians`
---
-ALTER TABLE `technicians`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_technician_user` (`user_id`);
 
 --
 -- Chỉ mục cho bảng `users`
@@ -298,13 +280,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT cho bảng `contractendrequests`
 --
 ALTER TABLE `contractendrequests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT cho bảng `devices`
 --
 ALTER TABLE `devices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT cho bảng `maintenancepackages`
@@ -316,13 +298,13 @@ ALTER TABLE `maintenancepackages`
 -- AUTO_INCREMENT cho bảng `maintenancereminders`
 --
 ALTER TABLE `maintenancereminders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT cho bảng `maintenanceschedules`
 --
 ALTER TABLE `maintenanceschedules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT cho bảng `orders`
@@ -331,16 +313,10 @@ ALTER TABLE `orders`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT cho bảng `technicians`
---
-ALTER TABLE `technicians`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
@@ -369,7 +345,7 @@ ALTER TABLE `maintenancereminders`
 --
 ALTER TABLE `maintenanceschedules`
   ADD CONSTRAINT `maintenanceschedules_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `maintenanceschedules_ibfk_2` FOREIGN KEY (`technician_id`) REFERENCES `technicians` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `maintenanceschedules_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `maintenanceschedules_ibfk_3` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE;
 
 --
@@ -378,12 +354,6 @@ ALTER TABLE `maintenanceschedules`
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`package_id`) REFERENCES `maintenancepackages` (`id`) ON DELETE CASCADE;
-
---
--- Các ràng buộc cho bảng `technicians`
---
-ALTER TABLE `technicians`
-  ADD CONSTRAINT `fk_technician_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
