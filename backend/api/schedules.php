@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-include './config/db.php';
+include '../config/db.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
@@ -30,8 +30,8 @@ if ($method === 'GET') {
             JOIN orders o ON s.order_id = o.id
             JOIN users u ON o.user_id = u.id
             JOIN devices d ON s.device_id = d.id
-            JOIN technicians t ON s.technician_id = t.id
-            WHERE s.technician_id = ?
+            JOIN users t ON s.user_id = t.id
+            WHERE s.user_id = ? AND t.role = 'technician' AND s.user_id != 999
             ORDER BY s.scheduled_date ASC
         ");
         $stmt->execute([$technician_id]);
@@ -46,7 +46,7 @@ if ($method === 'GET') {
             JOIN orders o ON s.order_id = o.id
             JOIN users u ON o.user_id = u.id
             JOIN devices d ON s.device_id = d.id
-            JOIN technicians t ON s.technician_id = t.id
+            LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician' AND s.user_id != 999
             WHERE o.user_id = ?
             ORDER BY s.scheduled_date ASC
         ");
@@ -62,7 +62,7 @@ if ($method === 'GET') {
             JOIN orders o ON s.order_id = o.id
             JOIN users u ON o.user_id = u.id
             JOIN devices d ON s.device_id = d.id
-            JOIN technicians t ON s.technician_id = t.id
+            LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician' AND s.user_id != 999
             ORDER BY s.scheduled_date ASC
         ");
     }
@@ -96,16 +96,16 @@ if ($method === 'POST') {
     }
 
     // Kiểm tra xem technician có available không
-    $stmt = $pdo->prepare("SELECT status FROM technicians WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE id = ? AND role = 'technician' AND active = 1");
     $stmt->execute([$technician_id]);
     $tech = $stmt->fetch();
     if (!$tech) {
         http_response_code(400);
-        echo json_encode(["error" => "Kỹ thuật viên không tồn tại"]);
+        echo json_encode(["error" => "Kỹ thuật viên không tồn tại hoặc không hoạt động"]);
         exit();
     }
 
-    $stmt = $pdo->prepare("INSERT INTO maintenanceschedules (order_id, technician_id, device_id, scheduled_date, note) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO maintenanceschedules (order_id, user_id, device_id, scheduled_date, note) VALUES (?, ?, ?, ?, ?)");
     if ($stmt->execute([$order_id, $technician_id, $device_id, $scheduled_date, $note])) {
         echo json_encode(["success" => true, "message" => "Đặt lịch bảo trì thành công"]);
     } else {

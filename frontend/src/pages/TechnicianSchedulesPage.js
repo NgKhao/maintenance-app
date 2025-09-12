@@ -1,30 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 export default function TechnicianSchedulesPage() {
   const [schedules, setSchedules] = useState([]);
-  const email = localStorage.getItem('email'); // email technician
-  const API_URL = 'http://localhost:8000/index.php?api=technician_approve';
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const email = user.email; // lấy email từ user object
+  const API_URL = 'http://localhost:8000/api/technician_approve.php';
 
-  const fetchSchedules = async () => {
-    if (!email) return;
+  const fetchSchedules = useCallback(async () => {
+    if (!email) {
+      console.log('No email found for technician');
+      return;
+    }
     try {
       const res = await axios.get(`${API_URL}?email=${email}`);
       setSchedules(res.data);
     } catch (err) {
+      console.error('Error fetching schedules:', err);
       alert(err.response?.data?.error || 'Lỗi tải lịch bảo trì');
     }
-  };
+  }, [email, API_URL]);
 
   useEffect(() => {
     fetchSchedules();
-  }, []);
+  }, [fetchSchedules]);
 
   const handleUpdateStatus = async (id, status) => {
     try {
       await axios.post(API_URL, {
         schedule_id: id,
-        status: status
+        status: status,
       });
       fetchSchedules();
     } catch (err) {
@@ -33,37 +38,37 @@ export default function TechnicianSchedulesPage() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Danh sách lịch chờ duyệt</h2>
-      <table className="min-w-full bg-white rounded-xl shadow-lg overflow-hidden">
-        <thead className="bg-indigo-50">
+    <div className='w-full max-w-5xl mx-auto p-6'>
+      <h2 className='text-2xl font-bold mb-4'>Danh sách lịch chờ duyệt</h2>
+      <table className='min-w-full bg-white rounded-xl shadow-lg overflow-hidden'>
+        <thead className='bg-indigo-50'>
           <tr>
-            <th className="px-6 py-3 text-left">ID</th>
-            <th className="px-6 py-3 text-left">User</th>
-            <th className="px-6 py-3 text-left">Device</th>
-            <th className="px-6 py-3 text-left">Ngày</th>
-            <th className="px-6 py-3 text-left">Ghi chú</th>
-            <th className="px-6 py-3 text-left">Hành động</th>
+            <th className='px-6 py-3 text-left'>ID</th>
+            <th className='px-6 py-3 text-left'>User</th>
+            <th className='px-6 py-3 text-left'>Device</th>
+            <th className='px-6 py-3 text-left'>Ngày</th>
+            <th className='px-6 py-3 text-left'>Ghi chú</th>
+            <th className='px-6 py-3 text-left'>Hành động</th>
           </tr>
         </thead>
         <tbody>
-          {schedules.map(s => (
-            <tr key={s.id} className="hover:bg-gray-100">
-              <td className="px-6 py-4">{s.id}</td>
-              <td className="px-6 py-4">{s.user_name}</td>
-              <td className="px-6 py-4">{s.device_name}</td>
-              <td className="px-6 py-4">{s.scheduled_date}</td>
-              <td className="px-6 py-4">{s.note}</td>
-              <td className="px-6 py-4 space-x-2">
+          {schedules.map((s) => (
+            <tr key={s.id} className='hover:bg-gray-100'>
+              <td className='px-6 py-4'>{s.id}</td>
+              <td className='px-6 py-4'>{s.user_name}</td>
+              <td className='px-6 py-4'>{s.device_name}</td>
+              <td className='px-6 py-4'>{s.scheduled_date}</td>
+              <td className='px-6 py-4'>{s.note}</td>
+              <td className='px-6 py-4 space-x-2'>
                 <button
                   onClick={() => handleUpdateStatus(s.id, 'completed')}
-                  className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg"
+                  className='px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg'
                 >
                   Hoàn thành
                 </button>
                 <button
                   onClick={() => handleUpdateStatus(s.id, 'busy')}
-                  className="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg"
+                  className='px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg'
                 >
                   Bận
                 </button>

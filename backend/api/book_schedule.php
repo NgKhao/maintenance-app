@@ -17,18 +17,18 @@ $method = $_SERVER['REQUEST_METHOD'];
 // Khách hàng đặt lịch bảo trì
 if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
-    
+
     $user_id = $data['user_id'] ?? 0;
     $device_id = $data['device_id'] ?? 0;
     $preferred_date = $data['preferred_date'] ?? '';
     $note = trim($data['note'] ?? '');
-    
+
     if (!$user_id || !$device_id || !$preferred_date) {
         http_response_code(400);
         echo json_encode(["error" => "User, thiết bị và ngày mong muốn bắt buộc"]);
         exit();
     }
-    
+
     // Kiểm tra user có order đang active không
     $stmt = $pdo->prepare("
         SELECT o.id 
@@ -40,13 +40,13 @@ if ($method === 'POST') {
     ");
     $stmt->execute([$user_id]);
     $order = $stmt->fetch();
-    
+
     if (!$order) {
         http_response_code(400);
         echo json_encode(["error" => "Bạn chưa có gói bảo trì hoặc gói đã hết hạn"]);
         exit();
     }
-    
+
     // Kiểm tra thiết bị thuộc về user
     $stmt = $pdo->prepare("SELECT id FROM devices WHERE id = ? AND user_id = ?");
     $stmt->execute([$device_id, $user_id]);
@@ -55,16 +55,16 @@ if ($method === 'POST') {
         echo json_encode(["error" => "Thiết bị không thuộc về bạn"]);
         exit();
     }
-    
-    // Tạo yêu cầu đặt lịch (chưa có technician, chờ admin phân công)
+
+    // Tạo yêu cầu đặt lịch (user_id = 999 placeholder, chờ admin phân công kỹ thuật viên)
     $stmt = $pdo->prepare("
-        INSERT INTO maintenanceschedules (order_id, device_id, scheduled_date, note, status) 
-        VALUES (?, ?, ?, ?, 'pending')
+        INSERT INTO maintenanceschedules (order_id, user_id, device_id, scheduled_date, note, status) 
+        VALUES (?, 999, ?, ?, ?, 'pending')
     ");
-    
+
     if ($stmt->execute([$order['id'], $device_id, $preferred_date, $note])) {
         echo json_encode([
-            "success" => true, 
+            "success" => true,
             "message" => "Đặt lịch thành công! Chúng tôi sẽ phân công kỹ thuật viên và xác nhận với bạn sớm nhất."
         ]);
     } else {
@@ -77,13 +77,13 @@ if ($method === 'POST') {
 // Lấy danh sách thiết bị của user để đặt lịch
 if ($method === 'GET') {
     $user_id = $_GET['user_id'] ?? 0;
-    
+
     if (!$user_id) {
         http_response_code(400);
         echo json_encode(["error" => "User ID bắt buộc"]);
         exit();
     }
-    
+
     // Lấy thiết bị của user
     $stmt = $pdo->prepare("
         SELECT d.id, d.name, d.serial_number, d.status
@@ -92,7 +92,7 @@ if ($method === 'GET') {
         ORDER BY d.name ASC
     ");
     $stmt->execute([$user_id]);
-    
+
     echo json_encode($stmt->fetchAll());
     exit();
 }
@@ -100,4 +100,3 @@ if ($method === 'GET') {
 // Fallback for unsupported methods
 http_response_code(405);
 echo json_encode(["error" => "Method not allowed"]);
-?>

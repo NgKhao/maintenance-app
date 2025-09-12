@@ -97,32 +97,71 @@ if ($method === 'PUT') {
     $action = $data['action'] ?? 'update';
 
     if ($action === 'reset_password') {
-        // Reset mật khẩu
-        $id = $data['id'] ?? 0;
-        $new_password = $data['new_password'] ?? '';
+        // Reset mật khẩu - tự động generate password mới
+        $id = $_GET['id'] ?? $data['id'] ?? 0;
 
-        if (!$id || !$new_password) {
+        if (!$id) {
             http_response_code(400);
-            echo json_encode(["error" => "ID user và mật khẩu mới là bắt buộc"]);
+            echo json_encode(["error" => "ID user là bắt buộc"]);
             exit();
         }
 
+        // Kiểm tra user tồn tại
+        $stmt = $pdo->prepare("SELECT name, email FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            http_response_code(404);
+            echo json_encode(["error" => "Người dùng không tồn tại"]);
+            exit();
+        }
+
+        // Generate password mới (8 ký tự random)
+        $new_password = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'), 0, 8);
         $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+
         $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
 
         if ($stmt->execute([$hashed, $id])) {
-            echo json_encode(["success" => true, "message" => "Reset mật khẩu thành công"]);
+            echo json_encode([
+                "success" => true,
+                "message" => "Reset mật khẩu thành công",
+                "new_password" => $new_password,
+                "user_name" => $user['name'],
+                "user_email" => $user['email']
+            ]);
         } else {
             http_response_code(500);
             echo json_encode(["error" => "Lỗi server, không thể reset mật khẩu"]);
         }
+    } elseif ($action === 'toggle_active') {
+        // Toggle trạng thái active
+        $id = $_GET['id'] ?? $data['id'] ?? 0;
+        $active = $data['active'] ?? 1;
+
+        if (!$id) {
+            http_response_code(400);
+            echo json_encode(["error" => "ID user là bắt buộc"]);
+            exit();
+        }
+
+        $stmt = $pdo->prepare("UPDATE users SET active = ? WHERE id = ?");
+
+        if ($stmt->execute([$active, $id])) {
+            $status = $active ? 'Kích hoạt' : 'Vô hiệu hóa';
+            echo json_encode(["success" => true, "message" => "$status tài khoản thành công"]);
+        } else {
+            http_response_code(500);
+            echo json_encode(["error" => "Lỗi server, không thể thay đổi trạng thái"]);
+        }
     } else {
         // Cập nhật thông tin thường
-        $id = $data['id'] ?? 0;
+        $id = $_GET['id'] ?? $data['id'] ?? 0;
         $name = trim($data['name'] ?? '');
         $email = trim($data['email'] ?? '');
         $phone = trim($data['phone'] ?? '');
-        $address = trim($data['address'] ?? '');
+        $role = $data['role'] ?? '';
         $active = isset($data['active']) ? (int)$data['active'] : 1;
 
         if (!$id || !$name || !$email) {
@@ -142,11 +181,11 @@ if ($method === 'PUT') {
 
         $stmt = $pdo->prepare("
             UPDATE users 
-            SET name = ?, email = ?, phone = ?, address = ?, active = ? 
+            SET name = ?, email = ?, phone = ?, role = ?, active = ? 
             WHERE id = ?
         ");
 
-        if ($stmt->execute([$name, $email, $phone, $address, $active, $id])) {
+        if ($stmt->execute([$name, $email, $phone, $role, $active, $id])) {
             echo json_encode(["success" => true, "message" => "Cập nhật thông tin thành công"]);
         } else {
             http_response_code(500);

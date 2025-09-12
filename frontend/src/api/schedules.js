@@ -1,15 +1,15 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/index.php?api=schedules';
+const API_URL = 'http://localhost:8000/api/schedules.php';
 
 // Lấy danh sách lịch bảo trì
 export const getSchedules = async (userId = null, technicianId = null) => {
   let url = API_URL;
 
   if (technicianId) {
-    url += `&technician_id=${technicianId}`;
+    url += `?technician_id=${technicianId}`;
   } else if (userId) {
-    url += `&user_id=${userId}`;
+    url += `?user_id=${userId}`;
   }
 
   const res = await axios.get(url);
@@ -42,6 +42,6 @@ export const updateScheduleStatus = async (scheduleId, status, note = '') => {
 
 // Xóa lịch bảo trì
 export const deleteSchedule = async (id) => {
-  const res = await axios.delete(`${API_URL}&id=${id}`);
+  const res = await axios.delete(`${API_URL}?id=${id}`);
   return res.data;
 };

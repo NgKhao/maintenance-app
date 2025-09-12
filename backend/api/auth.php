@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-include './config/db.php';
+include '../config/db.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
@@ -31,7 +31,7 @@ if ($method === 'POST') {
         }
 
         // Kiểm tra email tồn tại
-        $stmt = $pdo->prepare("SELECT id FROM Users WHERE email=?");
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE email=?");
         $stmt->execute([$email]);
         if ($stmt->rowCount() > 0) {
             http_response_code(400);
@@ -42,7 +42,7 @@ if ($method === 'POST') {
         // Hash password
         $hashed = password_hash($password, PASSWORD_DEFAULT);
 
-        $stmt = $pdo->prepare("INSERT INTO Users (name,email,password,role) VALUES (?,?,?,?)");
+        $stmt = $pdo->prepare("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)");
         $role = 'user'; // mặc định là user
         if ($stmt->execute([$name, $email, $hashed, $role])) {
             echo json_encode(["success" => true, "message" => "Đăng ký thành công"]);
@@ -50,7 +50,6 @@ if ($method === 'POST') {
             http_response_code(500);
             echo json_encode(["error" => "Lỗi server, không thể đăng ký"]);
         }
-
     } elseif ($action === 'login') {
         if (!$email || !$password) {
             http_response_code(400);
@@ -58,7 +57,7 @@ if ($method === 'POST') {
             exit;
         }
 
-        $stmt = $pdo->prepare("SELECT * FROM Users WHERE email=?");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email=?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
@@ -85,4 +84,3 @@ if ($method === 'POST') {
     http_response_code(405);
     echo json_encode(["error" => "Method không được hỗ trợ"]);
 }
-?>

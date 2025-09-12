@@ -105,6 +105,7 @@ export default function UsersPage() {
   const saveEdit = async (id) => {
     try {
       const payload = {
+        id: id,
         name: editData.name,
         email: editData.email,
         phone: editData.phone || '',
@@ -127,6 +128,7 @@ export default function UsersPage() {
   const toggleActive = async (id, currentActive) => {
     try {
       const payload = {
+        id: id,
         active: currentActive ? 0 : 1,
         action: 'toggle_active',
       };
@@ -150,13 +152,26 @@ export default function UsersPage() {
       return;
     try {
       const payload = {
+        id: id,
         action: 'reset_password',
       };
 
-      await axios.put(`${API_URL}?id=${id}`, payload, {
+      const response = await axios.put(`${API_URL}?id=${id}`, payload, {
         headers: { 'Content-Type': 'application/json' },
       });
-      alert('Reset mật khẩu thành công. Mật khẩu mới đã được gửi qua email.');
+
+      const data = response.data;
+      if (data.success && data.new_password) {
+        alert(
+          `Reset mật khẩu thành công!\n\n` +
+            `Người dùng: ${data.user_name}\n` +
+            `Email: ${data.user_email}\n` +
+            `Mật khẩu mới: ${data.new_password}\n\n` +
+            `Vui lòng ghi lại mật khẩu và thông báo cho người dùng.`
+        );
+      } else {
+        alert('Reset mật khẩu thành công');
+      }
     } catch (err) {
       alert(err.response?.data?.error || 'Lỗi khi reset mật khẩu');
     }

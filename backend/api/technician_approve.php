@@ -17,17 +17,17 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     $email = $_GET['email'] ?? '';
     $technician_id = $_GET['technician_id'] ?? '';
-    
+
     $tech_id = null;
-    
+
     if ($email) {
-        // Lấy technician_id theo email
-        $stmtTech = $pdo->prepare("SELECT id, name FROM technicians WHERE email=?");
+        // Lấy technician_id theo email từ users table
+        $stmtTech = $pdo->prepare("SELECT id, name FROM users WHERE email=? AND role='technician'");
         $stmtTech->execute([$email]);
         $tech = $stmtTech->fetch();
         if (!$tech) {
             http_response_code(404);
-            echo json_encode(["error"=>"Kỹ thuật viên không tồn tại"]);
+            echo json_encode(["error" => "Kỹ thuật viên không tồn tại"]);
             exit();
         }
         $tech_id = $tech['id'];
@@ -59,7 +59,7 @@ if ($method === 'GET') {
         JOIN users u ON o.user_id = u.id
         JOIN devices d ON ms.device_id = d.id
         JOIN maintenancepackages p ON o.package_id = p.id
-        WHERE ms.technician_id = ?
+        WHERE ms.user_id = ?
         ORDER BY ms.scheduled_date ASC
     ");
     $stmt->execute([$tech_id]);
@@ -75,7 +75,7 @@ if ($method === 'POST') {
 
     if (!$schedule_id || !$status) {
         http_response_code(400);
-        echo json_encode(["error"=>"schedule_id và status bắt buộc"]);
+        echo json_encode(["error" => "schedule_id và status bắt buộc"]);
         exit();
     }
 
@@ -83,7 +83,7 @@ if ($method === 'POST') {
     $validStatuses = ['pending', 'confirmed', 'rejected', 'in_progress', 'completed'];
     if (!in_array($status, $validStatuses)) {
         http_response_code(400);
-        echo json_encode(["error"=>"Status không hợp lệ"]);
+        echo json_encode(["error" => "Status không hợp lệ"]);
         exit();
     }
 
@@ -100,4 +100,3 @@ if ($method === 'POST') {
 // Fallback for unsupported methods
 http_response_code(405);
 echo json_encode(["error" => "Method not allowed"]);
-?>

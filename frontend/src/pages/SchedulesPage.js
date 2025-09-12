@@ -55,9 +55,7 @@ export default function SchedulesPage() {
       setDevices(devicesData);
 
       // Fetch technicians
-      const techRes = await fetch(
-        'http://localhost:8000/index.php?api=technicians'
-      );
+      const techRes = await fetch('http://localhost:8000/api/technicians.php');
       const techData = await techRes.json();
       setTechnicians(techData);
     } catch (err) {
