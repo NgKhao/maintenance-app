@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-include '../config/db.php';
+include __DIR__ . '/../config/db.php';
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Lấy danh sách users với filter theo role
@@ -36,10 +36,23 @@ if ($method === 'GET') {
     }
 
     $stmt = $pdo->prepare("
-        SELECT id, name, email, role, active, phone, address, created_at 
-        FROM users 
+        SELECT 
+            u.id, 
+            u.name, 
+            u.email, 
+            u.role, 
+            u.active, 
+            u.phone, 
+            u.address, 
+            u.created_at,
+            CASE 
+                WHEN u.role = 'technician' THEN 
+                    (SELECT COUNT(*) FROM maintenanceschedules ms WHERE ms.user_id = u.id AND ms.status IN ('assigned', 'confirmed', 'in_progress'))
+                ELSE 0 
+            END as active_jobs
+        FROM users u
         $whereClause 
-        ORDER BY created_at DESC
+        ORDER BY u.created_at DESC
     ");
     $stmt->execute($params);
     echo json_encode($stmt->fetchAll());

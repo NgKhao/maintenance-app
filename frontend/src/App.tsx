@@ -10,7 +10,7 @@ import { LoginForm, RegisterForm } from './features/auth';
 import AppLayout from './components/layout/AppLayout';
 import theme from './styles/theme';
 
-function App() {
+const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -21,9 +21,9 @@ function App() {
       </AuthProvider>
     </ThemeProvider>
   );
-}
+};
 
-const AppContent = () => {
+const AppContent: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -51,7 +51,7 @@ const AppContent = () => {
 };
 
 // Auth Routes Component
-const AuthRoutes = () => (
+const AuthRoutes: React.FC = () => (
   <Box
     sx={{
       minHeight: '100vh',

@@ -79,17 +79,31 @@ if ($method === 'POST') {
         exit();
     }
 
-    // Kiểm tra status hợp lệ
-    $validStatuses = ['pending', 'confirmed', 'rejected', 'in_progress', 'completed'];
-    if (!in_array($status, $validStatuses)) {
+    // Kiểm tra status hợp lệ với thông báo cụ thể
+    $validStatuses = [
+        'pending' => 'Chờ xử lý',
+        'confirmed' => 'Đã xác nhận',
+        'rejected' => 'Từ chối',
+        'in_progress' => 'Đang thực hiện',
+        'completed' => 'Hoàn thành'
+    ];
+
+    if (!array_key_exists($status, $validStatuses)) {
         http_response_code(400);
-        echo json_encode(["error" => "Status không hợp lệ"]);
+        echo json_encode([
+            "error" => "Status không hợp lệ",
+            "valid_statuses" => $validStatuses
+        ]);
         exit();
     }
 
+    // Cập nhật trạng thái và ghi log
     $stmt = $pdo->prepare("UPDATE maintenanceschedules SET status = ?, note = ? WHERE id = ?");
     if ($stmt->execute([$status, $note, $schedule_id])) {
-        echo json_encode(["success" => true, "message" => "Cập nhật trạng thái thành công"]);
+        echo json_encode([
+            "success" => true,
+            "message" => "Cập nhật trạng thái thành công: " . $validStatuses[$status]
+        ]);
     } else {
         http_response_code(500);
         echo json_encode(["error" => "Lỗi server, không thể cập nhật"]);

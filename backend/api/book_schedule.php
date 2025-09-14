@@ -56,10 +56,10 @@ if ($method === 'POST') {
         exit();
     }
 
-    // Tạo yêu cầu đặt lịch (user_id = 999 placeholder, chờ admin phân công kỹ thuật viên)
+    // Tạo yêu cầu đặt lịch (user_id = NULL, chờ admin phân công kỹ thuật viên)
     $stmt = $pdo->prepare("
         INSERT INTO maintenanceschedules (order_id, user_id, device_id, scheduled_date, note, status) 
-        VALUES (?, 999, ?, ?, ?, 'pending')
+        VALUES (?, NULL, ?, ?, ?, 'pending')
     ");
 
     if ($stmt->execute([$order['id'], $device_id, $preferred_date, $note])) {

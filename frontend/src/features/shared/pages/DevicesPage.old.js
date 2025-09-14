@@ -1,5 +1,35 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Devices as DevicesIcon
+} from '@mui/icons-material';
+import {
   getDevices,
   addDevice,
   updateDevice,

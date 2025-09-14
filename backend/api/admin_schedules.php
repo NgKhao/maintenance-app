@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-include '../config/db.php';
+include __DIR__ . '/../config/db.php';
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Admin xem tất cả yêu cầu đặt lịch
@@ -43,7 +43,7 @@ if ($method === 'GET') {
         LEFT JOIN orders o ON ms.order_id = o.id
         LEFT JOIN users u ON o.user_id = u.id
         LEFT JOIN devices d ON ms.device_id = d.id
-        LEFT JOIN users t ON ms.user_id = t.id AND t.role = 'technician' AND ms.user_id != 999
+        LEFT JOIN users t ON ms.user_id = t.id AND t.role = 'technician'
         LEFT JOIN maintenancepackages mp ON o.package_id = mp.id
         $whereClause
         ORDER BY ms.created_at DESC
@@ -81,7 +81,7 @@ if ($method === 'POST') {
     $stmt = $pdo->prepare("
         UPDATE maintenanceschedules 
         SET user_id = ?, scheduled_date = ?, status = 'assigned'
-        WHERE id = ? AND status = 'pending'
+        WHERE id = ?
     ");
 
     if ($stmt->execute([$technician_id, $scheduled_date, $schedule_id])) {
@@ -92,7 +92,7 @@ if ($method === 'POST') {
             ]);
         } else {
             http_response_code(400);
-            echo json_encode(["error" => "Lịch không tồn tại hoặc đã được phân công"]);
+            echo json_encode(["error" => "Lịch không tồn tại"]);
         }
     } else {
         http_response_code(500);

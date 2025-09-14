@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-include '../config/db.php';
+include __DIR__ . '/../config/db.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
@@ -30,8 +30,8 @@ if ($method === 'GET') {
             JOIN orders o ON s.order_id = o.id
             JOIN users u ON o.user_id = u.id
             JOIN devices d ON s.device_id = d.id
-            JOIN users t ON s.user_id = t.id
-            WHERE s.user_id = ? AND t.role = 'technician' AND s.user_id != 999
+            LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician'
+            WHERE s.user_id = ?
             ORDER BY s.scheduled_date ASC
         ");
         $stmt->execute([$technician_id]);
@@ -46,7 +46,7 @@ if ($method === 'GET') {
             JOIN orders o ON s.order_id = o.id
             JOIN users u ON o.user_id = u.id
             JOIN devices d ON s.device_id = d.id
-            LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician' AND s.user_id != 999
+            LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician'
             WHERE o.user_id = ?
             ORDER BY s.scheduled_date ASC
         ");
@@ -62,7 +62,7 @@ if ($method === 'GET') {
             JOIN orders o ON s.order_id = o.id
             JOIN users u ON o.user_id = u.id
             JOIN devices d ON s.device_id = d.id
-            LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician' AND s.user_id != 999
+            LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician'
             ORDER BY s.scheduled_date ASC
         ");
     }
@@ -105,7 +105,7 @@ if ($method === 'POST') {
         exit();
     }
 
-    $stmt = $pdo->prepare("INSERT INTO maintenanceschedules (order_id, user_id, device_id, scheduled_date, note) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO maintenanceschedules (order_id, user_id, device_id, scheduled_date, note, status) VALUES (?, ?, ?, ?, ?, 'pending')");
     if ($stmt->execute([$order_id, $technician_id, $device_id, $scheduled_date, $note])) {
         echo json_encode(["success" => true, "message" => "Đặt lịch bảo trì thành công"]);
     } else {
