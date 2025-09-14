@@ -1,8 +1,20 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { Box, CircularProgress, Typography, Card, CardContent, Avatar } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  Card,
+  CardContent,
+  Avatar,
+} from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 import { AuthProvider, useAuth } from './contexts';
@@ -10,7 +22,7 @@ import { LoginForm, RegisterForm } from './features/auth';
 import AppLayout from './components/layout/AppLayout';
 import theme from './styles/theme';
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -23,7 +35,7 @@ const App: React.FC = () => {
   );
 };
 
-const AppContent: React.FC = () => {
+const AppContent = () => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -34,12 +46,12 @@ const AppContent: React.FC = () => {
           background: 'linear-gradient(135deg, #e0f2fe 0%, #e8eaf6 100%)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
         }}
       >
-        <Box textAlign="center">
+        <Box textAlign='center'>
           <CircularProgress size={48} sx={{ mb: 2 }} />
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant='body1' color='text.secondary'>
             Đang tải...
           </Typography>
         </Box>
@@ -51,7 +63,7 @@ const AppContent: React.FC = () => {
 };
 
 // Auth Routes Component
-const AuthRoutes: React.FC = () => (
+const AuthRoutes = () => (
   <Box
     sx={{
       minHeight: '100vh',
@@ -59,27 +71,27 @@ const AuthRoutes: React.FC = () => (
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      p: 2
+      p: 2,
     }}
   >
     <Box sx={{ maxWidth: 400, width: '100%' }}>
-      <Box textAlign="center" mb={4}>
-        <Box display="flex" justifyContent="center" mb={2}>
+      <Box textAlign='center' mb={4}>
+        <Box display='flex' justifyContent='center' mb={2}>
           <Avatar
             sx={{
               width: 64,
               height: 64,
               bgcolor: 'primary.main',
-              borderRadius: 3
+              borderRadius: 3,
             }}
           >
             <SettingsIcon sx={{ fontSize: 32 }} />
           </Avatar>
         </Box>
-        <Typography variant="h3" component="h1" gutterBottom>
+        <Typography variant='h3' component='h1' gutterBottom>
           Maintenance Pro
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant='body1' color='text.secondary'>
           Hệ thống quản lý bảo trì thiết bị gia dụng
         </Typography>
       </Box>
@@ -88,22 +100,22 @@ const AuthRoutes: React.FC = () => (
         <CardContent sx={{ p: 4 }}>
           <Routes>
             <Route
-              path="/login"
+              path='/login'
               element={
                 <LoginForm
-                  onSwitch={() => window.location.href = '/register'}
+                  onSwitch={() => (window.location.href = '/register')}
                 />
               }
             />
             <Route
-              path="/register"
+              path='/register'
               element={
-                <RegisterForm 
-                  onSwitch={() => window.location.href = '/login'} 
+                <RegisterForm
+                  onSwitch={() => (window.location.href = '/login')}
                 />
               }
             />
-            <Route path="*" element={<Navigate to="/login" />} />
+            <Route path='*' element={<Navigate to='/login' />} />
           </Routes>
         </CardContent>
       </Card>

@@ -9,7 +9,7 @@ import {
   ListItemText,
   Toolbar,
   Typography,
-  Box
+  Box,
 } from '@mui/material';
 import {
   Home,
@@ -20,7 +20,7 @@ import {
   Schedule,
   Notifications,
   Description,
-  Add
+  Add,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -36,7 +36,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
         { label: 'Tổng quan', icon: <Home />, path: '/dashboard' },
         { label: 'Người dùng', icon: <People />, path: '/users' },
         { label: 'Gói bảo trì', icon: <Inventory />, path: '/packages' },
-        { label: 'Yêu cầu hợp đồng', icon: <Description />, path: '/contract-requests' },
+        {
+          label: 'Yêu cầu hợp đồng',
+          icon: <Description />,
+          path: '/contract-requests',
+        },
         { label: 'Quản lý lịch', icon: <Schedule />, path: '/admin-schedules' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
         { label: 'Đơn hàng', icon: <Assignment />, path: '/orders' },
@@ -47,7 +51,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
       return [
         { label: 'Tổng quan', icon: <Home />, path: '/dashboard' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
-        { label: 'Lịch của tôi', icon: <Schedule />, path: '/technician-schedules' },
+        {
+          label: 'Lịch của tôi',
+          icon: <Schedule />,
+          path: '/technician-schedules',
+        },
         { label: 'Đơn hàng', icon: <Assignment />, path: '/orders' },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
         { label: 'Nhắc nhở', icon: <Notifications />, path: '/reminders' },
@@ -56,8 +64,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
       return [
         { label: 'Tổng quan', icon: <Home />, path: '/dashboard' },
         { label: 'Đăng ký dịch vụ', icon: <Add />, path: '/register-service' },
-        { label: 'Hợp đồng của tôi', icon: <Description />, path: '/contracts' },
-        { label: 'Đặt lịch bảo trì', icon: <Schedule />, path: '/book-schedule' },
+        {
+          label: 'Hợp đồng của tôi',
+          icon: <Description />,
+          path: '/contracts',
+        },
+        {
+          label: 'Đặt lịch bảo trì',
+          icon: <Schedule />,
+          path: '/book-schedule',
+        },
         { label: 'Chọn kỹ thuật viên', icon: <People />, path: '/technicians' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
         { label: 'Đơn hàng', icon: <Assignment />, path: '/orders' },
@@ -75,15 +91,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
   const drawer = (
     <div>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div">
+        <Typography variant='h6' noWrap component='div'>
           Maintenance Pro
         </Typography>
       </Toolbar>
-      
+
       <List>
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
-          
+
           return (
             <ListItem key={item.path} disablePadding>
               <ListItemButton
@@ -99,7 +115,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
                   },
                 }}
               >
-                <ListItemIcon sx={{ color: isActive ? 'inherit' : 'text.secondary' }}>
+                <ListItemIcon
+                  sx={{ color: isActive ? 'inherit' : 'text.secondary' }}
+                >
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText primary={item.label} />
@@ -113,13 +131,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
 
   return (
     <Box
-      component="nav"
+      component='nav'
       sx={{ width: { sm: DRAWER_WIDTH }, flexShrink: { sm: 0 } }}
-      aria-label="mailbox folders"
+      aria-label='mailbox folders'
     >
       {/* Mobile drawer */}
       <Drawer
-        variant="temporary"
+        variant='temporary'
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         ModalProps={{
@@ -127,18 +145,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
         }}
         sx={{
           display: { xs: 'block', sm: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: DRAWER_WIDTH,
+          },
         }}
       >
         {drawer}
       </Drawer>
-      
+
       {/* Desktop drawer */}
       <Drawer
-        variant="permanent"
+        variant='permanent'
         sx={{
           display: { xs: 'none', sm: 'block' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: DRAWER_WIDTH,
+          },
         }}
         open
       >

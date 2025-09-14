@@ -7,7 +7,7 @@ class ApiService {
       baseURL: API_CONFIG.BASE_URL,
       timeout: REQUEST_TIMEOUT,
       headers: DEFAULT_HEADERS,
-      withCredentials: true
+      withCredentials: true,
     });
 
     // Request interceptor
@@ -28,10 +28,12 @@ class ApiService {
       },
       (error) => {
         console.error('API Error:', error);
-        
+
         if (error.response) {
           // Server responded with error status
-          throw new Error(error.response.data?.error || error.response.statusText);
+          throw new Error(
+            error.response.data?.error || error.response.statusText
+          );
         } else if (error.request) {
           // Request was made but no response received
           throw new Error('Không thể kết nối đến server');

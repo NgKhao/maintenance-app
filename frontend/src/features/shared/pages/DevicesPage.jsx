@@ -21,13 +21,13 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
-  Grid
+  Grid,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Devices as DevicesIcon
+  Devices as DevicesIcon,
 } from '@mui/icons-material';
 import {
   getDevices,
@@ -192,7 +192,12 @@ export default function DevicesPage() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='400px'
+      >
         <CircularProgress />
       </Box>
     );
@@ -200,25 +205,29 @@ export default function DevicesPage() {
 
   return (
     <Box>
-      <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        mb={4}
+        display='flex'
+        justifyContent='space-between'
+        alignItems='center'
+      >
         <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography variant='h4' component='h1' gutterBottom>
             <DevicesIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
             Quản lý thiết bị
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            {role === 'user' 
-              ? 'Danh sách thiết bị của bạn' 
+          <Typography variant='body1' color='text.secondary'>
+            {role === 'user'
+              ? 'Danh sách thiết bị của bạn'
               : role === 'technician'
               ? 'Danh sách thiết bị cần bảo trì'
-              : 'Danh sách tất cả thiết bị trong hệ thống'
-            }
+              : 'Danh sách tất cả thiết bị trong hệ thống'}
           </Typography>
         </Box>
-        
+
         {role === 'user' && (
           <Button
-            variant="contained"
+            variant='contained'
             startIcon={<AddIcon />}
             onClick={handleAdd}
           >
@@ -228,7 +237,7 @@ export default function DevicesPage() {
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity='error' sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
@@ -246,14 +255,17 @@ export default function DevicesPage() {
                   {(role === 'technician' || role === 'admin') && (
                     <TableCell>Ghi chú kỹ thuật</TableCell>
                   )}
-                  <TableCell align="center">Hành động</TableCell>
+                  <TableCell align='center'>Hành động</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {devices.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={role === 'admin' ? 6 : 5} align="center">
-                      <Typography variant="body2" color="text.secondary">
+                    <TableCell
+                      colSpan={role === 'admin' ? 6 : 5}
+                      align='center'
+                    >
+                      <Typography variant='body2' color='text.secondary'>
                         Không có thiết bị nào
                       </Typography>
                     </TableCell>
@@ -267,39 +279,39 @@ export default function DevicesPage() {
                         <Chip
                           label={getStatusText(device.status)}
                           color={getStatusColor(device.status)}
-                          size="small"
+                          size='small'
                         />
                       </TableCell>
                       {role === 'admin' && (
                         <TableCell>
-                          <Typography variant="body2">
+                          <Typography variant='body2'>
                             {device.user_name} ({device.user_email})
                           </Typography>
                         </TableCell>
                       )}
                       {(role === 'technician' || role === 'admin') && (
                         <TableCell>
-                          <Typography variant="body2">
+                          <Typography variant='body2'>
                             {device.technician_note || 'Chưa có ghi chú'}
                           </Typography>
                         </TableCell>
                       )}
-                      <TableCell align="center">
+                      <TableCell align='center'>
                         <Box>
                           {(role === 'user' || role === 'technician') && (
                             <IconButton
-                              size="small"
+                              size='small'
                               onClick={() => handleEdit(device)}
-                              color="primary"
+                              color='primary'
                             >
                               <EditIcon />
                             </IconButton>
                           )}
                           {role === 'user' && (
                             <IconButton
-                              size="small"
+                              size='small'
                               onClick={() => handleDelete(device.id)}
-                              color="error"
+                              color='error'
                             >
                               <DeleteIcon />
                             </IconButton>
@@ -319,27 +331,27 @@ export default function DevicesPage() {
       <Dialog
         open={formVisible}
         onClose={() => setFormVisible(false)}
-        maxWidth="sm"
+        maxWidth='sm'
         fullWidth
       >
         <DialogTitle>
           {editing ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới'}
         </DialogTitle>
-        
-        <Box component="form" onSubmit={handleSubmit}>
+
+        <Box component='form' onSubmit={handleSubmit}>
           <DialogContent>
             <Grid container spacing={2}>
               {/* Tên thiết bị */}
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Tên thiết bị"
-                  name="name"
+                  label='Tên thiết bị'
+                  name='name'
                   value={formData.name}
                   onChange={handleInputChange}
                   required={role === 'user'}
                   disabled={role !== 'user'}
-                  variant="outlined"
+                  variant='outlined'
                 />
               </Grid>
 
@@ -347,13 +359,13 @@ export default function DevicesPage() {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Số serial"
-                  name="serial_number"
+                  label='Số serial'
+                  name='serial_number'
                   value={formData.serial_number}
                   onChange={handleInputChange}
                   required={role === 'user' && !editing}
                   disabled={role !== 'user' || editing}
-                  variant="outlined"
+                  variant='outlined'
                 />
               </Grid>
 
@@ -362,16 +374,16 @@ export default function DevicesPage() {
                 <TextField
                   fullWidth
                   select
-                  label="Trạng thái"
-                  name="status"
+                  label='Trạng thái'
+                  name='status'
                   value={formData.status}
                   onChange={handleInputChange}
                   disabled={role === 'admin'}
-                  variant="outlined"
+                  variant='outlined'
                 >
-                  <MenuItem value="normal">Bình thường</MenuItem>
-                  <MenuItem value="issue">Có vấn đề</MenuItem>
-                  <MenuItem value="maintenance">Đang bảo trì</MenuItem>
+                  <MenuItem value='normal'>Bình thường</MenuItem>
+                  <MenuItem value='issue'>Có vấn đề</MenuItem>
+                  <MenuItem value='maintenance'>Đang bảo trì</MenuItem>
                 </TextField>
               </Grid>
 
@@ -382,13 +394,13 @@ export default function DevicesPage() {
                     fullWidth
                     multiline
                     rows={3}
-                    label="Ghi chú kỹ thuật"
-                    name="technician_note"
+                    label='Ghi chú kỹ thuật'
+                    name='technician_note'
                     value={formData.technician_note}
                     onChange={handleInputChange}
                     disabled={role === 'admin'}
-                    placeholder="Ghi chú về tình trạng thiết bị sau bảo trì..."
-                    variant="outlined"
+                    placeholder='Ghi chú về tình trạng thiết bị sau bảo trì...'
+                    variant='outlined'
                   />
                 </Grid>
               )}
@@ -396,16 +408,16 @@ export default function DevicesPage() {
               {/* Thông tin chủ sở hữu */}
               {role === 'admin' && editing && (
                 <Grid item xs={12}>
-                  <Card variant="outlined">
+                  <Card variant='outlined'>
                     <CardContent>
-                      <Typography variant="h6" gutterBottom>
+                      <Typography variant='h6' gutterBottom>
                         Thông tin chủ sở hữu
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant='body2'>
                         <strong>Tên:</strong>{' '}
                         {devices.find((d) => d.id === formData.id)?.user_name}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant='body2'>
                         <strong>Email:</strong>{' '}
                         {devices.find((d) => d.id === formData.id)?.user_email}
                       </Typography>
@@ -415,13 +427,13 @@ export default function DevicesPage() {
               )}
             </Grid>
           </DialogContent>
-          
+
           <DialogActions>
             <Button onClick={() => setFormVisible(false)}>
               {role === 'admin' ? 'Đóng' : 'Hủy'}
             </Button>
             {role !== 'admin' && (
-              <Button type="submit" variant="contained">
+              <Button type='submit' variant='contained'>
                 {role === 'technician'
                   ? 'Cập nhật'
                   : editing

@@ -13,8 +13,8 @@ export const API_CONFIG = {
     CONTRACT_REQUESTS: '/index.php?api=contract_requests',
     ADMIN_SCHEDULES: '/index.php?api=admin_schedules',
     TECHNICIAN_APPROVE: '/index.php?api=technician_approve',
-    BOOK_SCHEDULE: '/index.php?api=book_schedule'
-  }
+    BOOK_SCHEDULE: '/index.php?api=book_schedule',
+  },
 };
 
 // Request timeout
@@ -22,5 +22,5 @@ export const REQUEST_TIMEOUT = 10000;
 
 // Default headers
 export const DEFAULT_HEADERS = {
-  'Content-Type': 'application/json'
+  'Content-Type': 'application/json',
 };

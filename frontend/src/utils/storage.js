@@ -9,7 +9,7 @@ export const storage = {
       return null;
     }
   },
-  
+
   set: (key, value) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -17,7 +17,7 @@ export const storage = {
       console.error('Error setting to localStorage:', error);
     }
   },
-  
+
   remove: (key) => {
     try {
       localStorage.removeItem(key);
@@ -25,14 +25,14 @@ export const storage = {
       console.error('Error removing from localStorage:', error);
     }
   },
-  
+
   clear: () => {
     try {
       localStorage.clear();
     } catch (error) {
       console.error('Error clearing localStorage:', error);
     }
-  }
+  },
 };
 
 // Auth storage helpers
@@ -50,5 +50,5 @@ export const authStorage = {
     storage.remove('user');
     storage.remove('role');
     storage.remove('userId');
-  }
+  },
 };

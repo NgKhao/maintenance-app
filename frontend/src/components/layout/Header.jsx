@@ -7,12 +7,9 @@ import {
   Avatar,
   Menu,
   MenuItem,
-  Box
+  Box,
 } from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Logout as LogoutIcon
-} from '@mui/icons-material';
+import { Menu as MenuIcon, Logout as LogoutIcon } from '@mui/icons-material';
 import { useAuth } from '../../contexts';
 
 const DRAWER_WIDTH = 240;
@@ -36,7 +33,7 @@ const Header = ({ sidebarOpen, setSidebarOpen, user }) => {
 
   return (
     <AppBar
-      position="fixed"
+      position='fixed'
       sx={{
         width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
         ml: { sm: `${DRAWER_WIDTH}px` },
@@ -44,16 +41,16 @@ const Header = ({ sidebarOpen, setSidebarOpen, user }) => {
     >
       <Toolbar>
         <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
+          color='inherit'
+          aria-label='open drawer'
+          edge='start'
           onClick={() => setSidebarOpen(!sidebarOpen)}
           sx={{ mr: 2, display: { sm: 'none' } }}
         >
           <MenuIcon />
         </IconButton>
-        
-        <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+
+        <Typography variant='h6' noWrap component='div' sx={{ flexGrow: 1 }}>
           Maintenance Pro
         </Typography>
 
@@ -63,7 +60,7 @@ const Header = ({ sidebarOpen, setSidebarOpen, user }) => {
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </Avatar>
           </IconButton>
-          
+
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -99,7 +96,7 @@ const Header = ({ sidebarOpen, setSidebarOpen, user }) => {
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           >
             <MenuItem onClick={handleLogout}>
-              <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+              <LogoutIcon fontSize='small' sx={{ mr: 1 }} />
               Đăng xuất
             </MenuItem>
           </Menu>

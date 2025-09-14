@@ -10,34 +10,36 @@ export const useForm = (initialData = {}, validationRules = {}) => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: newValue
+      [name]: newValue,
     }));
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: '',
       }));
     }
   };
 
   const handleBlur = (e) => {
     const { name } = e.target;
-    setTouched(prev => ({
+    setTouched((prev) => ({
       ...prev,
-      [name]: true
+      [name]: true,
     }));
 
     // Validate single field on blur
     if (validationRules[name]) {
-      const fieldErrors = validateForm(formData, { [name]: validationRules[name] });
-      setErrors(prev => ({
+      const fieldErrors = validateForm(formData, {
+        [name]: validationRules[name],
+      });
+      setErrors((prev) => ({
         ...prev,
-        [name]: fieldErrors[name] || ''
+        [name]: fieldErrors[name] || '',
       }));
     }
   };
@@ -67,6 +69,6 @@ export const useForm = (initialData = {}, validationRules = {}) => {
     validate,
     reset,
     setData,
-    setErrors
+    setErrors,
   };
 };

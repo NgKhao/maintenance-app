@@ -20,16 +20,16 @@ export const validateRequired = (value) => {
 // Form validation helper
 export const validateForm = (data, rules) => {
   const errors = {};
-  
-  Object.keys(rules).forEach(field => {
+
+  Object.keys(rules).forEach((field) => {
     const value = data[field];
     const fieldRules = rules[field];
-    
+
     if (fieldRules.required && !validateRequired(value)) {
       errors[field] = `${fieldRules.label || field} là bắt buộc`;
       return;
     }
-    
+
     if (value) {
       if (fieldRules.type === 'email' && !validateEmail(value)) {
         errors[field] = 'Email không hợp lệ';
@@ -40,6 +40,6 @@ export const validateForm = (data, rules) => {
       }
     }
   });
-  
+
   return errors;
 };

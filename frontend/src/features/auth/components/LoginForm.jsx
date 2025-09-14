@@ -5,7 +5,7 @@ import {
   Button,
   Typography,
   Alert,
-  CircularProgress
+  CircularProgress,
 } from '@mui/material';
 import { useForm } from '../../../hooks';
 import { authService } from '../../../services';
@@ -15,35 +15,35 @@ const validationRules = {
   email: {
     required: true,
     type: 'email',
-    label: 'Email'
+    label: 'Email',
   },
   password: {
     required: true,
-    label: 'Mật khẩu'
-  }
+    label: 'Mật khẩu',
+  },
 };
 
 const LoginForm = ({ onSwitch }) => {
   const { login, setError, error } = useAuth();
-  const {
-    formData,
-    errors,
-    handleInputChange,
-    handleBlur,
-    validate
-  } = useForm({ email: '', password: '' }, validationRules);
+  const { formData, errors, handleInputChange, handleBlur, validate } = useForm(
+    { email: '', password: '' },
+    validationRules
+  );
 
   const [loading, setLoading] = React.useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validate()) return;
 
     setLoading(true);
     try {
-      const response = await authService.login(formData.email, formData.password);
-      
+      const response = await authService.login(
+        formData.email,
+        formData.password
+      );
+
       if (response.success && response.user) {
         login(response.user);
       } else {
@@ -58,25 +58,25 @@ const LoginForm = ({ onSwitch }) => {
 
   return (
     <Box>
-      <Typography variant="h4" component="h2" textAlign="center" mb={3}>
+      <Typography variant='h4' component='h2' textAlign='center' mb={3}>
         Đăng nhập
       </Typography>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity='error' sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
 
-      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+      <Box component='form' onSubmit={handleSubmit} sx={{ mt: 1 }}>
         <TextField
-          margin="normal"
+          margin='normal'
           required
           fullWidth
-          id="email"
-          label="Email"
-          name="email"
-          autoComplete="email"
+          id='email'
+          label='Email'
+          name='email'
+          autoComplete='email'
           autoFocus
           value={formData.email}
           onChange={handleInputChange}
@@ -85,16 +85,16 @@ const LoginForm = ({ onSwitch }) => {
           helperText={errors.email}
           disabled={loading}
         />
-        
+
         <TextField
-          margin="normal"
+          margin='normal'
           required
           fullWidth
-          name="password"
-          label="Mật khẩu"
-          type="password"
-          id="password"
-          autoComplete="current-password"
+          name='password'
+          label='Mật khẩu'
+          type='password'
+          id='password'
+          autoComplete='current-password'
           value={formData.password}
           onChange={handleInputChange}
           onBlur={handleBlur}
@@ -102,11 +102,11 @@ const LoginForm = ({ onSwitch }) => {
           helperText={errors.password}
           disabled={loading}
         />
-        
+
         <Button
-          type="submit"
+          type='submit'
           fullWidth
-          variant="contained"
+          variant='contained'
           sx={{ mt: 3, mb: 2 }}
           disabled={loading}
           startIcon={loading && <CircularProgress size={20} />}
@@ -115,11 +115,11 @@ const LoginForm = ({ onSwitch }) => {
         </Button>
       </Box>
 
-      <Box textAlign="center">
-        <Typography variant="body2" color="text.secondary">
+      <Box textAlign='center'>
+        <Typography variant='body2' color='text.secondary'>
           Chưa có tài khoản?{' '}
           <Button
-            variant="text"
+            variant='text'
             onClick={() => onSwitch('register')}
             sx={{ p: 0, textTransform: 'none' }}
           >

@@ -6,7 +6,7 @@ const initialState = {
   isAuthenticated: false,
   user: null,
   loading: true,
-  error: null
+  error: null,
 };
 
 // Action types
@@ -15,7 +15,7 @@ const AUTH_ACTIONS = {
   LOGIN_SUCCESS: 'LOGIN_SUCCESS',
   LOGOUT: 'LOGOUT',
   SET_ERROR: 'SET_ERROR',
-  CLEAR_ERROR: 'CLEAR_ERROR'
+  CLEAR_ERROR: 'CLEAR_ERROR',
 };
 
 // Reducer
@@ -24,7 +24,7 @@ const authReducer = (state, action) => {
     case AUTH_ACTIONS.SET_LOADING:
       return {
         ...state,
-        loading: action.payload
+        loading: action.payload,
       };
     case AUTH_ACTIONS.LOGIN_SUCCESS:
       return {
@@ -32,7 +32,7 @@ const authReducer = (state, action) => {
         isAuthenticated: true,
         user: action.payload,
         loading: false,
-        error: null
+        error: null,
       };
     case AUTH_ACTIONS.LOGOUT:
       return {
@@ -40,18 +40,18 @@ const authReducer = (state, action) => {
         isAuthenticated: false,
         user: null,
         loading: false,
-        error: null
+        error: null,
       };
     case AUTH_ACTIONS.SET_ERROR:
       return {
         ...state,
         error: action.payload,
-        loading: false
+        loading: false,
       };
     case AUTH_ACTIONS.CLEAR_ERROR:
       return {
         ...state,
-        error: null
+        error: null,
       };
     default:
       return state;
@@ -101,14 +101,10 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     setError,
-    clearError
+    clearError,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // Hook to use auth context

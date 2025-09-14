@@ -10,13 +10,13 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Chip
+  Chip,
 } from '@mui/material';
 import {
   Devices as DevicesIcon,
   Schedule as ScheduleIcon,
   Notifications as NotificationsIcon,
-  People as PeopleIcon
+  People as PeopleIcon,
 } from '@mui/icons-material';
 
 const DashboardPage = ({ role }) => {
@@ -25,20 +25,20 @@ const DashboardPage = ({ role }) => {
       title: 'Thiết bị',
       value: '24',
       icon: <DevicesIcon sx={{ fontSize: 40 }} />,
-      color: 'primary.main'
+      color: 'primary.main',
     },
     {
       title: 'Lịch bảo trì',
       value: '8',
       icon: <ScheduleIcon sx={{ fontSize: 40 }} />,
-      color: 'success.main'
+      color: 'success.main',
     },
     {
       title: 'Nhắc nhở',
       value: '3',
       icon: <NotificationsIcon sx={{ fontSize: 40 }} />,
-      color: 'warning.main'
-    }
+      color: 'warning.main',
+    },
   ];
 
   if (role === 'admin') {
@@ -46,7 +46,7 @@ const DashboardPage = ({ role }) => {
       title: 'Người dùng',
       value: '156',
       icon: <PeopleIcon sx={{ fontSize: 40 }} />,
-      color: 'secondary.main'
+      color: 'secondary.main',
     });
   }
 
@@ -54,18 +54,18 @@ const DashboardPage = ({ role }) => {
     {
       title: 'Bảo trì máy giặt LG hoàn thành',
       time: '2 giờ trước',
-      status: 'completed'
+      status: 'completed',
     },
     {
       title: 'Lịch bảo trì mới được tạo',
       time: '4 giờ trước',
-      status: 'created'
+      status: 'created',
     },
     {
       title: 'Nhắc nhở bảo trì điều hòa',
       time: '1 ngày trước',
-      status: 'reminder'
-    }
+      status: 'reminder',
+    },
   ];
 
   const getStatusColor = (status) => {
@@ -84,10 +84,10 @@ const DashboardPage = ({ role }) => {
   return (
     <Box>
       <Box mb={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant='h4' component='h1' gutterBottom>
           Tổng quan
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant='body1' color='text.secondary'>
           Chào mừng đến với hệ thống quản lý bảo trì thiết bị
         </Typography>
       </Box>
@@ -97,15 +97,15 @@ const DashboardPage = ({ role }) => {
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card>
               <CardContent>
-                <Box display="flex" alignItems="center">
+                <Box display='flex' alignItems='center'>
                   <Avatar sx={{ bgcolor: stat.color, mr: 2 }}>
                     {stat.icon}
                   </Avatar>
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant='body2' color='text.secondary'>
                       {stat.title}
                     </Typography>
-                    <Typography variant="h5" component="div">
+                    <Typography variant='h5' component='div'>
                       {stat.value}
                     </Typography>
                   </Box>
@@ -118,7 +118,7 @@ const DashboardPage = ({ role }) => {
 
       <Card>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant='h6' gutterBottom>
             Hoạt động gần đây
           </Typography>
           <List>
@@ -131,7 +131,7 @@ const DashboardPage = ({ role }) => {
                       height: 8,
                       bgcolor: `${getStatusColor(activity.status)}.main`,
                       borderRadius: '50%',
-                      mr: 2
+                      mr: 2,
                     }}
                   />
                 </ListItemAvatar>
@@ -142,7 +142,7 @@ const DashboardPage = ({ role }) => {
                 <Chip
                   label={activity.status}
                   color={getStatusColor(activity.status)}
-                  size="small"
+                  size='small'
                 />
               </ListItem>
             ))}

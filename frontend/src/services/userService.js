@@ -20,7 +20,10 @@ export const userService = {
 
   async updateUser(id, userData) {
     try {
-      return await apiService.put(`${API_CONFIG.ENDPOINTS.USERS}?id=${id}`, userData);
+      return await apiService.put(
+        `${API_CONFIG.ENDPOINTS.USERS}?id=${id}`,
+        userData
+      );
     } catch (error) {
       throw new Error(error.message || 'Không thể cập nhật người dùng');
     }
@@ -36,11 +39,14 @@ export const userService = {
 
   async resetPassword(userId) {
     try {
-      return await apiService.post(`${API_CONFIG.ENDPOINTS.USERS}?action=reset_password`, {
-        user_id: userId
-      });
+      return await apiService.post(
+        `${API_CONFIG.ENDPOINTS.USERS}?action=reset_password`,
+        {
+          user_id: userId,
+        }
+      );
     } catch (error) {
       throw new Error(error.message || 'Không thể reset mật khẩu');
     }
-  }
+  },
 };

@@ -10,25 +10,23 @@ import {
   UsersPage,
   PackagesPage,
   ContractRequestsPage,
-  AdminSchedulesPage
+  AdminSchedulesPage,
 } from '../../features/admin';
 
-import {
-  TechnicianSchedulesPage
-} from '../../features/technician';
+import { TechnicianSchedulesPage } from '../../features/technician';
 
 import {
   ServiceRegistrationPage,
   ContractsPage,
   BookSchedulePage,
-  TechniciansPage
+  TechniciansPage,
 } from '../../features/user';
 
 import {
   DevicesPage,
   OrdersPage,
   SchedulesPage,
-  RemindersPage
+  RemindersPage,
 } from '../../features/shared';
 
 import { useAuth } from '../../contexts';
@@ -41,64 +39,73 @@ const AppLayout = () => {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      
-      <Header 
+
+      <Header
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         user={user}
       />
-      
-      <Sidebar 
+
+      <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         role={role}
       />
-        
+
       <Box
-        component="main"
+        component='main'
         sx={{
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - 240px)` },
-          mt: { xs: 7, sm: 8 } // Account for AppBar height
+          mt: { xs: 7, sm: 8 }, // Account for AppBar height
         }}
       >
         <Routes>
           {/* Admin routes */}
           {role === 'admin' && (
             <>
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/packages" element={<PackagesPage />} />
-              <Route path="/contract-requests" element={<ContractRequestsPage user={user} />} />
-              <Route path="/admin-schedules" element={<AdminSchedulesPage />} />
+              <Route path='/users' element={<UsersPage />} />
+              <Route path='/packages' element={<PackagesPage />} />
+              <Route
+                path='/contract-requests'
+                element={<ContractRequestsPage user={user} />}
+              />
+              <Route path='/admin-schedules' element={<AdminSchedulesPage />} />
             </>
           )}
-          
+
           {/* Technician routes */}
           {role === 'technician' && (
             <>
-              <Route path="/technician-schedules" element={<TechnicianSchedulesPage />} />
+              <Route
+                path='/technician-schedules'
+                element={<TechnicianSchedulesPage />}
+              />
             </>
           )}
 
           {/* User routes */}
           {role === 'user' && (
             <>
-              <Route path="/register-service" element={<ServiceRegistrationPage />} />
-              <Route path="/contracts" element={<ContractsPage />} />
-              <Route path="/book-schedule" element={<BookSchedulePage />} />
-              <Route path="/technicians" element={<TechniciansPage />} />
+              <Route
+                path='/register-service'
+                element={<ServiceRegistrationPage />}
+              />
+              <Route path='/contracts' element={<ContractsPage />} />
+              <Route path='/book-schedule' element={<BookSchedulePage />} />
+              <Route path='/technicians' element={<TechniciansPage />} />
             </>
           )}
 
           {/* Shared routes */}
-          <Route path="/devices" element={<DevicesPage />} />
-          <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/schedules" element={<SchedulesPage />} />
-          <Route path="/reminders" element={<RemindersPage />} />
-          
-          <Route path="/dashboard" element={<DashboardPage role={role} />} />
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path='/devices' element={<DevicesPage />} />
+          <Route path='/orders' element={<OrdersPage />} />
+          <Route path='/schedules' element={<SchedulesPage />} />
+          <Route path='/reminders' element={<RemindersPage />} />
+
+          <Route path='/dashboard' element={<DashboardPage role={role} />} />
+          <Route path='*' element={<Navigate to='/dashboard' />} />
         </Routes>
       </Box>
     </Box>
