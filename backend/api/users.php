@@ -33,7 +33,7 @@ if ($method === 'GET') {
             u.name, 
             u.email, 
             u.role, 
-            u.active, 
+            u.active as is_active, 
             u.phone, 
             u.address, 
             u.created_at,
@@ -61,7 +61,8 @@ if ($method === 'POST') {
     $role = $data['role'] ?? 'user';
     $phone = trim($data['phone'] ?? '');
     $address = trim($data['address'] ?? '');
-    $active = isset($data['active']) ? (int)$data['active'] : 1;
+    // Handle both 'active' and 'is_active' field names for compatibility
+    $active = isset($data['active']) ? (int)$data['active'] : (isset($data['is_active']) ? (int)$data['is_active'] : 1);
 
     if (!$name || !$email || !$password) {
         http_response_code(400);
@@ -143,7 +144,8 @@ if ($method === 'PUT') {
     } elseif ($action === 'toggle_active') {
         // Toggle trạng thái active
         $id = $_GET['id'] ?? $data['id'] ?? 0;
-        $active = $data['active'] ?? 1;
+        // Handle both 'active' and 'is_active' field names for compatibility
+        $active = isset($data['active']) ? $data['active'] : (isset($data['is_active']) ? $data['is_active'] : 1);
 
         if (!$id) {
             http_response_code(400);
@@ -161,40 +163,69 @@ if ($method === 'PUT') {
             echo json_encode(["error" => "Lỗi server, không thể thay đổi trạng thái"]);
         }
     } else {
-        // Cập nhật thông tin thường
+        // Cập nhật thông tin thường hoặc chỉ toggle active
         $id = $_GET['id'] ?? $data['id'] ?? 0;
-        $name = trim($data['name'] ?? '');
-        $email = trim($data['email'] ?? '');
-        $phone = trim($data['phone'] ?? '');
-        $role = $data['role'] ?? '';
-        $active = isset($data['active']) ? (int)$data['active'] : 1;
 
-        if (!$id || !$name || !$email) {
+        if (!$id) {
             http_response_code(400);
-            echo json_encode(["error" => "ID, tên và email là bắt buộc"]);
+            echo json_encode(["error" => "ID user là bắt buộc"]);
             exit();
         }
 
-        // Kiểm tra email đã tồn tại (trừ user hiện tại)
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
-        $stmt->execute([$email, $id]);
-        if ($stmt->rowCount() > 0) {
-            http_response_code(400);
-            echo json_encode(["error" => "Email đã tồn tại"]);
-            exit();
-        }
+        // Check if this is just a toggle active request (only has is_active/active field)
+        $dataKeys = array_keys($data);
+        $isToggleOnly = (count($dataKeys) == 1 && (in_array('is_active', $dataKeys) || in_array('active', $dataKeys))) ||
+            (count($dataKeys) == 2 && in_array('id', $dataKeys) && (in_array('is_active', $dataKeys) || in_array('active', $dataKeys)));
 
-        $stmt = $pdo->prepare("
-            UPDATE users 
-            SET name = ?, email = ?, phone = ?, role = ?, active = ? 
-            WHERE id = ?
-        ");
+        if ($isToggleOnly) {
+            // Only toggle active status
+            $active = isset($data['active']) ? (int)$data['active'] : (isset($data['is_active']) ? (int)$data['is_active'] : 1);
 
-        if ($stmt->execute([$name, $email, $phone, $role, $active, $id])) {
-            echo json_encode(["success" => true, "message" => "Cập nhật thông tin thành công"]);
+            $stmt = $pdo->prepare("UPDATE users SET active = ? WHERE id = ?");
+
+            if ($stmt->execute([$active, $id])) {
+                $status = $active ? 'Kích hoạt' : 'Vô hiệu hóa';
+                echo json_encode(["success" => true, "message" => "$status tài khoản thành công"]);
+            } else {
+                http_response_code(500);
+                echo json_encode(["error" => "Lỗi server, không thể thay đổi trạng thái"]);
+            }
         } else {
-            http_response_code(500);
-            echo json_encode(["error" => "Lỗi server, không thể cập nhật"]);
+            // Full update - requires name and email
+            $name = trim($data['name'] ?? '');
+            $email = trim($data['email'] ?? '');
+            $phone = trim($data['phone'] ?? '');
+            $role = $data['role'] ?? '';
+            // Handle both 'active' and 'is_active' field names for compatibility
+            $active = isset($data['active']) ? (int)$data['active'] : (isset($data['is_active']) ? (int)$data['is_active'] : 1);
+
+            if (!$name || !$email) {
+                http_response_code(400);
+                echo json_encode(["error" => "Tên và email là bắt buộc cho việc cập nhật thông tin"]);
+                exit();
+            }
+
+            // Kiểm tra email đã tồn tại (trừ user hiện tại)
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+            $stmt->execute([$email, $id]);
+            if ($stmt->rowCount() > 0) {
+                http_response_code(400);
+                echo json_encode(["error" => "Email đã tồn tại"]);
+                exit();
+            }
+
+            $stmt = $pdo->prepare("
+                UPDATE users 
+                SET name = ?, email = ?, phone = ?, role = ?, active = ? 
+                WHERE id = ?
+            ");
+
+            if ($stmt->execute([$name, $email, $phone, $role, $active, $id])) {
+                echo json_encode(["success" => true, "message" => "Cập nhật thông tin thành công"]);
+            } else {
+                http_response_code(500);
+                echo json_encode(["error" => "Lỗi server, không thể cập nhật"]);
+            }
         }
     }
     exit();

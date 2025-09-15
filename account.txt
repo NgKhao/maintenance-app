@@ -1,0 +1,11 @@
+user:
+222@gmail.com
+123456
+
+technician
+111@gmail.com
+123456
+
+admin
+admin@example.com
+123456
