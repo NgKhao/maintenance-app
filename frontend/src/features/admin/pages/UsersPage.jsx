@@ -59,6 +59,34 @@ export default function UsersPage() {
 
   const API_URL = 'http://localhost:8000/api/users.php';
 
+  // Role mapping for Vietnamese display
+  const getRoleLabel = (roleValue) => {
+    const roleLabels = {
+      user: 'Người dùng',
+      technician: 'Kỹ thuật viên',
+      admin: 'Quản trị viên',
+    };
+    return roleLabels[roleValue] || roleValue;
+  };
+
+  // Role color mapping
+  const getRoleColor = (roleValue) => {
+    const roleColors = {
+      user: 'default',
+      technician: 'warning',
+      admin: 'error',
+    };
+    return roleColors[roleValue] || 'default';
+  };
+
+  // Get available role options (admin can only create user & technician)
+  const getRoleOptions = () => {
+    return [
+      { value: 'user', label: 'Người dùng' },
+      { value: 'technician', label: 'Kỹ thuật viên' },
+    ];
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -66,8 +94,14 @@ export default function UsersPage() {
       const result = await response.json();
 
       if (response.ok) {
-        setData(result);
-        setFilteredData(result);
+        // Filter out admin users if current user is admin
+        const filteredResult =
+          role === 'admin'
+            ? result.filter((user) => user.role !== 'admin')
+            : result;
+
+        setData(filteredResult);
+        setFilteredData(filteredResult);
         setError('');
       } else {
         setError(result.error || 'Lỗi tải dữ liệu');
@@ -89,7 +123,10 @@ export default function UsersPage() {
         (user) =>
           user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+          user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          getRoleLabel(user.role)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -132,7 +169,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [role]); // Re-fetch when role changes
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -161,7 +198,7 @@ export default function UsersPage() {
         fetchData();
         setError('');
       } else {
-        setError(result.error || 'Lỗi tạo user');
+        setError(result.error || 'Lỗi tạo người dùng');
       }
     } catch (error) {
       console.error('Create error:', error);
@@ -202,7 +239,7 @@ export default function UsersPage() {
         fetchData();
         setError('');
       } else {
-        setError(result.error || 'Lỗi cập nhật user');
+        setError(result.error || 'Lỗi cập nhật người dùng');
       }
     } catch (error) {
       console.error('Update error:', error);
@@ -218,7 +255,7 @@ export default function UsersPage() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bạn có chắc muốn xóa user này?')) {
+    if (window.confirm('Bạn có chắc muốn xóa người dùng này?')) {
       setLoading(true);
 
       try {
@@ -232,7 +269,7 @@ export default function UsersPage() {
           fetchData();
           setError('');
         } else {
-          setError(result.error || 'Lỗi xóa user');
+          setError(result.error || 'Lỗi xóa người dùng');
         }
       } catch (error) {
         console.error('Delete error:', error);
@@ -303,7 +340,7 @@ export default function UsersPage() {
             Quản lý người dùng
           </Typography>
           <Typography variant='body1' color='text.secondary'>
-            Quản lý tài khoản và phân quyền người dùng
+            Quản lý tài khoản người dùng và kỹ thuật viên
           </Typography>
         </Box>
         {canEdit && (
@@ -332,7 +369,7 @@ export default function UsersPage() {
               <TextField
                 id='user-search-input'
                 fullWidth
-                placeholder='Tìm kiếm theo tên, email, số điện thoại... (Ctrl+F)'
+                placeholder='Tìm kiếm theo tên, email, số điện thoại, vai trò... (Ctrl+F)'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 variant='outlined'
@@ -468,22 +505,18 @@ export default function UsersPage() {
                             onChange={(e) =>
                               setEditData({ ...editData, role: e.target.value })
                             }
-                            sx={{ minWidth: 120 }}
+                            sx={{ minWidth: 140 }}
                           >
-                            <MenuItem value='user'>User</MenuItem>
-                            <MenuItem value='technician'>Technician</MenuItem>
-                            <MenuItem value='admin'>Admin</MenuItem>
+                            {getRoleOptions().map((option) => (
+                              <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                              </MenuItem>
+                            ))}
                           </TextField>
                         ) : (
                           <Chip
-                            label={user.role}
-                            color={
-                              user.role === 'admin'
-                                ? 'error'
-                                : user.role === 'technician'
-                                ? 'warning'
-                                : 'default'
-                            }
+                            label={getRoleLabel(user.role)}
+                            color={getRoleColor(user.role)}
                             size='small'
                           />
                         )}
@@ -633,9 +666,11 @@ export default function UsersPage() {
                     setFormData({ ...formData, role: e.target.value })
                   }
                 >
-                  <MenuItem value='user'>User</MenuItem>
-                  <MenuItem value='technician'>Technician</MenuItem>
-                  <MenuItem value='admin'>Admin</MenuItem>
+                  {getRoleOptions().map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid>
             </Grid>
