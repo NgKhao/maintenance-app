@@ -10,12 +10,15 @@ export const getDevices = async (userId = null) => {
 };
 
 // Thêm thiết bị
-export const addDevice = async (device) => {
+export const createDevice = async (device) => {
   const res = await axios.post(API_URL, device, {
     headers: { 'Content-Type': 'application/json' },
   });
   return res.data;
 };
+
+// Alias for backwards compatibility
+export const addDevice = createDevice;
 
 // ✅ Cập nhật thiết bị (PUT)
 export const updateDevice = async (device) => {

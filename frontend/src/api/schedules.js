@@ -24,6 +24,14 @@ export const createSchedule = async (scheduleData) => {
   return res.data;
 };
 
+// Cập nhật lịch bảo trì
+export const updateSchedule = async (scheduleData) => {
+  const res = await axios.put(API_URL, scheduleData, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return res.data;
+};
+
 // Cập nhật trạng thái lịch bảo trì
 export const updateScheduleStatus = async (scheduleId, status, note = '') => {
   const res = await axios.put(

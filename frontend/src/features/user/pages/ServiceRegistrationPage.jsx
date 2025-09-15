@@ -12,15 +12,15 @@ import {
   Paper,
   CircularProgress,
   Alert,
-  Divider
+  Divider,
 } from '@mui/material';
 import {
   CheckCircle as CheckIcon,
   Assignment as ServiceIcon,
   ArrowBack as BackIcon,
-  ArrowForward as ForwardIcon
+  ArrowForward as ForwardIcon,
 } from '@mui/icons-material';
-import { registerService } from '../api/orders';
+import { registerService } from '../../../api/orders';
 import axios from 'axios';
 
 export default function ServiceRegistrationPage() {
@@ -96,39 +96,41 @@ export default function ServiceRegistrationPage() {
   // Step 3: Hoàn thành
   if (step === 2) {
     return (
-      <Box maxWidth={600} mx="auto">
+      <Box maxWidth={600} mx='auto'>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
           <CheckIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
-          <Typography variant="h4" color="success.main" gutterBottom>
+          <Typography variant='h4' color='success.main' gutterBottom>
             Đăng ký dịch vụ thành công!
           </Typography>
-          <Typography variant="body1" color="text.secondary" mb={3}>
-            Chúng tôi sẽ liên hệ với bạn trong vòng 24h để xác nhận lịch bảo trì.
+          <Typography variant='body1' color='text.secondary' mb={3}>
+            Chúng tôi sẽ liên hệ với bạn trong vòng 24h để xác nhận lịch bảo
+            trì.
           </Typography>
-          
-          <Card variant="outlined" sx={{ mb: 3 }}>
+
+          <Card variant='outlined' sx={{ mb: 3 }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant='h6' gutterBottom>
                 Thông tin gói đã đăng ký:
               </Typography>
-              <Box textAlign="left">
-                <Typography variant="body2" mb={1}>
+              <Box textAlign='left'>
+                <Typography variant='body2' mb={1}>
                   <strong>Gói:</strong> {selectedPackage?.name}
                 </Typography>
-                <Typography variant="body2" mb={1}>
+                <Typography variant='body2' mb={1}>
                   <strong>Giá:</strong> {formatPrice(selectedPackage?.price)}
                 </Typography>
-                <Typography variant="body2">
-                  <strong>Thời gian:</strong> {selectedPackage?.duration_months} tháng
+                <Typography variant='body2'>
+                  <strong>Thời gian:</strong> {selectedPackage?.duration_months}{' '}
+                  tháng
                 </Typography>
               </Box>
             </CardContent>
           </Card>
-          
+
           <Button
-            variant="contained"
+            variant='contained'
             onClick={() => (window.location.href = '/contracts')}
-            size="large"
+            size='large'
           >
             Xem hợp đồng của tôi
           </Button>
@@ -140,7 +142,7 @@ export default function ServiceRegistrationPage() {
   // Step 2: Xác nhận
   if (step === 1) {
     return (
-      <Box maxWidth={800} mx="auto">
+      <Box maxWidth={800} mx='auto'>
         <Stepper activeStep={step} sx={{ mb: 4 }}>
           {steps.map((label) => (
             <Step key={label}>
@@ -149,12 +151,12 @@ export default function ServiceRegistrationPage() {
           ))}
         </Stepper>
 
-        <Typography variant="h4" gutterBottom>
+        <Typography variant='h4' gutterBottom>
           Xác nhận đăng ký dịch vụ
         </Typography>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity='error' sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
@@ -163,21 +165,22 @@ export default function ServiceRegistrationPage() {
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant='h6' gutterBottom>
                   Thông tin gói đã chọn
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
-                <Typography variant="body2" mb={1}>
+                <Typography variant='body2' mb={1}>
                   <strong>Tên gói:</strong> {selectedPackage?.name}
                 </Typography>
-                <Typography variant="body2" mb={1}>
+                <Typography variant='body2' mb={1}>
                   <strong>Mô tả:</strong> {selectedPackage?.description}
                 </Typography>
-                <Typography variant="body2" mb={1}>
+                <Typography variant='body2' mb={1}>
                   <strong>Giá:</strong> {formatPrice(selectedPackage?.price)}
                 </Typography>
-                <Typography variant="body2">
-                  <strong>Thời gian:</strong> {selectedPackage?.duration_months} tháng
+                <Typography variant='body2'>
+                  <strong>Thời gian:</strong> {selectedPackage?.duration_months}{' '}
+                  tháng
                 </Typography>
               </CardContent>
             </Card>
@@ -186,14 +189,14 @@ export default function ServiceRegistrationPage() {
           <Grid item xs={12} md={6}>
             <Card sx={{ bgcolor: 'grey.50' }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant='h6' gutterBottom>
                   Thông tin khách hàng
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
-                <Typography variant="body2" mb={1}>
+                <Typography variant='body2' mb={1}>
                   <strong>Họ tên:</strong> {user?.name}
                 </Typography>
-                <Typography variant="body2">
+                <Typography variant='body2'>
                   <strong>Email:</strong> {user?.email}
                 </Typography>
               </CardContent>
@@ -201,16 +204,16 @@ export default function ServiceRegistrationPage() {
           </Grid>
         </Grid>
 
-        <Box display="flex" gap={2} mt={4}>
+        <Box display='flex' gap={2} mt={4}>
           <Button
-            variant="outlined"
+            variant='outlined'
             startIcon={<BackIcon />}
             onClick={() => setStep(0)}
           >
             Quay lại
           </Button>
           <Button
-            variant="contained"
+            variant='contained'
             endIcon={loading ? <CircularProgress size={20} /> : <ForwardIcon />}
             onClick={handleConfirmRegistration}
             disabled={loading}
@@ -224,7 +227,7 @@ export default function ServiceRegistrationPage() {
 
   // Step 1: Chọn gói
   return (
-    <Box maxWidth={1200} mx="auto">
+    <Box maxWidth={1200} mx='auto'>
       <Stepper activeStep={step} sx={{ mb: 4 }}>
         {steps.map((label) => (
           <Step key={label}>
@@ -233,26 +236,26 @@ export default function ServiceRegistrationPage() {
         ))}
       </Stepper>
 
-      <Box textAlign="center" mb={4}>
-        <Typography variant="h3" component="h1" gutterBottom>
+      <Box textAlign='center' mb={4}>
+        <Typography variant='h3' component='h1' gutterBottom>
           <ServiceIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
           Đăng ký dịch vụ bảo trì
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant='body1' color='text.secondary'>
           Chọn gói bảo trì phù hợp với nhu cầu của bạn
         </Typography>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity='error' sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
 
       {packages.length === 0 ? (
-        <Box textAlign="center" py={8}>
+        <Box textAlign='center' py={8}>
           <CircularProgress />
-          <Typography variant="body2" color="text.secondary" mt={2}>
+          <Typography variant='body2' color='text.secondary' mt={2}>
             Đang tải danh sách gói bảo trì...
           </Typography>
         </Box>
@@ -260,40 +263,40 @@ export default function ServiceRegistrationPage() {
         <Grid container spacing={3}>
           {packages.map((pkg) => (
             <Grid item xs={12} md={4} key={pkg.id}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
                   flexDirection: 'column',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: 4
-                  }
+                    boxShadow: 4,
+                  },
                 }}
               >
                 <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
-                  <Typography variant="h5" component="h3" gutterBottom>
+                  <Typography variant='h5' component='h3' gutterBottom>
                     {pkg.name}
                   </Typography>
-                  <Typography 
-                    variant="h4" 
-                    color="primary.main" 
-                    fontWeight="bold" 
+                  <Typography
+                    variant='h4'
+                    color='primary.main'
+                    fontWeight='bold'
                     mb={2}
                   >
                     {formatPrice(pkg.price)}
                   </Typography>
-                  <Typography variant="body1" color="text.secondary" mb={2}>
+                  <Typography variant='body1' color='text.secondary' mb={2}>
                     {pkg.description}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={3}>
+                  <Typography variant='body2' color='text.secondary' mb={3}>
                     Thời gian: {pkg.duration_months} tháng
                   </Typography>
                   <Button
-                    variant="contained"
+                    variant='contained'
                     fullWidth
-                    size="large"
+                    size='large'
                     onClick={() => handleSelectPackage(pkg)}
                   >
                     Chọn gói này

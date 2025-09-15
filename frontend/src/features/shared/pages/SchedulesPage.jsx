@@ -21,22 +21,22 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
-  Grid
+  Grid,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
   Schedule as ScheduleIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
 } from '@mui/icons-material';
 import {
   getSchedules,
   createSchedule,
   updateScheduleStatus,
   deleteSchedule,
-} from '../api/schedules';
-import { getOrders } from '../api/orders';
-import { getDevices } from '../api/devices';
+} from '../../../api/schedules';
+import { getOrders } from '../../../api/orders';
+import { getDevices } from '../../../api/devices';
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState([]);
@@ -151,7 +151,7 @@ export default function SchedulesPage() {
     }
 
     if (!window.confirm('Bạn có chắc muốn xóa lịch bảo trì này?')) return;
-    
+
     try {
       await deleteSchedule(id);
       fetchSchedules();
@@ -188,7 +188,12 @@ export default function SchedulesPage() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='400px'
+      >
         <CircularProgress />
       </Box>
     );
@@ -196,23 +201,27 @@ export default function SchedulesPage() {
 
   return (
     <Box>
-      <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        mb={4}
+        display='flex'
+        justifyContent='space-between'
+        alignItems='center'
+      >
         <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography variant='h4' component='h1' gutterBottom>
             <ScheduleIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
             Lịch bảo trì
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            {role === 'user' 
-              ? 'Lịch bảo trì thiết bị của bạn' 
-              : 'Quản lý lịch bảo trì hệ thống'
-            }
+          <Typography variant='body1' color='text.secondary'>
+            {role === 'user'
+              ? 'Lịch bảo trì thiết bị của bạn'
+              : 'Quản lý lịch bảo trì hệ thống'}
           </Typography>
         </Box>
-        
+
         {canEdit && (
           <Button
-            variant="contained"
+            variant='contained'
             startIcon={<AddIcon />}
             onClick={handleAdd}
           >
@@ -222,7 +231,7 @@ export default function SchedulesPage() {
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity='error' sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
@@ -238,14 +247,14 @@ export default function SchedulesPage() {
                   <TableCell>Kỹ thuật viên</TableCell>
                   <TableCell>Trạng thái</TableCell>
                   <TableCell>Ghi chú</TableCell>
-                  <TableCell align="center">Hành động</TableCell>
+                  <TableCell align='center'>Hành động</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {schedules.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      <Typography variant="body2" color="text.secondary">
+                    <TableCell colSpan={6} align='center'>
+                      <Typography variant='body2' color='text.secondary'>
                         Không có lịch bảo trì nào
                       </Typography>
                     </TableCell>
@@ -254,15 +263,17 @@ export default function SchedulesPage() {
                   schedules.map((schedule) => (
                     <TableRow key={schedule.id}>
                       <TableCell>
-                        <Typography variant="body2">
+                        <Typography variant='body2'>
                           {schedule.device_name}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {new Date(schedule.scheduled_date).toLocaleDateString('vi-VN')}
+                        {new Date(schedule.scheduled_date).toLocaleDateString(
+                          'vi-VN'
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
+                        <Typography variant='body2'>
                           {schedule.technician_name || 'Chưa phân công'}
                         </Typography>
                       </TableCell>
@@ -270,42 +281,48 @@ export default function SchedulesPage() {
                         <Chip
                           label={getStatusText(schedule.status)}
                           color={getStatusColor(schedule.status)}
-                          size="small"
+                          size='small'
                         />
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
+                        <Typography variant='body2'>
                           {schedule.note || 'Không có ghi chú'}
                         </Typography>
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell align='center'>
                         <Box>
-                          {role === 'technician' && schedule.status === 'pending' && (
-                            <IconButton
-                              size="small"
-                              onClick={() => handleStatusUpdate(schedule.id, 'in_progress')}
-                              color="primary"
-                              title="Bắt đầu thực hiện"
-                            >
-                              <CheckIcon />
-                            </IconButton>
-                          )}
-                          {role === 'technician' && schedule.status === 'in_progress' && (
-                            <IconButton
-                              size="small"
-                              onClick={() => handleStatusUpdate(schedule.id, 'completed')}
-                              color="success"
-                              title="Hoàn thành"
-                            >
-                              <CheckIcon />
-                            </IconButton>
-                          )}
+                          {role === 'technician' &&
+                            schedule.status === 'pending' && (
+                              <IconButton
+                                size='small'
+                                onClick={() =>
+                                  handleStatusUpdate(schedule.id, 'in_progress')
+                                }
+                                color='primary'
+                                title='Bắt đầu thực hiện'
+                              >
+                                <CheckIcon />
+                              </IconButton>
+                            )}
+                          {role === 'technician' &&
+                            schedule.status === 'in_progress' && (
+                              <IconButton
+                                size='small'
+                                onClick={() =>
+                                  handleStatusUpdate(schedule.id, 'completed')
+                                }
+                                color='success'
+                                title='Hoàn thành'
+                              >
+                                <CheckIcon />
+                              </IconButton>
+                            )}
                           {canEdit && (
                             <IconButton
-                              size="small"
+                              size='small'
                               onClick={() => handleDelete(schedule.id)}
-                              color="error"
-                              title="Xóa"
+                              color='error'
+                              title='Xóa'
                             >
                               <DeleteIcon />
                             </IconButton>
@@ -325,26 +342,24 @@ export default function SchedulesPage() {
       <Dialog
         open={formVisible}
         onClose={() => setFormVisible(false)}
-        maxWidth="sm"
+        maxWidth='sm'
         fullWidth
       >
-        <DialogTitle>
-          Tạo lịch bảo trì mới
-        </DialogTitle>
-        
-        <Box component="form" onSubmit={handleSubmit}>
+        <DialogTitle>Tạo lịch bảo trì mới</DialogTitle>
+
+        <Box component='form' onSubmit={handleSubmit}>
           <DialogContent>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   select
-                  label="Đơn hàng"
-                  name="order_id"
+                  label='Đơn hàng'
+                  name='order_id'
                   value={formData.order_id}
                   onChange={handleInputChange}
                   required
-                  variant="outlined"
+                  variant='outlined'
                 >
                   {orders.map((order) => (
                     <MenuItem key={order.id} value={order.id}>
@@ -358,12 +373,12 @@ export default function SchedulesPage() {
                 <TextField
                   fullWidth
                   select
-                  label="Thiết bị"
-                  name="device_id"
+                  label='Thiết bị'
+                  name='device_id'
                   value={formData.device_id}
                   onChange={handleInputChange}
                   required
-                  variant="outlined"
+                  variant='outlined'
                 >
                   {devices.map((device) => (
                     <MenuItem key={device.id} value={device.id}>
@@ -376,16 +391,16 @@ export default function SchedulesPage() {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  type="datetime-local"
-                  label="Ngày giờ bảo trì"
-                  name="scheduled_date"
+                  type='datetime-local'
+                  label='Ngày giờ bảo trì'
+                  name='scheduled_date'
                   value={formData.scheduled_date}
                   onChange={handleInputChange}
                   required
                   InputLabelProps={{
                     shrink: true,
                   }}
-                  variant="outlined"
+                  variant='outlined'
                 />
               </Grid>
 
@@ -394,22 +409,20 @@ export default function SchedulesPage() {
                   fullWidth
                   multiline
                   rows={3}
-                  label="Ghi chú"
-                  name="note"
+                  label='Ghi chú'
+                  name='note'
                   value={formData.note}
                   onChange={handleInputChange}
-                  placeholder="Ghi chú về lịch bảo trì..."
-                  variant="outlined"
+                  placeholder='Ghi chú về lịch bảo trì...'
+                  variant='outlined'
                 />
               </Grid>
             </Grid>
           </DialogContent>
-          
+
           <DialogActions>
-            <Button onClick={() => setFormVisible(false)}>
-              Hủy
-            </Button>
-            <Button type="submit" variant="contained">
+            <Button onClick={() => setFormVisible(false)}>Hủy</Button>
+            <Button type='submit' variant='contained'>
               Tạo lịch bảo trì
             </Button>
           </DialogActions>

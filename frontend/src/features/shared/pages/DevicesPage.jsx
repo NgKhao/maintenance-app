@@ -34,7 +34,7 @@ import {
   addDevice,
   updateDevice,
   deleteDevice,
-} from '../api/devices';
+} from '../../../api/devices';
 
 export default function DevicesPage() {
   const [devices, setDevices] = useState([]);

@@ -19,7 +19,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 import { AuthProvider, useAuth } from './contexts';
 import { LoginForm, RegisterForm } from './features/auth';
-import AppLayout from './components/layout/AppLayout';
+import AppLayout from './components/layout/AppLayout.jsx';
 import theme from './styles/theme';
 
 const App = () => {
