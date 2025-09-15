@@ -1,17 +1,17 @@
 <?php
+// Load environment variables
+require_once __DIR__ . '/config/env.php';
+
 header("Content-Type: application/json");
 
-// Determine origin
-$allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001'
-];
+// Determine origin from environment configuration
+$allowedOrigins = explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001'));
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if (in_array($origin, $allowedOrigins)) {
     header("Access-Control-Allow-Origin: $origin");
 } else {
-    header("Access-Control-Allow-Origin: http://localhost:3001");
+    header("Access-Control-Allow-Origin: " . env('CORS_DEFAULT_ORIGIN', 'http://localhost:3001'));
 }
 
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");

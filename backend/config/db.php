@@ -1,15 +1,29 @@
 <?php
+// Load environment variables
+require_once __DIR__ . '/env.php';
+
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: http://localhost:3000");
+
+// Get CORS origins from environment
+$allowedOrigins = explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000'));
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+if (in_array($origin, $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: $origin");
+} else {
+    header("Access-Control-Allow-Origin: " . env('CORS_DEFAULT_ORIGIN', 'http://localhost:3000'));
+}
+
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Credentials: true");
 
-$host = 'localhost:3308';
-$db   = 'maintenance_app';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
+// Database configuration from environment variables
+$host = env('DB_HOST', 'localhost:3308');
+$db   = env('DB_NAME', 'maintenance_app');
+$user = env('DB_USER', 'root');
+$pass = env('DB_PASS', '');
+$charset = env('DB_CHARSET', 'utf8mb4');
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [

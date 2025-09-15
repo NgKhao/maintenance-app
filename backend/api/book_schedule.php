@@ -1,17 +1,9 @@
 <?php
-// CORS headers
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Content-Type: application/json");
+// Include CORS helper
+include __DIR__ . '/../config/cors.php';
+setCorsHeaders();
 
-// Handle preflight OPTIONS
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-include '../config/db.php';
+include __DIR__ . '/../config/db.php';
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Khách hàng đặt lịch bảo trì
