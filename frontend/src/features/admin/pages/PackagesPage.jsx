@@ -19,7 +19,7 @@ import {
   TextField,
   CircularProgress,
   Alert,
-  Grid
+  Grid,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -27,9 +27,10 @@ import {
   Delete as DeleteIcon,
   Inventory as PackagesIcon,
   Save as SaveIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
+import { authStorage } from '../../../utils/storage';
 
 export default function PackagesPage() {
   const [data, setData] = useState([]);
@@ -38,14 +39,15 @@ export default function PackagesPage() {
     name: '',
     description: '',
     price: '',
-    duration_months: '12'
+    duration_months: '12',
   });
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const role = localStorage.getItem('role');
+  const role = authStorage.getRole() || '';
+
   const canEdit = role === 'admin';
 
   const API_URL = 'http://localhost:8000/index.php?api=packages';
@@ -95,7 +97,7 @@ export default function PackagesPage() {
       name: '',
       description: '',
       price: '',
-      duration_months: '12'
+      duration_months: '12',
     });
     setFormVisible(true);
   };
@@ -124,7 +126,7 @@ export default function PackagesPage() {
       name: pkg.name || '',
       description: pkg.description || '',
       price: pkg.price || '',
-      duration_months: pkg.duration_months || '12'
+      duration_months: pkg.duration_months || '12',
     });
   };
 
@@ -132,7 +134,7 @@ export default function PackagesPage() {
     try {
       const form = new FormData();
       form.append('id', id);
-      Object.keys(editData).forEach(key => {
+      Object.keys(editData).forEach((key) => {
         form.append(key, editData[key] || '');
       });
 
@@ -170,7 +172,12 @@ export default function PackagesPage() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='400px'
+      >
         <CircularProgress />
       </Box>
     );
@@ -178,20 +185,25 @@ export default function PackagesPage() {
 
   return (
     <Box>
-      <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        mb={4}
+        display='flex'
+        justifyContent='space-between'
+        alignItems='center'
+      >
         <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography variant='h4' component='h1' gutterBottom>
             <PackagesIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
             Quản lý gói bảo trì
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant='body1' color='text.secondary'>
             Tạo và quản lý các gói dịch vụ bảo trì
           </Typography>
         </Box>
-        
+
         {canEdit && (
           <Button
-            variant="contained"
+            variant='contained'
             startIcon={<AddIcon />}
             onClick={handleAdd}
           >
@@ -201,7 +213,7 @@ export default function PackagesPage() {
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity='error' sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
@@ -218,14 +230,14 @@ export default function PackagesPage() {
                   <TableCell>Giá</TableCell>
                   <TableCell>Thời gian (tháng)</TableCell>
                   <TableCell>Ngày tạo</TableCell>
-                  <TableCell align="center">Hành động</TableCell>
+                  <TableCell align='center'>Hành động</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {data.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      <Typography variant="body2" color="text.secondary">
+                    <TableCell colSpan={7} align='center'>
+                      <Typography variant='body2' color='text.secondary'>
                         Không có gói bảo trì nào
                       </Typography>
                     </TableCell>
@@ -237,11 +249,11 @@ export default function PackagesPage() {
                       <TableCell>
                         {editingId === pkg.id ? (
                           <TextField
-                            size="small"
-                            name="name"
+                            size='small'
+                            name='name'
                             value={editData.name || ''}
                             onChange={handleEditInputChange}
-                            variant="outlined"
+                            variant='outlined'
                             fullWidth
                           />
                         ) : (
@@ -251,17 +263,17 @@ export default function PackagesPage() {
                       <TableCell>
                         {editingId === pkg.id ? (
                           <TextField
-                            size="small"
-                            name="description"
+                            size='small'
+                            name='description'
                             value={editData.description || ''}
                             onChange={handleEditInputChange}
-                            variant="outlined"
+                            variant='outlined'
                             fullWidth
                             multiline
                             rows={2}
                           />
                         ) : (
-                          <Typography variant="body2" sx={{ maxWidth: 200 }}>
+                          <Typography variant='body2' sx={{ maxWidth: 200 }}>
                             {pkg.description || '-'}
                           </Typography>
                         )}
@@ -269,15 +281,19 @@ export default function PackagesPage() {
                       <TableCell>
                         {editingId === pkg.id ? (
                           <TextField
-                            size="small"
-                            name="price"
-                            type="number"
+                            size='small'
+                            name='price'
+                            type='number'
                             value={editData.price || ''}
                             onChange={handleEditInputChange}
-                            variant="outlined"
+                            variant='outlined'
                           />
                         ) : (
-                          <Typography variant="body2" color="primary.main" fontWeight="bold">
+                          <Typography
+                            variant='body2'
+                            color='primary.main'
+                            fontWeight='bold'
+                          >
                             {formatPrice(pkg.price)}
                           </Typography>
                         )}
@@ -285,36 +301,34 @@ export default function PackagesPage() {
                       <TableCell>
                         {editingId === pkg.id ? (
                           <TextField
-                            size="small"
-                            name="duration_months"
-                            type="number"
+                            size='small'
+                            name='duration_months'
+                            type='number'
                             value={editData.duration_months || ''}
                             onChange={handleEditInputChange}
-                            variant="outlined"
+                            variant='outlined'
                           />
                         ) : (
                           `${pkg.duration_months} tháng`
                         )}
                       </TableCell>
-                      <TableCell>
-                        {formatDate(pkg.created_at)}
-                      </TableCell>
-                      <TableCell align="center">
+                      <TableCell>{formatDate(pkg.created_at)}</TableCell>
+                      <TableCell align='center'>
                         {editingId === pkg.id ? (
                           <Box>
                             <IconButton
-                              size="small"
+                              size='small'
                               onClick={() => handleSaveEdit(pkg.id)}
-                              color="primary"
-                              title="Lưu"
+                              color='primary'
+                              title='Lưu'
                             >
                               <SaveIcon />
                             </IconButton>
                             <IconButton
-                              size="small"
+                              size='small'
                               onClick={handleCancelEdit}
-                              color="secondary"
-                              title="Hủy"
+                              color='secondary'
+                              title='Hủy'
                             >
                               <CancelIcon />
                             </IconButton>
@@ -324,18 +338,18 @@ export default function PackagesPage() {
                             {canEdit && (
                               <>
                                 <IconButton
-                                  size="small"
+                                  size='small'
                                   onClick={() => handleEdit(pkg)}
-                                  color="primary"
-                                  title="Chỉnh sửa"
+                                  color='primary'
+                                  title='Chỉnh sửa'
                                 >
                                   <EditIcon />
                                 </IconButton>
                                 <IconButton
-                                  size="small"
+                                  size='small'
                                   onClick={() => handleDelete(pkg.id)}
-                                  color="error"
-                                  title="Xóa"
+                                  color='error'
+                                  title='Xóa'
                                 >
                                   <DeleteIcon />
                                 </IconButton>
@@ -357,25 +371,23 @@ export default function PackagesPage() {
       <Dialog
         open={formVisible}
         onClose={() => setFormVisible(false)}
-        maxWidth="sm"
+        maxWidth='sm'
         fullWidth
       >
-        <DialogTitle>
-          Thêm gói bảo trì mới
-        </DialogTitle>
-        
-        <Box component="form" onSubmit={handleSubmit}>
+        <DialogTitle>Thêm gói bảo trì mới</DialogTitle>
+
+        <Box component='form' onSubmit={handleSubmit}>
           <DialogContent>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Tên gói"
-                  name="name"
+                  label='Tên gói'
+                  name='name'
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  variant="outlined"
+                  variant='outlined'
                 />
               </Grid>
 
@@ -384,48 +396,46 @@ export default function PackagesPage() {
                   fullWidth
                   multiline
                   rows={3}
-                  label="Mô tả"
-                  name="description"
+                  label='Mô tả'
+                  name='description'
                   value={formData.description}
                   onChange={handleInputChange}
-                  variant="outlined"
-                  placeholder="Mô tả chi tiết về gói bảo trì..."
+                  variant='outlined'
+                  placeholder='Mô tả chi tiết về gói bảo trì...'
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Giá (VND)"
-                  name="price"
-                  type="number"
+                  label='Giá (VND)'
+                  name='price'
+                  type='number'
                   value={formData.price}
                   onChange={handleInputChange}
                   required
-                  variant="outlined"
+                  variant='outlined'
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Thời gian (tháng)"
-                  name="duration_months"
-                  type="number"
+                  label='Thời gian (tháng)'
+                  name='duration_months'
+                  type='number'
                   value={formData.duration_months}
                   onChange={handleInputChange}
                   required
-                  variant="outlined"
+                  variant='outlined'
                 />
               </Grid>
             </Grid>
           </DialogContent>
-          
+
           <DialogActions>
-            <Button onClick={() => setFormVisible(false)}>
-              Hủy
-            </Button>
-            <Button type="submit" variant="contained">
+            <Button onClick={() => setFormVisible(false)}>Hủy</Button>
+            <Button type='submit' variant='contained'>
               Thêm gói bảo trì
             </Button>
           </DialogActions>

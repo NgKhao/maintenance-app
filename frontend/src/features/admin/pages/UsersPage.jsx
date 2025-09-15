@@ -35,6 +35,7 @@ import {
   Clear as ClearIcon,
   People as PeopleIcon,
 } from '@mui/icons-material';
+import { authStorage } from '../../../utils/storage';
 
 export default function UsersPage() {
   const [data, setData] = useState([]);
@@ -53,7 +54,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const role = localStorage.getItem('role');
+  const role = authStorage.getRole() || '';
   const canEdit = role === 'admin';
 
   const API_URL = 'http://localhost:8000/api/users.php';

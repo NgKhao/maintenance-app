@@ -1,3 +1,9 @@
+run
+backend 
+php -S localhost:8000
+frontend
+npm start
+
 user:
 222@gmail.com
 123456
