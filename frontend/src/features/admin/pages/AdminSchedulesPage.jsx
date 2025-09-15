@@ -1,9 +1,50 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  CircularProgress,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  InputAdornment,
+  Paper,
+  Grid,
+} from '@mui/material';
+import {
+  Assignment as AssignmentIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
+  Person as PersonIcon,
+  Build as BuildIcon,
+  Schedule as ScheduleIcon,
+  Engineering as EngineeringIcon,
+  Visibility as VisibilityIcon,
+} from '@mui/icons-material';
 
 function AdminSchedulesPage() {
   const [schedules, setSchedules] = useState([]);
+  const [filteredSchedules, setFilteredSchedules] = useState([]);
   const [technicians, setTechnicians] = useState([]);
   const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -21,6 +62,7 @@ function AdminSchedulesPage() {
 
       if (response.ok) {
         setSchedules(data);
+        setFilteredSchedules(data);
       } else {
         setMessage(data.error || 'Lỗi tải lịch');
       }
@@ -29,6 +71,52 @@ function AdminSchedulesPage() {
       setMessage('Lỗi kết nối server');
     }
   }, [filter]);
+
+  // Filter schedules based on search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredSchedules(schedules);
+    } else {
+      const filtered = schedules.filter(
+        (schedule) =>
+          schedule.customer_name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          schedule.device_name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          schedule.technician_name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          new Date(schedule.scheduled_date)
+            .toLocaleDateString('vi-VN')
+            .includes(searchTerm)
+      );
+      setFilteredSchedules(filtered);
+    }
+  }, [schedules, searchTerm]);
+
+  // Helper function to highlight search term
+  const highlightText = (text, searchTerm) => {
+    if (!searchTerm || !text) return text;
+
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <Box
+          component='span'
+          key={index}
+          sx={{ backgroundColor: 'yellow', fontWeight: 'bold' }}
+        >
+          {part}
+        </Box>
+      ) : (
+        part
+      )
+    );
+  };
 
   useEffect(() => {
     fetchSchedules();
@@ -98,242 +186,376 @@ function AdminSchedulesPage() {
   const getStatusBadge = (status) => {
     const statusConfig = {
       pending: {
-        bg: 'bg-yellow-100',
-        text: 'text-yellow-800',
+        color: 'warning',
         label: 'Chờ phân công',
       },
       assigned: {
-        bg: 'bg-blue-100',
-        text: 'text-blue-800',
+        color: 'info',
         label: 'Đã phân công',
       },
       confirmed: {
-        bg: 'bg-green-100',
-        text: 'text-green-800',
+        color: 'success',
         label: 'Đã xác nhận',
       },
-      rejected: { bg: 'bg-red-100', text: 'text-red-800', label: 'Đã từ chối' },
+      rejected: {
+        color: 'error',
+        label: 'Đã từ chối',
+      },
       in_progress: {
-        bg: 'bg-purple-100',
-        text: 'text-purple-800',
+        color: 'secondary',
         label: 'Đang thực hiện',
       },
       completed: {
-        bg: 'bg-gray-100',
-        text: 'text-gray-800',
+        color: 'default',
         label: 'Hoàn thành',
       },
     };
 
     const config = statusConfig[status] || statusConfig.pending;
     return (
-      <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
-      >
-        {config.label}
-      </span>
+      <Chip
+        label={config.label}
+        color={config.color}
+        size='small'
+        variant='filled'
+      />
     );
   };
 
   return (
-    <div className='p-6'>
-      <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-2xl font-bold'>Quản Lý Lịch Bảo Trì</h1>
+    <Box>
+      {/* Header */}
+      <Box
+        mb={4}
+        display='flex'
+        justifyContent='space-between'
+        alignItems='center'
+      >
+        <Box>
+          <Typography variant='h4' component='h1' gutterBottom>
+            <AssignmentIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Quản lý lịch bảo trì
+          </Typography>
+          <Typography variant='body1' color='text.secondary'>
+            Phân công và theo dõi lịch bảo trì thiết bị
+          </Typography>
+        </Box>
+      </Box>
 
-        <div className='flex gap-4'>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className='px-3 py-2 border border-gray-300 rounded-lg'
-          >
-            <option value='all'>Tất cả</option>
-            <option value='pending'>Chờ phân công</option>
-            <option value='assigned'>Đã phân công</option>
-            <option value='confirmed'>Đã xác nhận</option>
-            <option value='in_progress'>Đang thực hiện</option>
-            <option value='completed'>Hoàn thành</option>
-          </select>
-        </div>
-      </div>
-
+      {/* Message Alert */}
       {message && (
-        <div
-          className={`p-4 rounded mb-4 ${
-            message.includes('thành công')
-              ? 'bg-green-100 text-green-700 border border-green-300'
-              : 'bg-red-100 text-red-700 border border-red-300'
-          }`}
+        <Alert
+          severity={message.includes('thành công') ? 'success' : 'error'}
+          sx={{ mb: 3 }}
+          onClose={() => setMessage('')}
         >
           {message}
-        </div>
+        </Alert>
       )}
 
-      <div className='bg-white rounded-lg shadow overflow-hidden'>
-        <table className='min-w-full divide-y divide-gray-200'>
-          <thead className='bg-gray-50'>
-            <tr>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                Khách hàng
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                Thiết bị
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                Ngày mong muốn
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                Kỹ thuật viên
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                Trạng thái
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                Thao tác
-              </th>
-            </tr>
-          </thead>
-          <tbody className='bg-white divide-y divide-gray-200'>
-            {schedules.map((schedule) => (
-              <tr key={schedule.id}>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <div>
-                    <div className='text-sm font-medium text-gray-900'>
-                      {schedule.customer_name}
-                    </div>
-                    <div className='text-sm text-gray-500'>
-                      {schedule.customer_phone}
-                    </div>
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <div>
-                    <div className='text-sm font-medium text-gray-900'>
-                      {schedule.device_name}
-                    </div>
-                    <div className='text-sm text-gray-500'>
-                      {schedule.serial_number}
-                    </div>
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-                  {new Date(schedule.scheduled_date).toLocaleDateString(
-                    'vi-VN'
-                  )}
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
-                  {schedule.technician_name || 'Chưa phân công'}
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  {getStatusBadge(schedule.status)}
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-                  {(schedule.status === 'pending' ||
-                    !schedule.technician_name) && (
-                    <button
-                      onClick={() => {
-                        setSelectedSchedule(schedule);
-                        setShowAssignModal(true);
-                      }}
-                      className='text-blue-600 hover:text-blue-900'
-                    >
-                      {schedule.technician_name ? 'Thay đổi KTV' : 'Phân công'}
-                    </button>
-                  )}
-                  {schedule.customer_note && (
-                    <button
-                      className='text-gray-600 hover:text-gray-900 ml-3'
-                      title={schedule.customer_note}
-                    >
-                      Xem ghi chú
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Search and Filter Bar */}
+      <Card sx={{ mb: 2 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Grid container spacing={2} alignItems='center'>
+            {/* Search Field */}
+            <Grid item xs={12} sm={12} md={7}>
+              <TextField
+                fullWidth
+                placeholder='Tìm kiếm theo khách hàng, thiết bị, kỹ thuật viên...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                variant='outlined'
+                size='small'
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <SearchIcon color='action' />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        onClick={() => setSearchTerm('')}
+                        size='small'
+                        edge='end'
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
 
-        {schedules.length === 0 && (
-          <div className='text-center py-8 text-gray-500'>
-            Không có lịch bảo trì nào
-          </div>
-        )}
-      </div>
+            {/* Status Filter */}
+            <Grid item xs={12} sm={8} md={3}>
+              <FormControl fullWidth size='small'>
+                <InputLabel>Trạng thái</InputLabel>
+                <Select
+                  value={filter}
+                  label='Trạng thái'
+                  onChange={(e) => setFilter(e.target.value)}
+                >
+                  <MenuItem value='all'>Tất cả</MenuItem>
+                  <MenuItem value='pending'>Chờ phân công</MenuItem>
+                  <MenuItem value='assigned'>Đã phân công</MenuItem>
+                  <MenuItem value='confirmed'>Đã xác nhận</MenuItem>
+                  <MenuItem value='in_progress'>Đang thực hiện</MenuItem>
+                  <MenuItem value='completed'>Hoàn thành</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
 
-      {/* Modal phân công kỹ thuật viên */}
+            {/* Results Counter */}
+            <Grid item xs={12} sm={4} md={2}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '40px',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontWeight: 'bold' }}
+                >
+                  {filteredSchedules.length} / {schedules.length}
+                </Typography>
+                <Typography variant='caption' color='text.secondary'>
+                  lịch bảo trì
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Data Table */}
+      <Card>
+        <CardContent sx={{ p: 0 }}>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <Box display='flex' alignItems='center'>
+                      <PersonIcon sx={{ mr: 1, fontSize: 16 }} />
+                      Khách hàng
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box display='flex' alignItems='center'>
+                      <BuildIcon sx={{ mr: 1, fontSize: 16 }} />
+                      Thiết bị
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box display='flex' alignItems='center'>
+                      <ScheduleIcon sx={{ mr: 1, fontSize: 16 }} />
+                      Ngày mong muốn
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box display='flex' alignItems='center'>
+                      <EngineeringIcon sx={{ mr: 1, fontSize: 16 }} />
+                      Kỹ thuật viên
+                    </Box>
+                  </TableCell>
+                  <TableCell>Trạng thái</TableCell>
+                  <TableCell align='center'>Thao tác</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredSchedules.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align='center'>
+                      <Typography variant='body2' color='text.secondary' py={4}>
+                        {searchTerm
+                          ? 'Không tìm thấy lịch bảo trì nào phù hợp'
+                          : 'Không có lịch bảo trì nào'}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredSchedules.map((schedule) => (
+                    <TableRow key={schedule.id} hover>
+                      <TableCell>
+                        <Box>
+                          <Typography variant='body2' fontWeight='medium'>
+                            {highlightText(schedule.customer_name, searchTerm)}
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary'>
+                            {schedule.customer_phone}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box>
+                          <Typography variant='body2' fontWeight='medium'>
+                            {highlightText(schedule.device_name, searchTerm)}
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary'>
+                            {schedule.serial_number}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant='body2'>
+                          {highlightText(
+                            new Date(
+                              schedule.scheduled_date
+                            ).toLocaleDateString('vi-VN'),
+                            searchTerm
+                          )}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant='body2'>
+                          {schedule.technician_name ? (
+                            highlightText(schedule.technician_name, searchTerm)
+                          ) : (
+                            <em style={{ color: '#666' }}>Chưa phân công</em>
+                          )}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(schedule.status)}</TableCell>
+                      <TableCell align='center'>
+                        <Box display='flex' gap={1} justifyContent='center'>
+                          {(schedule.status === 'pending' ||
+                            !schedule.technician_name) && (
+                            <Button
+                              size='small'
+                              variant='outlined'
+                              onClick={() => {
+                                setSelectedSchedule(schedule);
+                                setShowAssignModal(true);
+                              }}
+                            >
+                              {schedule.technician_name
+                                ? 'Thay đổi KTV'
+                                : 'Phân công'}
+                            </Button>
+                          )}
+                          {schedule.customer_note && (
+                            <IconButton
+                              size='small'
+                              title={schedule.customer_note}
+                              color='info'
+                            >
+                              <VisibilityIcon fontSize='small' />
+                            </IconButton>
+                          )}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
+
+      {/* Assignment Modal */}
       {showAssignModal && selectedSchedule && (
-        <div className='fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center'>
-          <div className='bg-white rounded-lg p-6 w-full max-w-md'>
-            <h3 className='text-lg font-semibold mb-4'>
+        <Dialog
+          open={showAssignModal}
+          onClose={() => {
+            setShowAssignModal(false);
+            setSelectedSchedule(null);
+          }}
+          maxWidth='sm'
+          fullWidth
+        >
+          <DialogTitle>
+            <Box display='flex' alignItems='center'>
+              <EngineeringIcon sx={{ mr: 1 }} />
               Phân công kỹ thuật viên
-            </h3>
+            </Box>
+          </DialogTitle>
 
-            <form onSubmit={handleAssign} className='space-y-4'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Khách hàng: {selectedSchedule.customer_name}
-                </label>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Thiết bị: {selectedSchedule.device_name}
-                </label>
-              </div>
+          <Box component='form' onSubmit={handleAssign}>
+            <DialogContent>
+              <Grid container spacing={2}>
+                {/* Schedule Info */}
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                    <Typography variant='body2' gutterBottom>
+                      <strong>Khách hàng:</strong>{' '}
+                      {selectedSchedule.customer_name}
+                    </Typography>
+                    <Typography variant='body2'>
+                      <strong>Thiết bị:</strong> {selectedSchedule.device_name}
+                    </Typography>
+                  </Paper>
+                </Grid>
 
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Chọn kỹ thuật viên *
-                </label>
-                <select
-                  name='technician_id'
-                  className='w-full p-3 border border-gray-300 rounded-lg'
-                  required
-                >
-                  <option value=''>-- Chọn kỹ thuật viên --</option>
-                  {technicians.map((tech) => (
-                    <option key={tech.id} value={tech.id}>
-                      {tech.name} - {tech.phone}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                {/* Technician Selection */}
+                <Grid item xs={12}>
+                  <FormControl fullWidth required>
+                    <InputLabel>Chọn kỹ thuật viên</InputLabel>
+                    <Select
+                      name='technician_id'
+                      label='Chọn kỹ thuật viên'
+                      defaultValue=''
+                    >
+                      {technicians.map((tech) => (
+                        <MenuItem key={tech.id} value={tech.id}>
+                          {tech.name} - {tech.phone}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Ngày hẹn *
-                </label>
-                <input
-                  type='date'
-                  name='scheduled_date'
-                  defaultValue={selectedSchedule.scheduled_date}
-                  min={new Date().toISOString().split('T')[0]}
-                  className='w-full p-3 border border-gray-300 rounded-lg'
-                  required
-                />
-              </div>
+                {/* Date Selection */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label='Ngày hẹn'
+                    name='scheduled_date'
+                    type='date'
+                    defaultValue={selectedSchedule.scheduled_date}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    inputProps={{
+                      min: new Date().toISOString().split('T')[0],
+                    }}
+                    required
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
 
-              <div className='flex gap-3'>
-                <button
-                  type='submit'
-                  disabled={loading}
-                  className='flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50'
-                >
-                  {loading ? 'Đang phân công...' : 'Phân công'}
-                </button>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setShowAssignModal(false);
-                    setSelectedSchedule(null);
-                  }}
-                  className='flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400'
-                >
-                  Hủy
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setSelectedSchedule(null);
+                }}
+              >
+                Hủy
+              </Button>
+              <Button
+                type='submit'
+                variant='contained'
+                disabled={loading}
+                startIcon={
+                  loading ? <CircularProgress size={16} /> : <AssignmentIcon />
+                }
+              >
+                {loading ? 'Đang phân công...' : 'Phân công'}
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
       )}
-    </div>
+    </Box>
   );
 }
 

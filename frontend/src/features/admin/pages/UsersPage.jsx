@@ -19,31 +19,34 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Switch,
   CircularProgress,
   Alert,
+  InputAdornment,
   Grid,
-  Switch,
-  FormControlLabel
 } from '@mui/material';
 import {
-  Add as AddIcon,
+  PersonAdd as PersonAddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  People as UsersIcon,
   Save as SaveIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
+  People as PeopleIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
 
 export default function UsersPage() {
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [formVisible, setFormVisible] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     password: '',
-    role: 'user'
+    role: 'user',
   });
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
@@ -56,154 +59,227 @@ export default function UsersPage() {
   const API_URL = 'http://localhost:8000/api/users.php';
 
   const fetchData = async () => {
-    setLoading(true);
     try {
-      const res = await axios.get(API_URL);
-      // Lọc ra admin accounts - chỉ hiển thị user và technician
-      const filteredData = res.data.filter((user) => user.role !== 'admin');
-      setData(filteredData);
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi tải dữ liệu người dùng');
+      setLoading(true);
+      const response = await fetch(API_URL);
+      const result = await response.json();
+
+      if (response.ok) {
+        setData(result);
+        setFilteredData(result);
+        setError('');
+      } else {
+        setError(result.error || 'Lỗi tải dữ liệu');
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setError('Lỗi kết nối server');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  // Filter data based on search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredData(data);
+    } else {
+      const filtered = data.filter(
+        (user) =>
+          user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  }, [data, searchTerm]);
+
+  // Keyboard shortcut for search (Ctrl+F)
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        document.getElementById('user-search-input')?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
+  // Helper function to highlight search term
+  const highlightText = (text, searchTerm) => {
+    if (!searchTerm || !text) return text;
+
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <Box
+          component='span'
+          key={index}
+          sx={{ backgroundColor: 'yellow', fontWeight: 'bold' }}
+        >
+          {part}
+        </Box>
+      ) : (
+        part
+      )
+    );
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Helper functions
-  const getRoleColor = (role) => {
-    switch (role) {
-      case 'user':
-        return 'primary';
-      case 'technician':
-        return 'secondary';
-      default:
-        return 'default';
-    }
-  };
-
-  const getRoleText = (role) => {
-    switch (role) {
-      case 'user':
-        return 'Khách hàng';
-      case 'technician':
-        return 'Kỹ thuật viên';
-      default:
-        return role;
-    }
-  };
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleEditInputChange = (e) => {
-    setEditData({ ...editData, [e.target.name]: e.target.value });
-  };
-
-  const handleAdd = () => {
-    if (!canEdit) {
-      setError('Bạn không có quyền thêm người dùng');
-      return;
-    }
-
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      password: '',
-      role: 'user'
-    });
-    setFormVisible(true);
-  };
-
-  const handleSubmit = async (e) => {
+  const handleCreate = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      const form = new FormData();
-      Object.keys(formData).forEach(key => {
-        form.append(key, formData[key] || '');
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
 
-      await axios.post(API_URL, form);
-      setFormVisible(false);
-      fetchData();
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi thêm người dùng');
+      const result = await response.json();
+
+      if (response.ok) {
+        setFormVisible(false);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          password: '',
+          role: 'user',
+        });
+        fetchData();
+        setError('');
+      } else {
+        setError(result.error || 'Lỗi tạo user');
+      }
+    } catch (error) {
+      console.error('Create error:', error);
+      setError('Lỗi kết nối server');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEdit = (user) => {
     setEditingId(user.id);
     setEditData({
-      name: user.name || '',
-      email: user.email || '',
-      phone: user.phone || '',
-      role: user.role || 'user'
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      is_active: user.is_active,
     });
   };
 
-  const handleSaveEdit = async (id) => {
+  const handleSave = async (id) => {
+    setLoading(true);
+
     try {
-      const form = new FormData();
-      form.append('id', id);
-      Object.keys(editData).forEach(key => {
-        form.append(key, editData[key] || '');
+      const response = await fetch(`${API_URL}?id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editData),
       });
 
-      await axios.put(API_URL, form);
-      setEditingId(null);
-      setEditData({});
-      fetchData();
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi cập nhật người dùng');
+      const result = await response.json();
+
+      if (response.ok) {
+        setEditingId(null);
+        setEditData({});
+        fetchData();
+        setError('');
+      } else {
+        setError(result.error || 'Lỗi cập nhật user');
+      }
+    } catch (error) {
+      console.error('Update error:', error);
+      setError('Lỗi kết nối server');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCancelEdit = () => {
+  const handleCancel = () => {
     setEditingId(null);
     setEditData({});
   };
 
   const handleDelete = async (id) => {
-    if (!canEdit) {
-      setError('Bạn không có quyền xóa người dùng');
-      return;
-    }
+    if (window.confirm('Bạn có chắc muốn xóa user này?')) {
+      setLoading(true);
 
-    if (!window.confirm('Bạn có chắc muốn xóa người dùng này?')) return;
+      try {
+        const response = await fetch(`${API_URL}?id=${id}`, {
+          method: 'DELETE',
+        });
 
-    try {
-      await axios.delete(`${API_URL}?id=${id}`);
-      fetchData();
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi xóa người dùng');
-    }
-  };
+        const result = await response.json();
 
-  const handleToggleActive = async (id, currentActive) => {
-    try {
-      const form = new FormData();
-      form.append('id', id);
-      form.append('active', currentActive ? '0' : '1');
-
-      await axios.put(API_URL, form);
-      fetchData();
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi cập nhật trạng thái');
+        if (response.ok) {
+          fetchData();
+          setError('');
+        } else {
+          setError(result.error || 'Lỗi xóa user');
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+        setError('Lỗi kết nối server');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  if (loading) {
+  const handleToggleActive = async (id, currentStatus) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}?id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          is_active: currentStatus === 1 ? 0 : 1,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        fetchData();
+        setError('');
+      } else {
+        setError(result.error || 'Lỗi cập nhật trạng thái');
+      }
+    } catch (error) {
+      console.error('Toggle active error:', error);
+      setError('Lỗi kết nối server');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && data.length === 0) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='200px'
+      >
         <CircularProgress />
       </Box>
     );
@@ -211,187 +287,275 @@ export default function UsersPage() {
 
   return (
     <Box>
-      <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
+      {/* Header */}
+      <Box
+        mb={4}
+        display='flex'
+        justifyContent='space-between'
+        alignItems='center'
+        flexWrap='wrap'
+        gap={2}
+      >
         <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            <UsersIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          <Typography variant='h4' component='h1' gutterBottom>
+            <PeopleIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
             Quản lý người dùng
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Quản lý khách hàng và kỹ thuật viên trong hệ thống
+          <Typography variant='body1' color='text.secondary'>
+            Quản lý tài khoản và phân quyền người dùng
           </Typography>
         </Box>
-        
         {canEdit && (
           <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAdd}
+            variant='contained'
+            startIcon={<PersonAddIcon />}
+            onClick={() => setFormVisible(true)}
           >
             Thêm người dùng
           </Button>
         )}
       </Box>
 
+      {/* Error Alert */}
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity='error' sx={{ mb: 3 }} onClose={() => setError('')}>
           {error}
         </Alert>
       )}
 
+      {/* Search and Stats */}
+      <Card sx={{ mb: 2 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Grid container spacing={2} alignItems='center'>
+            <Grid item xs={12} md={8}>
+              <TextField
+                id='user-search-input'
+                fullWidth
+                placeholder='Tìm kiếm theo tên, email, số điện thoại... (Ctrl+F)'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                variant='outlined'
+                size='small'
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <SearchIcon color='action' />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        onClick={() => setSearchTerm('')}
+                        size='small'
+                        edge='end'
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontWeight: 'bold' }}
+                >
+                  {filteredData.length} / {data.length}
+                </Typography>
+                <Typography variant='caption' color='text.secondary'>
+                  người dùng
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Data Table */}
       <Card>
-        <CardContent>
+        <CardContent sx={{ p: 0 }}>
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Họ tên</TableCell>
+                  <TableCell>STT</TableCell>
+                  <TableCell>Tên</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Số điện thoại</TableCell>
                   <TableCell>Vai trò</TableCell>
                   <TableCell>Trạng thái</TableCell>
-                  <TableCell>Ngày tạo</TableCell>
-                  <TableCell align="center">Hành động</TableCell>
+                  {canEdit && <TableCell align='center'>Thao tác</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {data.length === 0 ? (
+                {filteredData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
-                      <Typography variant="body2" color="text.secondary">
-                        Không có người dùng nào
+                    <TableCell colSpan={canEdit ? 7 : 6} align='center'>
+                      <Typography variant='body2' color='text.secondary' py={4}>
+                        {searchTerm
+                          ? 'Không tìm thấy người dùng nào phù hợp'
+                          : 'Không có dữ liệu'}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{user.id}</TableCell>
+                  filteredData.map((user, index) => (
+                    <TableRow key={user.id} hover>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>
                         {editingId === user.id ? (
                           <TextField
-                            size="small"
-                            name="name"
+                            size='small'
                             value={editData.name || ''}
-                            onChange={handleEditInputChange}
-                            variant="outlined"
+                            onChange={(e) =>
+                              setEditData({ ...editData, name: e.target.value })
+                            }
                           />
                         ) : (
-                          user.name
+                          highlightText(user.name, searchTerm)
                         )}
                       </TableCell>
                       <TableCell>
                         {editingId === user.id ? (
                           <TextField
-                            size="small"
-                            name="email"
-                            type="email"
+                            size='small'
+                            type='email'
                             value={editData.email || ''}
-                            onChange={handleEditInputChange}
-                            variant="outlined"
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                email: e.target.value,
+                              })
+                            }
                           />
                         ) : (
-                          user.email
+                          highlightText(user.email, searchTerm)
                         )}
                       </TableCell>
                       <TableCell>
                         {editingId === user.id ? (
                           <TextField
-                            size="small"
-                            name="phone"
+                            size='small'
                             value={editData.phone || ''}
-                            onChange={handleEditInputChange}
-                            variant="outlined"
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                phone: e.target.value,
+                              })
+                            }
                           />
                         ) : (
-                          user.phone || '-'
+                          highlightText(user.phone, searchTerm)
                         )}
                       </TableCell>
                       <TableCell>
                         {editingId === user.id ? (
                           <TextField
-                            size="small"
                             select
-                            name="role"
+                            size='small'
                             value={editData.role || 'user'}
-                            onChange={handleEditInputChange}
-                            variant="outlined"
+                            onChange={(e) =>
+                              setEditData({ ...editData, role: e.target.value })
+                            }
+                            sx={{ minWidth: 120 }}
                           >
-                            <MenuItem value="user">Khách hàng</MenuItem>
-                            <MenuItem value="technician">Kỹ thuật viên</MenuItem>
+                            <MenuItem value='user'>User</MenuItem>
+                            <MenuItem value='technician'>Technician</MenuItem>
+                            <MenuItem value='admin'>Admin</MenuItem>
                           </TextField>
                         ) : (
                           <Chip
-                            label={getRoleText(user.role)}
-                            color={getRoleColor(user.role)}
-                            size="small"
+                            label={user.role}
+                            color={
+                              user.role === 'admin'
+                                ? 'error'
+                                : user.role === 'technician'
+                                ? 'warning'
+                                : 'default'
+                            }
+                            size='small'
                           />
                         )}
                       </TableCell>
                       <TableCell>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={user.active === '1' || user.active === 1}
-                              onChange={() => handleToggleActive(user.id, user.active === '1' || user.active === 1)}
-                              disabled={!canEdit}
-                            />
-                          }
-                          label={user.active === '1' || user.active === 1 ? 'Hoạt động' : 'Tạm khóa'}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {user.created_at ? 
-                          new Date(user.created_at).toLocaleDateString('vi-VN') : 
-                          '-'
-                        }
-                      </TableCell>
-                      <TableCell align="center">
-                        {editingId === user.id ? (
-                          <Box>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleSaveEdit(user.id)}
-                              color="primary"
-                              title="Lưu"
-                            >
-                              <SaveIcon />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={handleCancelEdit}
-                              color="secondary"
-                              title="Hủy"
-                            >
-                              <CancelIcon />
-                            </IconButton>
-                          </Box>
+                        {canEdit ? (
+                          <Switch
+                            checked={
+                              editingId === user.id
+                                ? editData.is_active === 1
+                                : user.is_active === 1
+                            }
+                            onChange={() =>
+                              editingId === user.id
+                                ? setEditData({
+                                    ...editData,
+                                    is_active: editData.is_active === 1 ? 0 : 1,
+                                  })
+                                : handleToggleActive(user.id, user.is_active)
+                            }
+                            disabled={loading}
+                          />
                         ) : (
-                          <Box>
-                            {canEdit && (
+                          <Chip
+                            label={
+                              user.is_active === 1 ? 'Hoạt động' : 'Vô hiệu'
+                            }
+                            color={user.is_active === 1 ? 'success' : 'default'}
+                            size='small'
+                          />
+                        )}
+                      </TableCell>
+                      {canEdit && (
+                        <TableCell align='center'>
+                          <Box display='flex' gap={1} justifyContent='center'>
+                            {editingId === user.id ? (
                               <>
                                 <IconButton
-                                  size="small"
+                                  color='primary'
+                                  onClick={() => handleSave(user.id)}
+                                  disabled={loading}
+                                >
+                                  <SaveIcon />
+                                </IconButton>
+                                <IconButton
+                                  color='secondary'
+                                  onClick={handleCancel}
+                                  disabled={loading}
+                                >
+                                  <CancelIcon />
+                                </IconButton>
+                              </>
+                            ) : (
+                              <>
+                                <IconButton
+                                  color='primary'
                                   onClick={() => handleEdit(user)}
-                                  color="primary"
-                                  title="Chỉnh sửa"
+                                  disabled={loading}
                                 >
                                   <EditIcon />
                                 </IconButton>
                                 <IconButton
-                                  size="small"
+                                  color='error'
                                   onClick={() => handleDelete(user.id)}
-                                  color="error"
-                                  title="Xóa"
+                                  disabled={loading}
                                 >
                                   <DeleteIcon />
                                 </IconButton>
                               </>
                             )}
                           </Box>
-                        )}
-                      </TableCell>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
                 )}
@@ -401,93 +565,91 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* Dialog Form */}
+      {/* Create User Dialog */}
       <Dialog
         open={formVisible}
         onClose={() => setFormVisible(false)}
-        maxWidth="sm"
+        maxWidth='sm'
         fullWidth
       >
-        <DialogTitle>
-          Thêm người dùng mới
-        </DialogTitle>
-        
-        <Box component="form" onSubmit={handleSubmit}>
+        <DialogTitle>Thêm người dùng mới</DialogTitle>
+        <Box component='form' onSubmit={handleCreate}>
           <DialogContent>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Họ tên"
-                  name="name"
+                  label='Tên'
                   value={formData.name}
-                  onChange={handleInputChange}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   required
-                  variant="outlined"
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Email"
-                  name="email"
-                  type="email"
+                  label='Email'
+                  type='email'
                   value={formData.email}
-                  onChange={handleInputChange}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   required
-                  variant="outlined"
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Số điện thoại"
-                  name="phone"
+                  label='Số điện thoại'
                   value={formData.phone}
-                  onChange={handleInputChange}
-                  variant="outlined"
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  required
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Mật khẩu"
-                  name="password"
-                  type="password"
+                  label='Mật khẩu'
+                  type='password'
                   value={formData.password}
-                  onChange={handleInputChange}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   required
-                  variant="outlined"
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   select
-                  label="Vai trò"
-                  name="role"
+                  label='Vai trò'
                   value={formData.role}
-                  onChange={handleInputChange}
-                  required
-                  variant="outlined"
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value })
+                  }
                 >
-                  <MenuItem value="user">Khách hàng</MenuItem>
-                  <MenuItem value="technician">Kỹ thuật viên</MenuItem>
+                  <MenuItem value='user'>User</MenuItem>
+                  <MenuItem value='technician'>Technician</MenuItem>
+                  <MenuItem value='admin'>Admin</MenuItem>
                 </TextField>
               </Grid>
             </Grid>
           </DialogContent>
-          
           <DialogActions>
-            <Button onClick={() => setFormVisible(false)}>
-              Hủy
-            </Button>
-            <Button type="submit" variant="contained">
-              Thêm người dùng
+            <Button onClick={() => setFormVisible(false)}>Hủy</Button>
+            <Button
+              type='submit'
+              variant='contained'
+              disabled={loading}
+              startIcon={
+                loading ? <CircularProgress size={16} /> : <PersonAddIcon />
+              }
+            >
+              {loading ? 'Đang tạo...' : 'Tạo'}
             </Button>
           </DialogActions>
         </Box>
