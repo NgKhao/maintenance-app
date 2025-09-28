@@ -23,6 +23,28 @@ export const registerService = async (orderData) => {
   return res.data;
 };
 
+// Đăng ký dịch vụ với thanh toán ZaloPay
+export const registerServiceWithZaloPay = async (orderData) => {
+  const dataWithPayment = {
+    ...orderData,
+    payment_method: 'zalopay'
+  };
+  const res = await axios.post(API_URL, dataWithPayment, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return res.data;
+};
+
+// Kiểm tra trạng thái thanh toán ZaloPay
+export const checkZaloPayStatus = async (appTransId) => {
+  const res = await axios.post('http://localhost:8000/api/zalopay_query.php', {
+    app_trans_id: appTransId
+  }, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return res.data;
+};
+
 // Cập nhật trạng thái thanh toán
 export const updatePaymentStatus = async (orderId, paymentStatus) => {
   const res = await axios.put(

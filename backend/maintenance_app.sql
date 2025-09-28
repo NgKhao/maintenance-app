@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost:3308
--- Thời gian đã tạo: Th9 15, 2025 lúc 05:12 AM
+-- Thời gian đã tạo: Th9 28, 2025 lúc 06:34 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -172,22 +172,26 @@ CREATE TABLE `orders` (
   `payment_status` enum('pending','paid','failed') DEFAULT 'pending',
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `app_trans_id` varchar(50) DEFAULT NULL COMMENT 'Mã giao dịch unique của app',
+  `zalo_trans_id` varchar(50) DEFAULT NULL COMMENT 'Mã giao dịch từ ZaloPay',
+  `amount` decimal(15,2) DEFAULT NULL COMMENT 'Số tiền thanh toán',
+  `paid_at` timestamp NULL DEFAULT NULL COMMENT 'Thời điểm thanh toán thành công'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `orders`
 --
 
-INSERT INTO `orders` (`id`, `user_id`, `package_id`, `payment_status`, `start_date`, `end_date`, `created_at`) VALUES
-(1, 2, 1, 'paid', '2025-09-01', '2026-08-31', '2025-09-10 12:01:13'),
-(2, 3, 2, 'paid', '2025-08-15', '2026-08-14', '2025-09-10 12:01:13'),
-(3, 4, 3, 'pending', '2025-09-10', '2026-09-09', '2025-09-10 12:01:13'),
-(4, 5, 1, 'paid', '2025-09-11', '2026-09-11', '2025-09-11 05:09:07'),
-(5, 6, 2, 'paid', '2025-09-11', '2026-09-11', '2025-09-11 07:06:00'),
-(6, 6, 2, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:06:09'),
-(7, 6, 3, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:16:52'),
-(8, 6, 3, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:22:55');
+INSERT INTO `orders` (`id`, `user_id`, `package_id`, `payment_status`, `start_date`, `end_date`, `created_at`, `app_trans_id`, `zalo_trans_id`, `amount`, `paid_at`) VALUES
+(1, 2, 1, 'paid', '2025-09-01', '2026-08-31', '2025-09-10 12:01:13', NULL, NULL, NULL, NULL),
+(2, 3, 2, 'paid', '2025-08-15', '2026-08-14', '2025-09-10 12:01:13', NULL, NULL, NULL, NULL),
+(3, 4, 3, 'pending', '2025-09-10', '2026-09-09', '2025-09-10 12:01:13', NULL, NULL, NULL, NULL),
+(4, 5, 1, 'paid', '2025-09-11', '2026-09-11', '2025-09-11 05:09:07', NULL, NULL, NULL, NULL),
+(5, 6, 2, 'paid', '2025-09-11', '2026-09-11', '2025-09-11 07:06:00', NULL, NULL, NULL, NULL),
+(6, 6, 2, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:06:09', NULL, NULL, NULL, NULL),
+(7, 6, 3, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:16:52', NULL, NULL, NULL, NULL),
+(8, 6, 3, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:22:55', NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -212,7 +216,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `active`, `created_at`, `phone`, `address`) VALUES
-(1, 'Admin', 'admin@example.com', '0192023a7bbd73250516f069df18b500', 'admin', 1, '2025-09-10 12:01:13', NULL, NULL),
+(1, 'Admin', 'admin@example.com', '$2y$10$5YgPkdqxEIBUr5XCNYPrsOAhojp4NwhfZIJ708UaGn.pBOYK2DrL2', 'admin', 1, '2025-09-10 12:01:13', NULL, NULL),
 (2, 'Nguyen Van A', 'user1@example.com', 'e10adc3949ba59abbe56e057f20f883e', 'user', 1, '2025-09-10 12:01:13', '0909111111', '123 Đường ABC, Quận 1, TP.HCM'),
 (3, 'Tran Thi B', 'user2@example.com', 'e10adc3949ba59abbe56e057f20f883e', 'user', 1, '2025-09-10 12:01:13', '0909222222', '456 Đường XYZ, Quận 2, TP.HCM'),
 (4, 'Le Van C', 'user3@example.com', 'e10adc3949ba59abbe56e057f20f883e', 'user', 1, '2025-09-10 12:01:13', '0909333333', '789 Đường DEF, Quận 3, TP.HCM'),
@@ -222,7 +226,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `active`, `creat
 (8, 'Tech John Smith', 'john.tech@example.com', '$2y$10$wLf0TCVOqxhb2W0CqmqXsOLBXzvIzyqjCM2FxcXKKmWF8cMTlMyg2', 'technician', 1, '2025-09-12 09:55:17', '0909444444', '456 Tech Street, District 1, HCMC'),
 (9, 'Tech Sarah Johnson', 'sarah.tech@example.com', '$2y$10$aL7wOelpNXZxQi.SUpTLf.Kz09foZMoMridkU5cdiqE6Us57Fy.Dy', 'technician', 1, '2025-09-12 09:55:17', '0909555555', '789 Service Ave, District 2, HCMC'),
 (10, 'Tech Mike Wilson', 'mike.tech@example.com', '$2y$10$aL7wOelpNXZxQi.SUpTLf.Kz09foZMoMridkU5cdiqE6Us57Fy.Dy', 'technician', 1, '2025-09-12 09:55:17', '0909666666', '321 Repair Blvd, District 3, HCMC'),
-(1000, 'Hung', 'hung@gmail.com', '$2y$10$pd0DUwsBXzg6cxJFTeO4muSdpPjqvYVsLXKWjbNCva4Qp2RgHb3c6', 'user', 1, '2025-09-12 16:00:38', NULL, NULL);
+(1000, 'Hung', 'hung@gmail.com', '$2y$10$pd0DUwsBXzg6cxJFTeO4muSdpPjqvYVsLXKWjbNCva4Qp2RgHb3c6', 'user', 0, '2025-09-12 16:00:38', NULL, NULL);
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -270,6 +274,7 @@ ALTER TABLE `maintenanceschedules`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `app_trans_id` (`app_trans_id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `package_id` (`package_id`);
 

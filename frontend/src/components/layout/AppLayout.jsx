@@ -20,6 +20,7 @@ import {
   ContractsPage,
   BookSchedulePage,
   TechniciansPage,
+  PaymentResultPage,
 } from '../../features/user';
 
 import {
@@ -95,6 +96,7 @@ const AppLayout = () => {
               <Route path='/contracts' element={<ContractsPage />} />
               <Route path='/book-schedule' element={<BookSchedulePage />} />
               <Route path='/technicians' element={<TechniciansPage />} />
+              <Route path='/payment-result' element={<PaymentResultPage />} />
             </>
           )}
 

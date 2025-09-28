@@ -3,8 +3,9 @@
 require_once __DIR__ . '/env.php';
 
 // CORS Configuration Helper
-function setCorsHeaders()
-{
+if (!function_exists('setCorsHeaders')) {
+    function setCorsHeaders()
+    {
     // Get allowed origins from environment
     $allowedOriginsString = env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001');
     $allowedOrigins = explode(',', $allowedOriginsString);
@@ -26,5 +27,6 @@ function setCorsHeaders()
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         http_response_code(200);
         exit;
+    }
     }
 }

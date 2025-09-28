@@ -20,7 +20,7 @@ import {
   ArrowBack as BackIcon,
   ArrowForward as ForwardIcon,
 } from '@mui/icons-material';
-import { registerService } from '../../../api/orders';
+import { registerServiceWithZaloPay } from '../../../api/orders';
 import axios from 'axios';
 
 export default function ServiceRegistrationPage() {
@@ -72,16 +72,18 @@ export default function ServiceRegistrationPage() {
         start_date: new Date().toISOString().split('T')[0],
       };
 
-      const result = await registerService(orderData);
-      if (result.success) {
-        setStep(2);
-        setError('');
+      // Luôn sử dụng ZaloPay cho thanh toán
+      const result = await registerServiceWithZaloPay(orderData);
+      if (result.success && result.payment_url) {
+        // Redirect tới trang thanh toán ZaloPay
+        window.location.href = result.payment_url;
+        return;
       } else {
-        setError('Lỗi: ' + result.error);
+        setError('Lỗi: ' + (result.error || 'Có lỗi xảy ra khi tạo liên kết thanh toán'));
       }
     } catch (err) {
       console.error('Lỗi đăng ký dịch vụ:', err);
-      setError('Có lỗi xảy ra khi đăng ký dịch vụ');
+      setError('Có lỗi xảy ra khi đăng ký dịch vụ: ' + err.message);
     }
     setLoading(false);
   };
@@ -196,8 +198,11 @@ export default function ServiceRegistrationPage() {
                 <Typography variant='body2' mb={1}>
                   <strong>Họ tên:</strong> {user?.name}
                 </Typography>
-                <Typography variant='body2'>
+                <Typography variant='body2' mb={1}>
                   <strong>Email:</strong> {user?.email}
+                </Typography>
+                <Typography variant='body2'>
+                  <strong>Thanh toán:</strong> ZaloPay
                 </Typography>
               </CardContent>
             </Card>

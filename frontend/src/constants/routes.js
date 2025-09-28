@@ -25,4 +25,5 @@ export const ROUTES = {
   CONTRACTS: '/contracts',
   BOOK_SCHEDULE: '/book-schedule',
   TECHNICIANS: '/technicians',
+  PAYMENT_RESULT: '/payment-result',
 };

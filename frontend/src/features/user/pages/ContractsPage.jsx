@@ -15,17 +15,16 @@ import {
 import {
   Assignment as ContractIcon,
   Add as AddIcon,
-  Payment as PaymentIcon,
   Schedule as ScheduleIcon,
   CheckCircle as CheckIcon,
+  CreditCard as CreditCardIcon,
 } from '@mui/icons-material';
-import { getUserContracts, updatePaymentStatus } from '../../../api/orders';
+import { getUserContracts } from '../../../api/orders';
 
 export default function ContractsPage() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   // Lấy thông tin user từ localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -49,22 +48,18 @@ export default function ContractsPage() {
     }
   }, [user.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handlePayment = async (orderId) => {
-    try {
-      const result = await updatePaymentStatus(orderId, 'paid');
-      if (result.success) {
-        setSuccess('Cập nhật trạng thái thanh toán thành công!');
-        setError('');
-        fetchContracts(); // Refresh danh sách
-      } else {
-        setError('Lỗi: ' + result.error);
-        setSuccess('');
-      }
-    } catch (err) {
-      console.error('Lỗi cập nhật thanh toán:', err);
-      setError('Có lỗi xảy ra khi cập nhật thanh toán');
-      setSuccess('');
-    }
+
+
+  const getPaymentMethodChip = () => {
+    // Tất cả đơn hàng mới đều dùng ZaloPay
+    return (
+      <Chip
+        label="ZaloPay"
+        color="primary"
+        size="small"
+        icon={<CreditCardIcon />}
+      />
+    );
   };
 
   const formatPrice = (price) => {
@@ -163,11 +158,7 @@ export default function ContractsPage() {
         </Alert>
       )}
 
-      {success && (
-        <Alert severity='success' sx={{ mb: 3 }}>
-          {success}
-        </Alert>
-      )}
+
 
       {contracts.length === 0 ? (
         <Paper elevation={2} sx={{ p: 6, textAlign: 'center' }}>
@@ -270,23 +261,20 @@ export default function ContractsPage() {
                         color='text.secondary'
                         gutterBottom
                       >
-                        Trạng thái
+                        Trạng thái & Thanh toán
                       </Typography>
                       <Typography variant='body2' mb={1}>
                         {contract.payment_status === 'paid'
                           ? 'Đang hoạt động'
                           : 'Chờ kích hoạt'}
                       </Typography>
+                      <Box mb={1}>
+                        {getPaymentMethodChip()}
+                      </Box>
                       {contract.payment_status === 'pending' && (
-                        <Button
-                          variant='contained'
-                          color='success'
-                          size='small'
-                          startIcon={<PaymentIcon />}
-                          onClick={() => handlePayment(contract.id)}
-                        >
-                          Thanh toán ngay
-                        </Button>
+                        <Typography variant='body2' color='warning.main' sx={{ fontStyle: 'italic' }}>
+                          Đang chờ xác nhận thanh toán từ ZaloPay
+                        </Typography>
                       )}
                     </Grid>
                   </Grid>
