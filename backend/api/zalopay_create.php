@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ZaloPay Create Order API
  * Tạo đơn hàng thanh toán ZaloPay
@@ -10,7 +11,8 @@ require_once __DIR__ . '/../config/env.php';
 /**
  * Tạo đơn hàng ZaloPay
  */
-function createZaloPayOrder($order_id, $amount, $description, $app_trans_id) {
+function createZaloPayOrder($order_id, $amount, $description, $app_trans_id)
+{
     // Lấy config từ environment
     $config = [
         "app_id" => env('ZALOPAY_APP_ID'),
@@ -34,10 +36,10 @@ function createZaloPayOrder($order_id, $amount, $description, $app_trans_id) {
         'order_id' => $order_id,
         'redirecturl' => $config["return_url"]
     ]);
-    
+
     // Items (có thể để trống cho dịch vụ)
     $items = json_encode([]);
-    
+
     // Tạo order data
     $order = [
         "app_id" => $config["app_id"],
@@ -54,8 +56,8 @@ function createZaloPayOrder($order_id, $amount, $description, $app_trans_id) {
     ];
 
     // Tạo MAC theo format ZaloPay
-    $data = $order["app_id"] . "|" . $order["app_trans_id"] . "|" . $order["app_user"] . "|" . $order["amount"] 
-          . "|" . $order["app_time"] . "|" . $order["embed_data"] . "|" . $order["item"];
+    $data = $order["app_id"] . "|" . $order["app_trans_id"] . "|" . $order["app_user"] . "|" . $order["amount"]
+        . "|" . $order["app_time"] . "|" . $order["embed_data"] . "|" . $order["item"];
     $order["mac"] = hash_hmac("sha256", $data, $config["key1"]);
 
     // Gọi ZaloPay API
@@ -86,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($GLOBALS['zalopay_included']
     setCorsHeaders();
 
     $data = json_decode(file_get_contents("php://input"), true);
-    
+
     $order_id = $data['order_id'] ?? 0;
     $amount = $data['amount'] ?? 0;
     $description = $data['description'] ?? 'Thanh toán dịch vụ bảo trì';

@@ -72,7 +72,7 @@ if ($method === 'POST') {
     }
 
     $end_date = date('Y-m-d', strtotime($start_date . ' + ' . $package['duration_months'] . ' months'));
-    
+
     // Tạo mã giao dịch unique
     $app_trans_id = date('ymd') . '_' . $user_id . '_' . time();
     $amount = $package['price'];
@@ -82,29 +82,29 @@ if ($method === 'POST') {
         INSERT INTO orders (user_id, package_id, payment_status, start_date, end_date, app_trans_id, amount) 
         VALUES (?,?,?,?,?,?,?)
     ");
-    
+
     if ($stmt->execute([$user_id, $package_id, 'pending', $start_date, $end_date, $app_trans_id, $amount])) {
         $order_id = $pdo->lastInsertId();
-        
+
         if ($payment_method === 'zalopay') {
             // Đánh dấu rằng file đang được include, không phải gọi trực tiếp
             $GLOBALS['zalopay_included'] = true;
-            
+
             // Gọi ZaloPay API để tạo payment URL
             include_once __DIR__ . '/zalopay_create.php';
-            
+
             // Debug info
             if (env('APP_DEBUG', false)) {
                 error_log("ZaloPay Debug - Order ID: $order_id, Amount: $amount, App Trans ID: $app_trans_id");
             }
-            
+
             $zalopay_result = createZaloPayOrder($order_id, $amount, "Thanh toán gói bảo trì: " . $package['name'], $app_trans_id);
-            
+
             // Debug response
             if (env('APP_DEBUG', false)) {
                 error_log("ZaloPay Response: " . json_encode($zalopay_result));
             }
-            
+
             if ($zalopay_result && $zalopay_result['return_code'] == 1) {
                 echo json_encode([
                     "success" => true,

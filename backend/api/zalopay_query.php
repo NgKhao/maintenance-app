@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ZaloPay Query Status API
  * Kiểm tra trạng thái thanh toán từ ZaloPay
@@ -14,7 +15,8 @@ require_once __DIR__ . '/../config/env.php';
 /**
  * Query trạng thái giao dịch từ ZaloPay
  */
-function queryZaloPayTransaction($app_trans_id) {
+function queryZaloPayTransaction($app_trans_id)
+{
     $config = [
         "app_id" => env('ZALOPAY_APP_ID'),
         "key1" => env('ZALOPAY_KEY1'),
@@ -59,7 +61,7 @@ function queryZaloPayTransaction($app_trans_id) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
-    
+
     $app_trans_id = $data['app_trans_id'] ?? '';
 
     if (!$app_trans_id) {
@@ -73,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $result = queryZaloPayTransaction($app_trans_id);
     echo json_encode($result);
-    
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Cho phép query qua GET với parameter
     $app_trans_id = $_GET['app_trans_id'] ?? '';
@@ -89,7 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $result = queryZaloPayTransaction($app_trans_id);
     echo json_encode($result);
-    
 } else {
     http_response_code(405);
     echo json_encode([
@@ -97,4 +97,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "return_message" => "Method not allowed"
     ]);
 }
-?>

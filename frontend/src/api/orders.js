@@ -27,7 +27,7 @@ export const registerService = async (orderData) => {
 export const registerServiceWithZaloPay = async (orderData) => {
   const dataWithPayment = {
     ...orderData,
-    payment_method: 'zalopay'
+    payment_method: 'zalopay',
   };
   const res = await axios.post(API_URL, dataWithPayment, {
     headers: { 'Content-Type': 'application/json' },
@@ -37,11 +37,15 @@ export const registerServiceWithZaloPay = async (orderData) => {
 
 // Kiểm tra trạng thái thanh toán ZaloPay
 export const checkZaloPayStatus = async (appTransId) => {
-  const res = await axios.post('http://localhost:8000/api/zalopay_query.php', {
-    app_trans_id: appTransId
-  }, {
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const res = await axios.post(
+    'http://localhost:8000/api/zalopay_query.php',
+    {
+      app_trans_id: appTransId,
+    },
+    {
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
   return res.data;
 };
 

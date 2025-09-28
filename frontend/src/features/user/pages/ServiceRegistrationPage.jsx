@@ -79,7 +79,10 @@ export default function ServiceRegistrationPage() {
         window.location.href = result.payment_url;
         return;
       } else {
-        setError('Lỗi: ' + (result.error || 'Có lỗi xảy ra khi tạo liên kết thanh toán'));
+        setError(
+          'Lỗi: ' +
+            (result.error || 'Có lỗi xảy ra khi tạo liên kết thanh toán')
+        );
       }
     } catch (err) {
       console.error('Lỗi đăng ký dịch vụ:', err);

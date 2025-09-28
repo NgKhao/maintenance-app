@@ -39,7 +39,7 @@ export default function PaymentResultPage() {
 
         // Kiểm tra trạng thái từ ZaloPay
         const result = await checkZaloPayStatus(appTransId);
-        
+
         setPaymentResult({
           appTransId,
           status: status === '1' ? 'success' : 'failed',
@@ -76,7 +76,8 @@ export default function PaymentResultPage() {
     );
   }
 
-  const isSuccess = paymentResult?.status === 'success' && paymentResult?.zaloStatus === 1;
+  const isSuccess =
+    paymentResult?.status === 'success' && paymentResult?.zaloStatus === 1;
 
   return (
     <Box maxWidth={600} mx='auto'>
@@ -91,27 +92,27 @@ export default function PaymentResultPage() {
             <Box sx={{ mb: 3 }}>
               {isSuccess ? (
                 <SuccessIcon
-                  sx={{ 
-                    fontSize: 80, 
+                  sx={{
+                    fontSize: 80,
                     color: 'success.main',
-                    mb: 2 
+                    mb: 2,
                   }}
                 />
               ) : (
                 <ErrorIcon
-                  sx={{ 
-                    fontSize: 80, 
+                  sx={{
+                    fontSize: 80,
                     color: 'error.main',
-                    mb: 2 
+                    mb: 2,
                   }}
                 />
               )}
             </Box>
 
             {/* Tiêu đề */}
-            <Typography 
-              variant='h4' 
-              gutterBottom 
+            <Typography
+              variant='h4'
+              gutterBottom
               color={isSuccess ? 'success.main' : 'error.main'}
             >
               {isSuccess ? 'Thanh toán thành công!' : 'Thanh toán thất bại!'}
@@ -128,10 +129,12 @@ export default function PaymentResultPage() {
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1 }}>
                   <strong>Trạng thái:</strong>{' '}
-                  <span style={{ 
-                    color: isSuccess ? '#4caf50' : '#f44336',
-                    fontWeight: 'bold'
-                  }}>
+                  <span
+                    style={{
+                      color: isSuccess ? '#4caf50' : '#f44336',
+                      fontWeight: 'bold',
+                    }}
+                  >
                     {isSuccess ? 'Thành công' : 'Thất bại'}
                   </span>
                 </Typography>
@@ -144,11 +147,13 @@ export default function PaymentResultPage() {
             {/* Thông báo */}
             {isSuccess ? (
               <Alert severity='success' sx={{ mb: 3 }}>
-                Đơn hàng của bạn đã được xác nhận. Chúng tôi sẽ liên hệ với bạn sớm nhất để sắp xếp lịch bảo trì.
+                Đơn hàng của bạn đã được xác nhận. Chúng tôi sẽ liên hệ với bạn
+                sớm nhất để sắp xếp lịch bảo trì.
               </Alert>
             ) : (
               <Alert severity='error' sx={{ mb: 3 }}>
-                Thanh toán không thành công. Vui lòng thử lại hoặc liên hệ hỗ trợ khách hàng.
+                Thanh toán không thành công. Vui lòng thử lại hoặc liên hệ hỗ
+                trợ khách hàng.
               </Alert>
             )}
           </>
@@ -163,7 +168,7 @@ export default function PaymentResultPage() {
           >
             Về trang chủ
           </Button>
-          
+
           {isSuccess && (
             <Button
               variant='contained'
@@ -173,7 +178,7 @@ export default function PaymentResultPage() {
               Xem hợp đồng
             </Button>
           )}
-          
+
           {!isSuccess && !error && (
             <Button
               variant='contained'

@@ -48,15 +48,13 @@ export default function ContractsPage() {
     }
   }, [user.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-
-
   const getPaymentMethodChip = () => {
     // Tất cả đơn hàng mới đều dùng ZaloPay
     return (
       <Chip
-        label="ZaloPay"
-        color="primary"
-        size="small"
+        label='ZaloPay'
+        color='primary'
+        size='small'
         icon={<CreditCardIcon />}
       />
     );
@@ -157,8 +155,6 @@ export default function ContractsPage() {
           {error}
         </Alert>
       )}
-
-
 
       {contracts.length === 0 ? (
         <Paper elevation={2} sx={{ p: 6, textAlign: 'center' }}>
@@ -268,11 +264,13 @@ export default function ContractsPage() {
                           ? 'Đang hoạt động'
                           : 'Chờ kích hoạt'}
                       </Typography>
-                      <Box mb={1}>
-                        {getPaymentMethodChip()}
-                      </Box>
+                      <Box mb={1}>{getPaymentMethodChip()}</Box>
                       {contract.payment_status === 'pending' && (
-                        <Typography variant='body2' color='warning.main' sx={{ fontStyle: 'italic' }}>
+                        <Typography
+                          variant='body2'
+                          color='warning.main'
+                          sx={{ fontStyle: 'italic' }}
+                        >
                           Đang chờ xác nhận thanh toán từ ZaloPay
                         </Typography>
                       )}

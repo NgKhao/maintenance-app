@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ZaloPay Callback Handler
  * Nhận thông báo từ ZaloPay khi thanh toán thành công
@@ -44,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Parse callback data
     $callbackData = json_decode($data, true);
-    
+
     if (!$callbackData) {
         http_response_code(400);
         echo json_encode([
@@ -116,7 +117,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "return_message" => "Database update failed"
             ]);
         }
-
     } catch (Exception $e) {
         error_log("ZaloPay Callback Error: " . $e->getMessage());
         echo json_encode([
@@ -124,7 +124,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "return_message" => "Internal server error"
         ]);
     }
-
 } else {
     // Method không được hỗ trợ
     http_response_code(405);
@@ -133,4 +132,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "return_message" => "Method not allowed"
     ]);
 }
-?>
