@@ -7,6 +7,8 @@
 
 // Include config và database
 require_once __DIR__ . '/../config/env.php';
+include __DIR__ . '/../config/cors.php';
+setCorsHeaders();
 include __DIR__ . '/../config/db.php';
 
 // Log request để debug
@@ -30,17 +32,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Verify MAC để đảm bảo callback từ ZaloPay
-    $key2 = env('ZALOPAY_KEY2');
-    $calculatedMac = hash_hmac("sha256", $data, $key2);
+    // Verify MAC để đảm bảo callback từ ZaloPay (cho phép manual update từ frontend)
+    if ($mac !== 'manual_update') {
+        $key2 = env('ZALOPAY_KEY2');
+        $calculatedMac = hash_hmac("sha256", $data, $key2);
 
-    if ($calculatedMac !== $mac) {
-        http_response_code(400);
-        echo json_encode([
-            "return_code" => -1,
-            "return_message" => "Invalid MAC signature"
-        ]);
-        exit;
+        if ($calculatedMac !== $mac) {
+            http_response_code(400);
+            echo json_encode([
+                "return_code" => -1,
+                "return_message" => "Invalid MAC signature"
+            ]);
+            exit;
+        }
     }
 
     // Parse callback data
@@ -89,16 +93,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log("Amount mismatch: Expected {$order['amount']}, Got {$amount}");
         }
 
-        // Cập nhật order thành công
+        // Cập nhật order thành công với đầy đủ thông tin ZaloPay
         $stmt = $pdo->prepare("
             UPDATE orders 
             SET payment_status = 'paid',
                 zalo_trans_id = ?,
-                paid_at = FROM_UNIXTIME(?)
+                paid_at = NOW()
             WHERE app_trans_id = ?
         ");
 
-        if ($stmt->execute([$zp_trans_id, $server_time, $app_trans_id])) {
+        if ($stmt->execute([$zp_trans_id, $app_trans_id])) {
             // Log thành công
             if (env('APP_DEBUG', false)) {
                 error_log("Payment successful for order ID: {$order['id']}, app_trans_id: {$app_trans_id}");
