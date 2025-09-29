@@ -10,7 +10,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Chip,
   Button,
   Dialog,
@@ -26,11 +25,16 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
+  Grid,
+  InputAdornment,
 } from '@mui/material';
 import {
   CheckCircle as ApproveIcon,
   Cancel as RejectIcon,
   Visibility as ViewIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
+  Assignment as RequestIcon,
 } from '@mui/icons-material';
 import {
   getContractRequests,
@@ -40,6 +44,8 @@ import { formatDate, formatDateTime } from '../../../utils/formatters';
 
 export default function ContractRequestsPage({ user }) {
   const [requests, setRequests] = useState([]);
+  const [filteredRequests, setFilteredRequests] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [processDialog, setProcessDialog] = useState({
@@ -55,6 +61,26 @@ export default function ContractRequestsPage({ user }) {
   const role = user?.role || 'user';
   const isAdmin = role === 'admin';
 
+  // Filter requests based on search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredRequests(requests);
+    } else {
+      const filtered = requests.filter(
+        (request) =>
+          request.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          request.package_name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          getRequestTypeDisplay(request.request_type)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          request.note?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredRequests(filtered);
+    }
+  }, [requests, searchTerm]);
+
   // Fetch contract requests
   useEffect(() => {
     const fetchRequests = async () => {
@@ -62,6 +88,7 @@ export default function ContractRequestsPage({ user }) {
         setLoading(true);
         const data = await getContractRequests({ admin_view: isAdmin });
         setRequests(data);
+        setFilteredRequests(data);
       } catch (err) {
         console.error('Error fetching requests:', err);
         setError('Không thể tải danh sách yêu cầu');
@@ -89,6 +116,7 @@ export default function ContractRequestsPage({ user }) {
       // Refresh data
       const updatedData = await getContractRequests({ admin_view: isAdmin });
       setRequests(updatedData);
+      setFilteredRequests(updatedData);
 
       // Close dialog
       setProcessDialog({ open: false, request: null });
@@ -142,19 +170,94 @@ export default function ContractRequestsPage({ user }) {
 
   return (
     <Box>
-      <Card>
-        <CardContent>
-          <Typography variant='h5' component='h1' gutterBottom>
+      {/* Header */}
+      <Box
+        mb={4}
+        display='flex'
+        justifyContent='space-between'
+        alignItems='center'
+        flexWrap='wrap'
+        gap={2}
+      >
+        <Box>
+          <Typography variant='h4' component='h1' gutterBottom>
+            <RequestIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
             Quản lý yêu cầu hợp đồng
           </Typography>
+          <Typography variant='body1' color='text.secondary'>
+            Quản lý yêu cầu gia hạn và hủy hợp đồng từ khách hàng
+          </Typography>
+        </Box>
+      </Box>
 
-          {error && (
-            <Alert severity='error' sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+      {/* Error Alert */}
+      {error && (
+        <Alert severity='error' sx={{ mb: 3 }} onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
 
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
+      {/* Search and Stats */}
+      <Card sx={{ mb: 2 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Grid container spacing={2} alignItems='center'>
+            <Grid item xs={12} md={8}>
+              <TextField
+                fullWidth
+                placeholder='Tìm kiếm theo khách hàng, gói dịch vụ, loại yêu cầu, ghi chú...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                variant='outlined'
+                size='small'
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <SearchIcon color='action' />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        onClick={() => setSearchTerm('')}
+                        size='small'
+                        edge='end'
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontWeight: 'bold' }}
+                >
+                  {filteredRequests.length} / {requests.length}
+                </Typography>
+                <Typography variant='caption' color='text.secondary'>
+                  yêu cầu
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Data Table */}
+      <Card>
+        <CardContent sx={{ p: 0 }}>
+          <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
@@ -169,14 +272,18 @@ export default function ContractRequestsPage({ user }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {requests.length === 0 ? (
+                {filteredRequests.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={isAdmin ? 8 : 7} align='center'>
-                      Không có yêu cầu nào
+                      <Typography variant='body2' color='text.secondary' py={4}>
+                        {searchTerm
+                          ? 'Không tìm thấy yêu cầu nào phù hợp'
+                          : 'Không có yêu cầu nào'}
+                      </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  requests.map((request) => (
+                  filteredRequests.map((request) => (
                     <TableRow key={request.id}>
                       <TableCell>{request.id}</TableCell>
                       <TableCell>

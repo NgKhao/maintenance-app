@@ -25,14 +25,16 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Chip,
+  IconButton,
   Fab,
 } from '@mui/material';
 import {
   Save as SaveIcon,
   Add as AddIcon,
-  Visibility as ViewIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
+  Assignment as ContractIcon,
 } from '@mui/icons-material';
 import {
   createContractByAdmin,
@@ -211,54 +213,71 @@ export default function ContractManagementPage({ user }) {
 
   return (
     <Box>
-      <Card>
-        <CardContent>
-          <Box
-            display='flex'
-            justifyContent='space-between'
-            alignItems='center'
-            mb={2}
-          >
-            <Typography variant='h5' component='h1'>
-              Quản lý hợp đồng
-            </Typography>
-            <Fab
-              color='primary'
-              size='small'
-              onClick={() => setOpenDialog(true)}
-              sx={{ display: { xs: 'none', md: 'flex' } }}
-            >
-              <AddIcon />
-            </Fab>
-          </Box>
-
-          {message.text && (
-            <Alert
-              severity={message.type}
-              sx={{ mb: 3 }}
-              onClose={() => setMessage({ type: '', text: '' })}
-            >
-              {message.text}
-            </Alert>
-          )}
-
-          <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
+      {/* Header */}
+      <Box
+        mb={4}
+        display='flex'
+        justifyContent='space-between'
+        alignItems='center'
+        flexWrap='wrap'
+        gap={2}
+      >
+        <Box>
+          <Typography variant='h4' component='h1' gutterBottom>
+            <ContractIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Quản lý hợp đồng
+          </Typography>
+          <Typography variant='body1' color='text.secondary'>
             Danh sách tất cả hợp đồng trong hệ thống
           </Typography>
+        </Box>
+        <Button
+          variant='contained'
+          startIcon={<AddIcon />}
+          onClick={() => setOpenDialog(true)}
+          sx={{ display: { xs: 'none', md: 'flex' } }}
+        >
+          Thêm hợp đồng
+        </Button>
+      </Box>
 
-          {/* Search and Filter Bar */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
+      {message.text && (
+        <Alert
+          severity={message.type}
+          sx={{ mb: 3 }}
+          onClose={() => setMessage({ type: '', text: '' })}
+        >
+          {message.text}
+        </Alert>
+      )}
+
+      {/* Search and Stats */}
+      <Card sx={{ mb: 2 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Grid container spacing={2} alignItems='center'>
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                size='small'
                 placeholder='Tìm kiếm khách hàng, gói dịch vụ, mã giao dịch...'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                variant='outlined'
+                size='small'
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position='start'>
-                      <ViewIcon />
+                      <SearchIcon color='action' />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        onClick={() => setSearchTerm('')}
+                        size='small'
+                        edge='end'
+                      >
+                        <ClearIcon />
+                      </IconButton>
                     </InputAdornment>
                   ),
                 }}
@@ -280,26 +299,51 @@ export default function ContractManagementPage({ user }) {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={3}>
-              <Box display='flex' justifyContent='flex-end'>
-                <Button
-                  variant='contained'
-                  startIcon={<AddIcon />}
-                  onClick={() => setOpenDialog(true)}
-                  fullWidth
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{ fontWeight: 'bold' }}
                 >
-                  Thêm hợp đồng
-                </Button>
+                  {filteredContracts.length} / {contracts.length}
+                </Typography>
+                <Typography variant='caption' color='text.secondary'>
+                  hợp đồng
+                </Typography>
               </Box>
             </Grid>
           </Grid>
+        </CardContent>
+      </Card>
 
-          {/* Contracts Table */}
+      {/* Add Contract Button for mobile */}
+      <Box sx={{ mb: 2, display: { xs: 'block', md: 'none' } }}>
+        <Button
+          variant='contained'
+          startIcon={<AddIcon />}
+          onClick={() => setOpenDialog(true)}
+          fullWidth
+        >
+          Thêm hợp đồng
+        </Button>
+      </Box>
+
+      {/* Data Table */}
+      <Card>
+        <CardContent sx={{ p: 0 }}>
           {loadingContracts ? (
             <Box display='flex' justifyContent='center' py={4}>
               <CircularProgress />
             </Box>
           ) : (
-            <TableContainer component={Paper}>
+            <TableContainer>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -372,247 +416,240 @@ export default function ContractManagementPage({ user }) {
 
           {filteredContracts.length === 0 && !loadingContracts && (
             <Box textAlign='center' py={4}>
-              <Typography color='text.secondary'>
-                {contracts.length === 0
-                  ? 'Chưa có hợp đồng nào'
-                  : 'Không tìm thấy hợp đồng phù hợp'}
+              <Typography variant='body2' color='text.secondary'>
+                {searchTerm
+                  ? 'Không tìm thấy hợp đồng phù hợp'
+                  : 'Chưa có hợp đồng nào'}
               </Typography>
             </Box>
           )}
-
-          {/* Contract Creation Dialog */}
-          <Dialog
-            open={openDialog}
-            onClose={() => setOpenDialog(false)}
-            maxWidth='md'
-            fullWidth
-          >
-            <DialogTitle>Tạo hợp đồng mới</DialogTitle>
-            <DialogContent>
-              <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
-                Admin có thể tạo hợp đồng trực tiếp cho khách hàng
-              </Typography>
-
-              <Box component='form' onSubmit={handleSubmit}>
-                <Grid container spacing={3}>
-                  {/* Khách hàng */}
-                  <Grid item xs={12} md={6}>
-                    <Autocomplete
-                      options={users}
-                      getOptionLabel={(option) =>
-                        `${option.name} (${option.email})`
-                      }
-                      value={
-                        users.find((u) => u.id === formData.user_id) || null
-                      }
-                      onChange={(event, newValue) => {
-                        handleInputChange({
-                          target: {
-                            name: 'user_id',
-                            value: newValue?.id || '',
-                          },
-                        });
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label='Khách hàng *'
-                          error={touched.user_id && !!errors.user_id}
-                          helperText={touched.user_id && errors.user_id}
-                          onBlur={() =>
-                            handleBlur({ target: { name: 'user_id' } })
-                          }
-                        />
-                      )}
-                    />
-                  </Grid>
-
-                  {/* Gói bảo trì */}
-                  <Grid item xs={12} md={6}>
-                    <FormControl
-                      fullWidth
-                      error={touched.package_id && !!errors.package_id}
-                    >
-                      <InputLabel>Gói bảo trì *</InputLabel>
-                      <Select
-                        name='package_id'
-                        value={formData.package_id}
-                        label='Gói bảo trì *'
-                        onChange={handleInputChange}
-                        onBlur={handleBlur}
-                      >
-                        {packages.map((pkg) => (
-                          <MenuItem key={pkg.id} value={pkg.id}>
-                            {pkg.name} - {pkg.price?.toLocaleString()} VND (
-                            {pkg.duration_months} tháng)
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {touched.package_id && errors.package_id && (
-                        <Typography
-                          variant='caption'
-                          color='error'
-                          sx={{ ml: 2, mt: 0.5 }}
-                        >
-                          {errors.package_id}
-                        </Typography>
-                      )}
-                    </FormControl>
-                  </Grid>
-
-                  {/* Trạng thái thanh toán */}
-                  <Grid item xs={12} md={6}>
-                    <FormControl
-                      fullWidth
-                      error={touched.payment_status && !!errors.payment_status}
-                    >
-                      <InputLabel>Trạng thái thanh toán *</InputLabel>
-                      <Select
-                        name='payment_status'
-                        value={formData.payment_status}
-                        label='Trạng thái thanh toán *'
-                        onChange={handleInputChange}
-                        onBlur={handleBlur}
-                      >
-                        <MenuItem value='pending'>Chờ thanh toán</MenuItem>
-                        <MenuItem value='paid'>Đã thanh toán</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  {/* Ngày bắt đầu */}
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      type='date'
-                      name='start_date'
-                      label='Ngày bắt đầu *'
-                      value={formData.start_date}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      error={touched.start_date && !!errors.start_date}
-                      helperText={touched.start_date && errors.start_date}
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-
-                  {/* Giá tùy chỉnh */}
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      type='number'
-                      name='custom_price'
-                      label='Giá tùy chỉnh (tùy chọn)'
-                      value={formData.custom_price}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position='end'>VND</InputAdornment>
-                        ),
-                      }}
-                      helperText='Để trống nếu sử dụng giá gói mặc định'
-                    />
-                  </Grid>
-
-                  {/* Ghi chú admin */}
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      name='admin_note'
-                      label='Ghi chú của admin'
-                      value={formData.admin_note}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      placeholder='Nhập ghi chú, lý do tạo hợp đồng...'
-                    />
-                  </Grid>
-
-                  {/* Thông tin tóm tắt */}
-                  {selectedPackage && (
-                    <Grid item xs={12}>
-                      <Card variant='outlined' sx={{ bgcolor: 'grey.50' }}>
-                        <CardContent>
-                          <Typography variant='h6' gutterBottom>
-                            Thông tin hợp đồng
-                          </Typography>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                              <Typography variant='body2'>
-                                <strong>Gói:</strong> {selectedPackage.name}
-                              </Typography>
-                              <Typography variant='body2'>
-                                <strong>Thời hạn:</strong>{' '}
-                                {selectedPackage.duration_months} tháng
-                              </Typography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                              <Typography variant='body2'>
-                                <strong>Giá gốc:</strong>{' '}
-                                {selectedPackage.price?.toLocaleString()} VND
-                              </Typography>
-                              <Typography variant='body2'>
-                                <strong>Giá áp dụng:</strong>{' '}
-                                {formData.custom_price
-                                  ? parseFloat(
-                                      formData.custom_price
-                                    ).toLocaleString()
-                                  : selectedPackage.price?.toLocaleString()}{' '}
-                                VND
-                              </Typography>
-                            </Grid>
-                            {formData.start_date && (
-                              <Grid item xs={12}>
-                                <Typography variant='body2'>
-                                  <strong>Thời gian:</strong>{' '}
-                                  {formatDate(formData.start_date)} -{' '}
-                                  {formatDate(
-                                    new Date(
-                                      new Date(formData.start_date).getTime() +
-                                        selectedPackage.duration_months *
-                                          30 *
-                                          24 *
-                                          60 *
-                                          60 *
-                                          1000
-                                    )
-                                      .toISOString()
-                                      .split('T')[0]
-                                  )}
-                                </Typography>
-                              </Grid>
-                            )}
-                          </Grid>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  )}
-                </Grid>
-              </Box>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => setOpenDialog(false)}
-                disabled={submitting}
-              >
-                Hủy
-              </Button>
-              <Button
-                variant='contained'
-                startIcon={
-                  submitting ? <CircularProgress size={20} /> : <SaveIcon />
-                }
-                disabled={submitting}
-                onClick={handleSubmit}
-              >
-                {submitting ? 'Đang tạo...' : 'Tạo hợp đồng'}
-              </Button>
-            </DialogActions>
-          </Dialog>
         </CardContent>
       </Card>
+
+      {/* Contract Creation Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth='md'
+        fullWidth
+      >
+        <DialogTitle>Tạo hợp đồng mới</DialogTitle>
+        <DialogContent>
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
+            Admin có thể tạo hợp đồng trực tiếp cho khách hàng
+          </Typography>
+
+          <Box component='form' onSubmit={handleSubmit}>
+            <Grid container spacing={3}>
+              {/* Khách hàng */}
+              <Grid item xs={12} md={6}>
+                <Autocomplete
+                  options={users}
+                  getOptionLabel={(option) =>
+                    `${option.name} (${option.email})`
+                  }
+                  value={users.find((u) => u.id === formData.user_id) || null}
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'user_id',
+                        value: newValue?.id || '',
+                      },
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label='Khách hàng *'
+                      error={touched.user_id && !!errors.user_id}
+                      helperText={touched.user_id && errors.user_id}
+                      onBlur={() => handleBlur({ target: { name: 'user_id' } })}
+                    />
+                  )}
+                />
+              </Grid>
+
+              {/* Gói bảo trì */}
+              <Grid item xs={12} md={6}>
+                <FormControl
+                  fullWidth
+                  error={touched.package_id && !!errors.package_id}
+                >
+                  <InputLabel>Gói bảo trì *</InputLabel>
+                  <Select
+                    name='package_id'
+                    value={formData.package_id}
+                    label='Gói bảo trì *'
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                  >
+                    {packages.map((pkg) => (
+                      <MenuItem key={pkg.id} value={pkg.id}>
+                        {pkg.name} - {pkg.price?.toLocaleString()} VND (
+                        {pkg.duration_months} tháng)
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {touched.package_id && errors.package_id && (
+                    <Typography
+                      variant='caption'
+                      color='error'
+                      sx={{ ml: 2, mt: 0.5 }}
+                    >
+                      {errors.package_id}
+                    </Typography>
+                  )}
+                </FormControl>
+              </Grid>
+
+              {/* Trạng thái thanh toán */}
+              <Grid item xs={12} md={6}>
+                <FormControl
+                  fullWidth
+                  error={touched.payment_status && !!errors.payment_status}
+                >
+                  <InputLabel>Trạng thái thanh toán *</InputLabel>
+                  <Select
+                    name='payment_status'
+                    value={formData.payment_status}
+                    label='Trạng thái thanh toán *'
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                  >
+                    <MenuItem value='pending'>Chờ thanh toán</MenuItem>
+                    <MenuItem value='paid'>Đã thanh toán</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Ngày bắt đầu */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type='date'
+                  name='start_date'
+                  label='Ngày bắt đầu *'
+                  value={formData.start_date}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  error={touched.start_date && !!errors.start_date}
+                  helperText={touched.start_date && errors.start_date}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+
+              {/* Giá tùy chỉnh */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type='number'
+                  name='custom_price'
+                  label='Giá tùy chỉnh (tùy chọn)'
+                  value={formData.custom_price}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position='end'>VND</InputAdornment>
+                    ),
+                  }}
+                  helperText='Để trống nếu sử dụng giá gói mặc định'
+                />
+              </Grid>
+
+              {/* Ghi chú admin */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  name='admin_note'
+                  label='Ghi chú của admin'
+                  value={formData.admin_note}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  placeholder='Nhập ghi chú, lý do tạo hợp đồng...'
+                />
+              </Grid>
+
+              {/* Thông tin tóm tắt */}
+              {selectedPackage && (
+                <Grid item xs={12}>
+                  <Card variant='outlined' sx={{ bgcolor: 'grey.50' }}>
+                    <CardContent>
+                      <Typography variant='h6' gutterBottom>
+                        Thông tin hợp đồng
+                      </Typography>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant='body2'>
+                            <strong>Gói:</strong> {selectedPackage.name}
+                          </Typography>
+                          <Typography variant='body2'>
+                            <strong>Thời hạn:</strong>{' '}
+                            {selectedPackage.duration_months} tháng
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant='body2'>
+                            <strong>Giá gốc:</strong>{' '}
+                            {selectedPackage.price?.toLocaleString()} VND
+                          </Typography>
+                          <Typography variant='body2'>
+                            <strong>Giá áp dụng:</strong>{' '}
+                            {formData.custom_price
+                              ? parseFloat(
+                                  formData.custom_price
+                                ).toLocaleString()
+                              : selectedPackage.price?.toLocaleString()}{' '}
+                            VND
+                          </Typography>
+                        </Grid>
+                        {formData.start_date && (
+                          <Grid item xs={12}>
+                            <Typography variant='body2'>
+                              <strong>Thời gian:</strong>{' '}
+                              {formatDate(formData.start_date)} -{' '}
+                              {formatDate(
+                                new Date(
+                                  new Date(formData.start_date).getTime() +
+                                    selectedPackage.duration_months *
+                                      30 *
+                                      24 *
+                                      60 *
+                                      60 *
+                                      1000
+                                )
+                                  .toISOString()
+                                  .split('T')[0]
+                              )}
+                            </Typography>
+                          </Grid>
+                        )}
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )}
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} disabled={submitting}>
+            Hủy
+          </Button>
+          <Button
+            variant='contained'
+            startIcon={
+              submitting ? <CircularProgress size={20} /> : <SaveIcon />
+            }
+            disabled={submitting}
+            onClick={handleSubmit}
+          >
+            {submitting ? 'Đang tạo...' : 'Tạo hợp đồng'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Mobile FAB */}
       <Fab
