@@ -14,7 +14,10 @@ export const validatePassword = (password) => {
 };
 
 export const validateRequired = (value) => {
-  return value && value.trim() !== '';
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'string') return value.trim() !== '';
+  if (typeof value === 'number') return !isNaN(value);
+  return !!value;
 };
 
 // Form validation helper
