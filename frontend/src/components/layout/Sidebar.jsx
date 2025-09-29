@@ -43,7 +43,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
         },
         { label: 'Quản lý lịch', icon: <Schedule />, path: '/admin-schedules' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
-        { label: 'Đơn hàng', icon: <Assignment />, path: '/orders' },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
         { label: 'Nhắc nhở', icon: <Notifications />, path: '/reminders' },
       ];
@@ -56,7 +55,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
           icon: <Schedule />,
           path: '/technician-schedules',
         },
-        { label: 'Đơn hàng', icon: <Assignment />, path: '/orders' },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
         { label: 'Nhắc nhở', icon: <Notifications />, path: '/reminders' },
       ];
@@ -76,7 +74,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
         },
         { label: 'Chọn kỹ thuật viên', icon: <People />, path: '/technicians' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
-        { label: 'Đơn hàng', icon: <Assignment />, path: '/orders' },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
         { label: 'Nhắc nhở', icon: <Notifications />, path: '/reminders' },
       ];

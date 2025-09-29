@@ -25,7 +25,6 @@ import {
 
 import {
   DevicesPage,
-  OrdersPage,
   SchedulesPage,
   RemindersPage,
 } from '../../features/shared';
@@ -102,7 +101,6 @@ const AppLayout = () => {
 
           {/* Shared routes */}
           <Route path='/devices' element={<DevicesPage />} />
-          <Route path='/orders' element={<OrdersPage />} />
           <Route path='/schedules' element={<SchedulesPage />} />
           <Route path='/reminders' element={<RemindersPage />} />
 
