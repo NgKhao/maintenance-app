@@ -29,13 +29,17 @@ import { useAuth } from '../../../contexts';
 import { profileService } from '../../../services/profileService';
 import { useForm } from '../../../hooks';
 import { validateForm } from '../../../utils';
-import { getRoleDisplay, getRoleColor, formatDate } from '../../../utils/formatters';
+import {
+  getRoleDisplay,
+  getRoleColor,
+  formatDate,
+} from '../../../utils/formatters';
 
 // Tab Panel Component
 function TabPanel({ children, value, index, ...other }) {
   return (
     <div
-      role="tabpanel"
+      role='tabpanel'
       hidden={value !== index}
       id={`profile-tabpanel-${index}`}
       aria-labelledby={`profile-tab-${index}`}
@@ -54,7 +58,11 @@ const ProfilePage = () => {
   const [editMode, setEditMode] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
-  const [notification, setNotification] = useState({ open: false, message: '', type: 'success' });
+  const [notification, setNotification] = useState({
+    open: false,
+    message: '',
+    type: 'success',
+  });
 
   // Form for profile info
   const {
@@ -64,12 +72,15 @@ const ProfilePage = () => {
     validate: validateProfile,
     setData: setProfileForm,
     setErrors: setProfileErrors,
-  } = useForm({}, {
-    name: { required: true, label: 'Tên' },
-    email: { required: true, type: 'email', label: 'Email' },
-    phone: { required: false, type: 'phone', label: 'Số điện thoại' },
-    address: { required: false, label: 'Địa chỉ' },
-  });
+  } = useForm(
+    {},
+    {
+      name: { required: true, label: 'Tên' },
+      email: { required: true, type: 'email', label: 'Email' },
+      phone: { required: false, type: 'phone', label: 'Số điện thoại' },
+      address: { required: false, label: 'Địa chỉ' },
+    }
+  );
 
   // Form for password change
   const {
@@ -78,22 +89,25 @@ const ProfilePage = () => {
     handleInputChange: handlePasswordChange,
     reset: resetPasswordForm,
     setErrors: setPasswordErrors,
-  } = useForm({
-    current_password: '',
-    new_password: '',
-    confirm_password: '',
-  }, {
-    current_password: { required: true, label: 'Mật khẩu hiện tại' },
-    new_password: { required: true, type: 'password', label: 'Mật khẩu mới' },
-    confirm_password: { required: true, label: 'Xác nhận mật khẩu' },
-  });
+  } = useForm(
+    {
+      current_password: '',
+      new_password: '',
+      confirm_password: '',
+    },
+    {
+      current_password: { required: true, label: 'Mật khẩu hiện tại' },
+      new_password: { required: true, type: 'password', label: 'Mật khẩu mới' },
+      confirm_password: { required: true, label: 'Xác nhận mật khẩu' },
+    }
+  );
 
   const showNotification = useCallback((message, type = 'success') => {
     setNotification({ open: true, message, type });
   }, []);
 
   const handleCloseNotification = () => {
-    setNotification(prev => ({ ...prev, open: false }));
+    setNotification((prev) => ({ ...prev, open: false }));
   };
 
   const loadProfile = async () => {
@@ -118,17 +132,17 @@ const ProfilePage = () => {
     try {
       setUpdating(true);
       const response = await profileService.updateProfile(user.id, profileForm);
-      
+
       if (response.success) {
         setProfileData(response.user);
         setProfileForm(response.user);
         setEditMode(false);
-        
+
         // Update user context if email changed
         if (response.user.email !== user.email) {
           login({ ...user, ...response.user });
         }
-        
+
         showNotification(response.message);
       } else {
         showNotification(response.error || 'Cập nhật thất bại', 'error');
@@ -192,7 +206,12 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='400px'
+      >
         <CircularProgress />
       </Box>
     );
@@ -200,7 +219,7 @@ const ProfilePage = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Thông tin cá nhân
       </Typography>
 
@@ -209,39 +228,46 @@ const ProfilePage = () => {
           <Tabs
             value={tabValue}
             onChange={(e, newValue) => setTabValue(newValue)}
-            variant="scrollable"
-            scrollButtons="auto"
+            variant='scrollable'
+            scrollButtons='auto'
           >
-            <Tab icon={<PersonIcon />} label="Thông tin cá nhân" />
-            <Tab icon={<LockIcon />} label="Đổi mật khẩu" />
+            <Tab icon={<PersonIcon />} label='Thông tin cá nhân' />
+            <Tab icon={<LockIcon />} label='Đổi mật khẩu' />
             {profileData?.job_statistics && (
-              <Tab icon={<BarChartIcon />} label="Thống kê công việc" />
+              <Tab icon={<BarChartIcon />} label='Thống kê công việc' />
             )}
             {profileData?.order_statistics && (
-              <Tab icon={<BarChartIcon />} label="Thống kê đơn hàng" />
+              <Tab icon={<BarChartIcon />} label='Thống kê đơn hàng' />
             )}
           </Tabs>
         </Box>
 
         {/* Profile Info Tab */}
         <TabPanel value={tabValue} index={0}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box display="flex" alignItems="center">
-              <Avatar sx={{ width: 64, height: 64, mr: 2, bgcolor: 'primary.main' }}>
+          <Box
+            display='flex'
+            justifyContent='space-between'
+            alignItems='center'
+            mb={3}
+          >
+            <Box display='flex' alignItems='center'>
+              <Avatar
+                sx={{ width: 64, height: 64, mr: 2, bgcolor: 'primary.main' }}
+              >
                 {profileData?.name?.charAt(0)?.toUpperCase() || 'U'}
               </Avatar>
               <Box>
-                <Typography variant="h6">{profileData?.name}</Typography>
+                <Typography variant='h6'>{profileData?.name}</Typography>
                 <Chip
                   label={getRoleDisplay(profileData?.role)}
-                  size="small"
+                  size='small'
                   className={getRoleColor(profileData?.role)}
                 />
               </Box>
             </Box>
             {!editMode && (
               <Button
-                variant="outlined"
+                variant='outlined'
                 startIcon={<EditIcon />}
                 onClick={() => setEditMode(true)}
               >
@@ -254,8 +280,8 @@ const ProfilePage = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Tên đầy đủ"
-                name="name"
+                label='Tên đầy đủ'
+                name='name'
                 value={profileForm.name || ''}
                 onChange={handleProfileChange}
                 disabled={!editMode}
@@ -266,9 +292,9 @@ const ProfilePage = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Email"
-                name="email"
-                type="email"
+                label='Email'
+                name='email'
+                type='email'
                 value={profileForm.email || ''}
                 onChange={handleProfileChange}
                 disabled={!editMode}
@@ -279,8 +305,8 @@ const ProfilePage = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Số điện thoại"
-                name="phone"
+                label='Số điện thoại'
+                name='phone'
                 value={profileForm.phone || ''}
                 onChange={handleProfileChange}
                 disabled={!editMode}
@@ -291,7 +317,7 @@ const ProfilePage = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Ngày tạo tài khoản"
+                label='Ngày tạo tài khoản'
                 value={formatDate(profileData?.created_at)}
                 disabled
               />
@@ -299,8 +325,8 @@ const ProfilePage = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Địa chỉ"
-                name="address"
+                label='Địa chỉ'
+                name='address'
                 multiline
                 rows={3}
                 value={profileForm.address || ''}
@@ -313,9 +339,9 @@ const ProfilePage = () => {
           </Grid>
 
           {editMode && (
-            <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
+            <Box display='flex' justifyContent='flex-end' gap={2} mt={3}>
               <Button
-                variant="outlined"
+                variant='outlined'
                 startIcon={<CancelIcon />}
                 onClick={handleCancelEdit}
                 disabled={updating}
@@ -323,7 +349,7 @@ const ProfilePage = () => {
                 Hủy
               </Button>
               <Button
-                variant="contained"
+                variant='contained'
                 startIcon={<SaveIcon />}
                 onClick={handleUpdateProfile}
                 disabled={updating}
@@ -336,20 +362,21 @@ const ProfilePage = () => {
 
         {/* Change Password Tab */}
         <TabPanel value={tabValue} index={1}>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant='h6' gutterBottom>
             Đổi mật khẩu
           </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Để bảo mật tài khoản, vui lòng sử dụng mật khẩu mạnh có ít nhất 6 ký tự.
+          <Typography variant='body2' color='text.secondary' paragraph>
+            Để bảo mật tài khoản, vui lòng sử dụng mật khẩu mạnh có ít nhất 6 ký
+            tự.
           </Typography>
 
           <Grid container spacing={3} maxWidth={400}>
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Mật khẩu hiện tại"
-                name="current_password"
-                type="password"
+                label='Mật khẩu hiện tại'
+                name='current_password'
+                type='password'
                 value={passwordForm.current_password}
                 onChange={handlePasswordChange}
                 error={!!passwordErrors.current_password}
@@ -359,9 +386,9 @@ const ProfilePage = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Mật khẩu mới"
-                name="new_password"
-                type="password"
+                label='Mật khẩu mới'
+                name='new_password'
+                type='password'
                 value={passwordForm.new_password}
                 onChange={handlePasswordChange}
                 error={!!passwordErrors.new_password}
@@ -371,9 +398,9 @@ const ProfilePage = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Xác nhận mật khẩu mới"
-                name="confirm_password"
-                type="password"
+                label='Xác nhận mật khẩu mới'
+                name='confirm_password'
+                type='password'
                 value={passwordForm.confirm_password}
                 onChange={handlePasswordChange}
                 error={!!passwordErrors.confirm_password}
@@ -383,7 +410,7 @@ const ProfilePage = () => {
             <Grid item xs={12}>
               <Button
                 fullWidth
-                variant="contained"
+                variant='contained'
                 onClick={handleChangePassword}
                 disabled={changingPassword}
               >
@@ -396,53 +423,53 @@ const ProfilePage = () => {
         {/* Statistics Tabs */}
         {profileData?.job_statistics && (
           <TabPanel value={tabValue} index={2}>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant='h6' gutterBottom>
               Thống kê công việc (Kỹ thuật viên)
             </Typography>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6} md={3}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Tổng công việc
                     </Typography>
-                    <Typography variant="h4">
+                    <Typography variant='h4'>
                       {profileData.job_statistics.total_jobs}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Hoàn thành
                     </Typography>
-                    <Typography variant="h4" color="success.main">
+                    <Typography variant='h4' color='success.main'>
                       {profileData.job_statistics.completed_jobs}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Đang thực hiện
                     </Typography>
-                    <Typography variant="h4" color="warning.main">
+                    <Typography variant='h4' color='warning.main'>
                       {profileData.job_statistics.active_jobs}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Chờ xử lý
                     </Typography>
-                    <Typography variant="h4" color="info.main">
+                    <Typography variant='h4' color='info.main'>
                       {profileData.job_statistics.pending_jobs}
                     </Typography>
                   </CardContent>
@@ -453,46 +480,49 @@ const ProfilePage = () => {
         )}
 
         {profileData?.order_statistics && (
-          <TabPanel value={tabValue} index={profileData?.job_statistics ? 3 : 2}>
-            <Typography variant="h6" gutterBottom>
+          <TabPanel
+            value={tabValue}
+            index={profileData?.job_statistics ? 3 : 2}
+          >
+            <Typography variant='h6' gutterBottom>
               Thống kê đơn hàng & thiết bị
             </Typography>
-            
-            <Typography variant="subtitle1" gutterBottom sx={{ mt: 3 }}>
+
+            <Typography variant='subtitle1' gutterBottom sx={{ mt: 3 }}>
               Đơn hàng
             </Typography>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={4}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Tổng đơn hàng
                     </Typography>
-                    <Typography variant="h4">
+                    <Typography variant='h4'>
                       {profileData.order_statistics.total_orders}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
               <Grid item xs={12} sm={4}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Đã thanh toán
                     </Typography>
-                    <Typography variant="h4" color="success.main">
+                    <Typography variant='h4' color='success.main'>
                       {profileData.order_statistics.paid_orders}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
               <Grid item xs={12} sm={4}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Chờ thanh toán
                     </Typography>
-                    <Typography variant="h4" color="warning.main">
+                    <Typography variant='h4' color='warning.main'>
                       {profileData.order_statistics.pending_orders}
                     </Typography>
                   </CardContent>
@@ -502,53 +532,53 @@ const ProfilePage = () => {
 
             <Divider sx={{ my: 3 }} />
 
-            <Typography variant="subtitle1" gutterBottom>
+            <Typography variant='subtitle1' gutterBottom>
               Thiết bị
             </Typography>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6} md={3}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Tổng thiết bị
                     </Typography>
-                    <Typography variant="h4">
+                    <Typography variant='h4'>
                       {profileData.device_statistics.total_devices}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Bình thường
                     </Typography>
-                    <Typography variant="h4" color="success.main">
+                    <Typography variant='h4' color='success.main'>
                       {profileData.device_statistics.normal_devices}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Có vấn đề
                     </Typography>
-                    <Typography variant="h4" color="error.main">
+                    <Typography variant='h4' color='error.main'>
                       {profileData.device_statistics.issue_devices}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <Card variant="outlined">
+                <Card variant='outlined'>
                   <CardContent>
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color='text.secondary' gutterBottom>
                       Đang bảo trì
                     </Typography>
-                    <Typography variant="h4" color="warning.main">
+                    <Typography variant='h4' color='warning.main'>
                       {profileData.device_statistics.maintenance_devices}
                     </Typography>
                   </CardContent>

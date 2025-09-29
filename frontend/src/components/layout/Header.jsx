@@ -9,10 +9,10 @@ import {
   MenuItem,
   Box,
 } from '@mui/material';
-import { 
-  Menu as MenuIcon, 
-  Logout as LogoutIcon, 
-  Person as PersonIcon 
+import {
+  Menu as MenuIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts';
