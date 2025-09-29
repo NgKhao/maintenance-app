@@ -77,7 +77,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
           icon: <Schedule />,
           path: '/book-schedule',
         },
-        { label: 'Chọn kỹ thuật viên', icon: <People />, path: '/technicians' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
         { label: 'Nhắc nhở', icon: <Notifications />, path: '/reminders' },
