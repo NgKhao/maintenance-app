@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -34,6 +34,7 @@ import {
   Search as SearchIcon,
   Clear as ClearIcon,
   People as PeopleIcon,
+  Key as KeyIcon,
 } from '@mui/icons-material';
 import { authStorage } from '../../../utils/storage';
 
@@ -53,6 +54,12 @@ export default function UsersPage() {
   const [editData, setEditData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [resetPasswordDialog, setResetPasswordDialog] = useState({
+    open: false,
+    user: null,
+    newPassword: '',
+    processing: false,
+  });
 
   const role = authStorage.getRole() || '';
   const canEdit = role === 'admin';
@@ -87,7 +94,7 @@ export default function UsersPage() {
     ];
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(API_URL);
@@ -112,7 +119,7 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [role]);
 
   // Filter data based on search term
   useEffect(() => {
@@ -169,7 +176,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     fetchData();
-  }, [role]); // Re-fetch when role changes
+  }, [role, fetchData]); // Re-fetch when role changes
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -308,6 +315,64 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResetPassword = async (user) => {
+    setResetPasswordDialog({
+      open: true,
+      user,
+      newPassword: '',
+      processing: false,
+    });
+  };
+
+  const executeResetPassword = async () => {
+    if (!resetPasswordDialog.user) return;
+
+    setResetPasswordDialog((prev) => ({ ...prev, processing: true }));
+
+    try {
+      const response = await fetch(
+        `${API_URL}?id=${resetPasswordDialog.user.id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'reset_password',
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setResetPasswordDialog((prev) => ({
+          ...prev,
+          newPassword: result.new_password,
+        }));
+        setError('');
+      } else {
+        setError(result.error || 'Lỗi reset mật khẩu');
+        setResetPasswordDialog((prev) => ({ ...prev, open: false }));
+      }
+    } catch (error) {
+      console.error('Reset password error:', error);
+      setError('Lỗi kết nối server');
+      setResetPasswordDialog((prev) => ({ ...prev, open: false }));
+    } finally {
+      setResetPasswordDialog((prev) => ({ ...prev, processing: false }));
+    }
+  };
+
+  const closeResetDialog = () => {
+    setResetPasswordDialog({
+      open: false,
+      user: null,
+      newPassword: '',
+      processing: false,
+    });
   };
 
   if (loading && data.length === 0) {
@@ -575,13 +640,23 @@ export default function UsersPage() {
                                   color='primary'
                                   onClick={() => handleEdit(user)}
                                   disabled={loading}
+                                  title='Chỉnh sửa'
                                 >
                                   <EditIcon />
+                                </IconButton>
+                                <IconButton
+                                  color='warning'
+                                  onClick={() => handleResetPassword(user)}
+                                  disabled={loading}
+                                  title='Reset mật khẩu'
+                                >
+                                  <KeyIcon />
                                 </IconButton>
                                 <IconButton
                                   color='error'
                                   onClick={() => handleDelete(user.id)}
                                   disabled={loading}
+                                  title='Xóa'
                                 >
                                   <DeleteIcon />
                                 </IconButton>
@@ -689,6 +764,112 @@ export default function UsersPage() {
             </Button>
           </DialogActions>
         </Box>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog
+        open={resetPasswordDialog.open}
+        onClose={closeResetDialog}
+        maxWidth='sm'
+        fullWidth
+      >
+        <DialogTitle>
+          <Box display='flex' alignItems='center' gap={1}>
+            <KeyIcon />
+            Reset mật khẩu
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {resetPasswordDialog.user && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant='body1' gutterBottom>
+                <strong>Người dùng:</strong> {resetPasswordDialog.user.name}
+              </Typography>
+              <Typography variant='body2' color='text.secondary' gutterBottom>
+                <strong>Email:</strong> {resetPasswordDialog.user.email}
+              </Typography>
+
+              {resetPasswordDialog.newPassword ? (
+                <Box
+                  sx={{
+                    mt: 3,
+                    p: 2,
+                    bgcolor: 'success.light',
+                    borderRadius: 1,
+                  }}
+                >
+                  <Typography variant='h6' color='success.dark' gutterBottom>
+                    ✅ Reset mật khẩu thành công!
+                  </Typography>
+                  <Typography variant='body2' sx={{ mb: 2 }}>
+                    Mật khẩu mới của người dùng:
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: 'background.paper',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'success.main',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <Typography
+                      variant='h5'
+                      component='code'
+                      sx={{
+                        fontFamily: 'monospace',
+                        fontWeight: 'bold',
+                        color: 'primary.main',
+                        letterSpacing: 2,
+                      }}
+                    >
+                      {resetPasswordDialog.newPassword}
+                    </Typography>
+                  </Box>
+                  <Alert severity='warning' sx={{ mt: 2 }}>
+                    Vui lòng lưu lại mật khẩu này và thông báo cho người dùng.
+                    Người dùng nên đổi mật khẩu sau khi đăng nhập lần đầu.
+                  </Alert>
+                </Box>
+              ) : (
+                <Box sx={{ mt: 3 }}>
+                  <Alert severity='info' sx={{ mb: 2 }}>
+                    Hệ thống sẽ tự động tạo mật khẩu mới (8 ký tự) cho người
+                    dùng này. Mật khẩu cũ sẽ không còn hiệu lực.
+                  </Alert>
+                  <Typography variant='body2' color='text.secondary'>
+                    Bạn có chắc chắn muốn reset mật khẩu cho người dùng này?
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeResetDialog}>
+            {resetPasswordDialog.newPassword ? 'Đóng' : 'Hủy'}
+          </Button>
+          {!resetPasswordDialog.newPassword && (
+            <Button
+              variant='contained'
+              color='warning'
+              onClick={executeResetPassword}
+              disabled={resetPasswordDialog.processing}
+              startIcon={
+                resetPasswordDialog.processing ? (
+                  <CircularProgress size={16} />
+                ) : (
+                  <KeyIcon />
+                )
+              }
+            >
+              {resetPasswordDialog.processing
+                ? 'Đang reset...'
+                : 'Reset mật khẩu'}
+            </Button>
+          )}
+        </DialogActions>
       </Dialog>
     </Box>
   );
