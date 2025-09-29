@@ -9,13 +9,19 @@ import {
   MenuItem,
   Box,
 } from '@mui/material';
-import { Menu as MenuIcon, Logout as LogoutIcon } from '@mui/icons-material';
+import { 
+  Menu as MenuIcon, 
+  Logout as LogoutIcon, 
+  Person as PersonIcon 
+} from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts';
 
 const DRAWER_WIDTH = 240;
 
 const Header = ({ sidebarOpen, setSidebarOpen, user }) => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handleMenuOpen = (event) => {
@@ -24,6 +30,11 @@ const Header = ({ sidebarOpen, setSidebarOpen, user }) => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleProfile = () => {
+    handleMenuClose();
+    navigate('/profile');
   };
 
   const handleLogout = () => {
@@ -95,6 +106,10 @@ const Header = ({ sidebarOpen, setSidebarOpen, user }) => {
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           >
+            <MenuItem onClick={handleProfile}>
+              <PersonIcon fontSize='small' sx={{ mr: 1 }} />
+              Thông tin cá nhân
+            </MenuItem>
             <MenuItem onClick={handleLogout}>
               <LogoutIcon fontSize='small' sx={{ mr: 1 }} />
               Đăng xuất

@@ -4,6 +4,7 @@ export const API_CONFIG = {
   ENDPOINTS: {
     AUTH: '/index.php?api=auth',
     USERS: '/api/users.php',
+    PROFILE: '/index.php?api=profile',
     DEVICES: '/index.php?api=devices',
     PACKAGES: '/index.php?api=packages',
     ORDERS: '/index.php?api=orders',

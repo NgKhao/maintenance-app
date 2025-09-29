@@ -28,6 +28,7 @@ import {
   DevicesPage,
   SchedulesPage,
   RemindersPage,
+  ProfilePage,
 } from '../../features/shared';
 
 import { useAuth } from '../../contexts';
@@ -108,6 +109,7 @@ const AppLayout = () => {
           <Route path='/devices' element={<DevicesPage />} />
           <Route path='/schedules' element={<SchedulesPage />} />
           <Route path='/reminders' element={<RemindersPage />} />
+          <Route path='/profile' element={<ProfilePage />} />
 
           <Route path='/dashboard' element={<DashboardPage role={role} />} />
           <Route path='*' element={<Navigate to='/dashboard' />} />
