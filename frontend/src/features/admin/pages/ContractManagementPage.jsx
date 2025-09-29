@@ -246,142 +246,139 @@ export default function ContractManagementPage({ user }) {
             Danh sách tất cả hợp đồng trong hệ thống
           </Typography>
 
-              {/* Search and Filter Bar */}
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    size='small'
-                    placeholder='Tìm kiếm khách hàng, gói dịch vụ, mã giao dịch...'
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position='start'>
-                          <ViewIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <FormControl fullWidth size='small'>
-                    <InputLabel>Trạng thái thanh toán</InputLabel>
-                    <Select
-                      value={filterStatus}
-                      label='Trạng thái thanh toán'
-                      onChange={(e) => setFilterStatus(e.target.value)}
-                    >
-                      <MenuItem value='all'>Tất cả</MenuItem>
-                      <MenuItem value='pending'>Chờ thanh toán</MenuItem>
-                      <MenuItem value='paid'>Đã thanh toán</MenuItem>
-                      <MenuItem value='failed'>Thanh toán thất bại</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <Box display='flex' justifyContent='flex-end'>
-                    <Button
-                      variant='contained'
-                      startIcon={<AddIcon />}
-                      onClick={() => setOpenDialog(true)}
-                      fullWidth
-                    >
-                      Thêm hợp đồng
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
+          {/* Search and Filter Bar */}
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                size='small'
+                placeholder='Tìm kiếm khách hàng, gói dịch vụ, mã giao dịch...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <ViewIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth size='small'>
+                <InputLabel>Trạng thái thanh toán</InputLabel>
+                <Select
+                  value={filterStatus}
+                  label='Trạng thái thanh toán'
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                >
+                  <MenuItem value='all'>Tất cả</MenuItem>
+                  <MenuItem value='pending'>Chờ thanh toán</MenuItem>
+                  <MenuItem value='paid'>Đã thanh toán</MenuItem>
+                  <MenuItem value='failed'>Thanh toán thất bại</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Box display='flex' justifyContent='flex-end'>
+                <Button
+                  variant='contained'
+                  startIcon={<AddIcon />}
+                  onClick={() => setOpenDialog(true)}
+                  fullWidth
+                >
+                  Thêm hợp đồng
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
 
-              {/* Contracts Table */}
-              {loadingContracts ? (
-                <Box display='flex' justifyContent='center' py={4}>
-                  <CircularProgress />
-                </Box>
-              ) : (
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>ID</TableCell>
-                        <TableCell>Khách hàng</TableCell>
-                        <TableCell>Gói dịch vụ</TableCell>
-                        <TableCell>Giá trị</TableCell>
-                        <TableCell>Trạng thái</TableCell>
-                        <TableCell>Thời gian</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredContracts.map((contract) => (
-                        <TableRow key={contract.id}>
-                          <TableCell>{contract.id}</TableCell>
-                          <TableCell>
-                            <Box>
-                              <Typography variant='body2' fontWeight='medium'>
-                                {contract.user_name}
-                              </Typography>
-                              <Typography
-                                variant='caption'
-                                color='text.secondary'
-                              >
-                                {contract.user_email}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell>{contract.package_name}</TableCell>
-                          <TableCell>
-                            {new Intl.NumberFormat('vi-VN', {
-                              style: 'currency',
-                              currency: 'VND',
-                            }).format(contract.amount)}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={
-                                contract.payment_status === 'pending'
-                                  ? 'Chờ thanh toán'
-                                  : contract.payment_status === 'paid'
-                                  ? 'Đã thanh toán'
-                                  : contract.payment_status === 'failed'
-                                  ? 'Thất bại'
-                                  : contract.payment_status
-                              }
-                              color={
-                                contract.payment_status === 'pending'
-                                  ? 'warning'
-                                  : contract.payment_status === 'paid'
-                                  ? 'success'
-                                  : 'error'
-                              }
-                              size='small'
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Box>
-                              <Typography variant='caption' display='block'>
-                                Bắt đầu: {formatDate(contract.start_date)}
-                              </Typography>
-                              <Typography variant='caption' display='block'>
-                                Kết thúc: {formatDate(contract.end_date)}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
+          {/* Contracts Table */}
+          {loadingContracts ? (
+            <Box display='flex' justifyContent='center' py={4}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ID</TableCell>
+                    <TableCell>Khách hàng</TableCell>
+                    <TableCell>Gói dịch vụ</TableCell>
+                    <TableCell>Giá trị</TableCell>
+                    <TableCell>Trạng thái</TableCell>
+                    <TableCell>Thời gian</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredContracts.map((contract) => (
+                    <TableRow key={contract.id}>
+                      <TableCell>{contract.id}</TableCell>
+                      <TableCell>
+                        <Box>
+                          <Typography variant='body2' fontWeight='medium'>
+                            {contract.user_name}
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary'>
+                            {contract.user_email}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>{contract.package_name}</TableCell>
+                      <TableCell>
+                        {new Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        }).format(contract.amount)}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={
+                            contract.payment_status === 'pending'
+                              ? 'Chờ thanh toán'
+                              : contract.payment_status === 'paid'
+                              ? 'Đã thanh toán'
+                              : contract.payment_status === 'failed'
+                              ? 'Thất bại'
+                              : contract.payment_status
+                          }
+                          color={
+                            contract.payment_status === 'pending'
+                              ? 'warning'
+                              : contract.payment_status === 'paid'
+                              ? 'success'
+                              : 'error'
+                          }
+                          size='small'
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Box>
+                          <Typography variant='caption' display='block'>
+                            Bắt đầu: {formatDate(contract.start_date)}
+                          </Typography>
+                          <Typography variant='caption' display='block'>
+                            Kết thúc: {formatDate(contract.end_date)}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
 
-              {filteredContracts.length === 0 && !loadingContracts && (
-                <Box textAlign='center' py={4}>
-                  <Typography color='text.secondary'>
-                    {contracts.length === 0
-                      ? 'Chưa có hợp đồng nào'
-                      : 'Không tìm thấy hợp đồng phù hợp'}
-                  </Typography>
-                </Box>
-              )}
+          {filteredContracts.length === 0 && !loadingContracts && (
+            <Box textAlign='center' py={4}>
+              <Typography color='text.secondary'>
+                {contracts.length === 0
+                  ? 'Chưa có hợp đồng nào'
+                  : 'Không tìm thấy hợp đồng phù hợp'}
+              </Typography>
+            </Box>
+          )}
 
           {/* Contract Creation Dialog */}
           <Dialog
