@@ -15,7 +15,7 @@ export const profileService = {
   async updateProfile(userId, profileData) {
     try {
       return await apiService.put(
-        `${API_CONFIG.ENDPOINTS.PROFILE}?user_id=${userId}`,
+        `${API_CONFIG.ENDPOINTS.PROFILE}&user_id=${userId}`,
         profileData
       );
     } catch (error) {
@@ -26,7 +26,7 @@ export const profileService = {
   async changePassword(userId, passwordData) {
     try {
       return await apiService.put(
-        `${API_CONFIG.ENDPOINTS.PROFILE}?user_id=${userId}`,
+        `${API_CONFIG.ENDPOINTS.PROFILE}&user_id=${userId}`,
         {
           action: 'change_password',
           ...passwordData,
