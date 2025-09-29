@@ -15,6 +15,7 @@ export const ROUTES = {
   USERS: '/users',
   PACKAGES: '/packages',
   CONTRACT_REQUESTS: '/contract-requests',
+  CONTRACT_MANAGEMENT: '/contract-management',
   ADMIN_SCHEDULES: '/admin-schedules',
 
   // Technician routes

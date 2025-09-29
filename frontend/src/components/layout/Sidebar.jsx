@@ -41,6 +41,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
           icon: <Description />,
           path: '/contract-requests',
         },
+        {
+          label: 'Quản lý hợp đồng',
+          icon: <Assignment />,
+          path: '/contract-management',
+        },
         { label: 'Quản lý lịch', icon: <Schedule />, path: '/admin-schedules' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },

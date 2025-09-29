@@ -1,118 +1,375 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Chip,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert,
+  CircularProgress,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import {
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon,
+  Visibility as ViewIcon,
+} from '@mui/icons-material';
+import {
+  getContractRequests,
+  processContractRequest,
+} from '../../../api/contract-requests';
+import { formatDate, formatDateTime } from '../../../utils/formatters';
 
 export default function ContractRequestsPage({ user }) {
-  const [data, setData] = useState([]);
-  const [formVisible, setFormVisible] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [processDialog, setProcessDialog] = useState({
+    open: false,
+    request: null,
+  });
+  const [processData, setProcessData] = useState({
+    status: '',
+    admin_note: '',
+  });
+  const [processing, setProcessing] = useState(false);
+
   const role = user?.role || 'user';
-  const canEdit = role === 'admin'; // admin mới được xóa
+  const isAdmin = role === 'admin';
 
-  const API_URL = 'http://localhost:8000/index.php?api=contract_requests';
-
+  // Fetch contract requests
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchRequests = async () => {
       try {
-        const res = await axios.get(API_URL);
-        const allData = res.data;
-        if (role === 'admin') setData(allData); // admin xem tất cả
-        else setData(allData.filter(r => r.user_id === user.id)); // user chỉ xem dữ liệu của mình
+        setLoading(true);
+        const data = await getContractRequests({ admin_view: isAdmin });
+        setRequests(data);
       } catch (err) {
-        alert(err.response?.data?.error || 'Lỗi khi tải dữ liệu');
+        console.error('Error fetching requests:', err);
+        setError('Không thể tải danh sách yêu cầu');
+      } finally {
+        setLoading(false);
       }
     };
-    fetchData();
-  }, [role, user]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    fetchRequests();
+  }, [isAdmin]);
+
+  // Handle process request (approve/reject)
+  const handleProcessRequest = async () => {
+    if (!processDialog.request || !processData.status) return;
+
     try {
-      const form = new FormData();
-      form.append('order_id', formData.order_id);
-      form.append('note', formData.note || '');
-      form.append('status', formData.status || 'pending');
-      await axios.post(API_URL, form);
-      setFormData({});
-      setFormVisible(false);
-      // reload dữ liệu
-      const res = await axios.get(API_URL);
-      const allData = res.data;
-      setData(role === 'admin' ? allData : allData.filter(r => r.user_id === user.id));
+      setProcessing(true);
+      await processContractRequest({
+        request_id: processDialog.request.id,
+        status: processData.status,
+        admin_id: user?.id,
+        admin_note: processData.admin_note,
+      });
+
+      // Refresh data
+      const updatedData = await getContractRequests({ admin_view: isAdmin });
+      setRequests(updatedData);
+
+      // Close dialog
+      setProcessDialog({ open: false, request: null });
+      setProcessData({ status: '', admin_note: '' });
     } catch (err) {
-      alert(err.response?.data?.error || 'Lỗi khi gửi yêu cầu');
+      console.error('Error processing request:', err);
+      setError('Không thể xử lý yêu cầu');
+    } finally {
+      setProcessing(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xóa?')) return;
-    try {
-      await axios.delete(`${API_URL}?id=${id}`);
-      setData(data.filter(d => d.id !== id));
-    } catch (err) {
-      alert(err.response?.data?.error || 'Lỗi khi xóa yêu cầu');
+  // Get status chip color
+  const getStatusChip = (status) => {
+    switch (status) {
+      case 'pending':
+        return <Chip label='Đang chờ' color='warning' size='small' />;
+      case 'approved':
+        return <Chip label='Đã duyệt' color='success' size='small' />;
+      case 'rejected':
+        return <Chip label='Từ chối' color='error' size='small' />;
+      default:
+        return <Chip label={status} size='small' />;
     }
   };
+
+  // Get request type display
+  const getRequestTypeDisplay = (type) => {
+    switch (type) {
+      case 'extend':
+        return 'Gia hạn';
+      case 'terminate':
+        return 'Kết thúc';
+      default:
+        return type;
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='400px'
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Yêu cầu kết thúc hợp đồng</h2>
-      {formVisible && (
-        <form onSubmit={handleSubmit} className="mb-6 p-4 bg-white rounded shadow space-y-4">
-          <div>
-            <label>Order ID:</label>
-            <input
-              type="number"
-              value={formData.order_id || ''}
-              onChange={e => setFormData({ ...formData, order_id: e.target.value })}
-              required
-            />
-          </div>
-          <div>
-            <label>Note:</label>
-            <input
-              type="text"
-              value={formData.note || ''}
-              onChange={e => setFormData({ ...formData, note: e.target.value })}
-            />
-          </div>
-          <button type="submit" className="bg-green-500 px-4 py-2 text-white rounded">Gửi</button>
-        </form>
-      )}
-      <button onClick={() => setFormVisible(!formVisible)} className="mb-4 bg-blue-500 px-4 py-2 text-white rounded">
-        {formVisible ? 'Hủy' : 'Tạo mới'}
-      </button>
+    <Box>
+      <Card>
+        <CardContent>
+          <Typography variant='h5' component='h1' gutterBottom>
+            Quản lý yêu cầu hợp đồng
+          </Typography>
 
-      <table className="min-w-full bg-white rounded shadow">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2">ID</th>
-            <th className="px-4 py-2">Order ID</th>
-            <th className="px-4 py-2">Note</th>
-            <th className="px-4 py-2">Status</th>
-            {canEdit && <th className="px-4 py-2">Hành động</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map(r => (
-            <tr key={r.id}>
-              <td className="border px-4 py-2">{r.id}</td>
-              <td className="border px-4 py-2">{r.order_id}</td>
-              <td className="border px-4 py-2">{r.note}</td>
-              <td className="border px-4 py-2">{r.status}</td>
-              {canEdit && (
-                <td className="border px-4 py-2">
-                  <button onClick={() => handleDelete(r.id)} className="bg-red-500 px-2 py-1 text-white rounded">Xóa</button>
-                </td>
-              )}
-            </tr>
-          ))}
-          {data.length === 0 && (
-            <tr>
-              <td colSpan={canEdit ? 5 : 4} className="text-center py-2">Không có dữ liệu</td>
-            </tr>
+          {error && (
+            <Alert severity='error' sx={{ mb: 2 }}>
+              {error}
+            </Alert>
           )}
-        </tbody>
-      </table>
-    </div>
+
+          <TableContainer component={Paper} sx={{ mt: 2 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Khách hàng</TableCell>
+                  <TableCell>Loại yêu cầu</TableCell>
+                  <TableCell>Gói hiện tại</TableCell>
+                  <TableCell>Chi tiết</TableCell>
+                  <TableCell>Ngày tạo</TableCell>
+                  <TableCell>Trạng thái</TableCell>
+                  {isAdmin && <TableCell>Hành động</TableCell>}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {requests.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={isAdmin ? 8 : 7} align='center'>
+                      Không có yêu cầu nào
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  requests.map((request) => (
+                    <TableRow key={request.id}>
+                      <TableCell>{request.id}</TableCell>
+                      <TableCell>
+                        <Box>
+                          <Typography variant='body2' fontWeight='bold'>
+                            {request.user_name}
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary'>
+                            {request.user_email}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={getRequestTypeDisplay(request.request_type)}
+                          color={
+                            request.request_type === 'extend'
+                              ? 'primary'
+                              : 'secondary'
+                          }
+                          size='small'
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Box>
+                          <Typography variant='body2'>
+                            {request.package_name}
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary'>
+                            {request.start_date} - {request.end_date}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box>
+                          {request.request_type === 'extend' && (
+                            <Typography variant='caption'>
+                              Gia hạn: {request.extend_months} tháng
+                            </Typography>
+                          )}
+                          {request.request_type === 'terminate' &&
+                            request.requested_end_date && (
+                              <Typography variant='caption'>
+                                Kết thúc:{' '}
+                                {formatDate(request.requested_end_date)}
+                              </Typography>
+                            )}
+                          {request.note && (
+                            <Typography variant='body2' sx={{ mt: 0.5 }}>
+                              {request.note}
+                            </Typography>
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant='caption'>
+                          {formatDateTime(request.request_date)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusChip(request.status)}
+                        {request.admin_name && (
+                          <Typography
+                            variant='caption'
+                            display='block'
+                            sx={{ mt: 0.5 }}
+                          >
+                            Bởi: {request.admin_name}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      {isAdmin && (
+                        <TableCell>
+                          {request.status === 'pending' ? (
+                            <Box>
+                              <Tooltip title='Duyệt'>
+                                <IconButton
+                                  color='success'
+                                  onClick={() => {
+                                    setProcessDialog({ open: true, request });
+                                    setProcessData({
+                                      status: 'approved',
+                                      admin_note: '',
+                                    });
+                                  }}
+                                >
+                                  <ApproveIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title='Từ chối'>
+                                <IconButton
+                                  color='error'
+                                  onClick={() => {
+                                    setProcessDialog({ open: true, request });
+                                    setProcessData({
+                                      status: 'rejected',
+                                      admin_note: '',
+                                    });
+                                  }}
+                                >
+                                  <RejectIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          ) : (
+                            <Tooltip title='Đã xử lý'>
+                              <IconButton disabled>
+                                <ViewIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
+
+      {/* Process Request Dialog */}
+      <Dialog
+        open={processDialog.open}
+        onClose={() => setProcessDialog({ open: false, request: null })}
+        maxWidth='sm'
+        fullWidth
+      >
+        <DialogTitle>
+          {processData.status === 'approved'
+            ? 'Duyệt yêu cầu'
+            : 'Từ chối yêu cầu'}
+        </DialogTitle>
+        <DialogContent>
+          {processDialog.request && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant='body2' gutterBottom>
+                <strong>Khách hàng:</strong> {processDialog.request.user_name}
+              </Typography>
+              <Typography variant='body2' gutterBottom>
+                <strong>Loại yêu cầu:</strong>{' '}
+                {getRequestTypeDisplay(processDialog.request.request_type)}
+              </Typography>
+              <Typography variant='body2' gutterBottom sx={{ mb: 2 }}>
+                <strong>Ghi chú từ khách hàng:</strong>{' '}
+                {processDialog.request.note || 'Không có'}
+              </Typography>
+
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Trạng thái</InputLabel>
+                <Select
+                  value={processData.status}
+                  label='Trạng thái'
+                  onChange={(e) =>
+                    setProcessData({ ...processData, status: e.target.value })
+                  }
+                >
+                  <MenuItem value='approved'>Duyệt</MenuItem>
+                  <MenuItem value='rejected'>Từ chối</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label='Ghi chú của admin'
+                value={processData.admin_note}
+                onChange={(e) =>
+                  setProcessData({ ...processData, admin_note: e.target.value })
+                }
+                placeholder='Nhập lý do hoặc ghi chú...'
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setProcessDialog({ open: false, request: null })}
+            disabled={processing}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleProcessRequest}
+            variant='contained'
+            disabled={processing || !processData.status}
+          >
+            {processing ? <CircularProgress size={20} /> : 'Xác nhận'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

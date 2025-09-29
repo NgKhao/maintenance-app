@@ -10,6 +10,7 @@ import {
   UsersPage,
   PackagesPage,
   ContractRequestsPage,
+  ContractManagementPage,
   AdminSchedulesPage,
 } from '../../features/admin';
 
@@ -70,6 +71,10 @@ const AppLayout = () => {
               <Route
                 path='/contract-requests'
                 element={<ContractRequestsPage user={user} />}
+              />
+              <Route
+                path='/contract-management'
+                element={<ContractManagementPage user={user} />}
               />
               <Route path='/admin-schedules' element={<AdminSchedulesPage />} />
             </>

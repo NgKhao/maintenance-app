@@ -48,10 +48,62 @@ if ($method === 'GET') {
 if ($method === 'POST') {
     // Đọc JSON từ frontend
     $data = json_decode(file_get_contents("php://input"), true);
+    $action = $data['action'] ?? 'user_register';
 
+    // Admin tạo hợp đồng trực tiếp
+    if ($action === 'admin_create') {
+        $user_id = $data['user_id'] ?? 0;
+        $package_id = $data['package_id'] ?? 0;
+        $payment_status = $data['payment_status'] ?? 'pending';
+        $start_date = $data['start_date'] ?? date('Y-m-d');
+        $custom_price = $data['custom_price'] ?? null;
+        $admin_note = $data['admin_note'] ?? '';
+
+        if (!$user_id || !$package_id) {
+            http_response_code(400);
+            echo json_encode(["error" => "User và gói bảo trì bắt buộc"]);
+            exit;
+        }
+
+        // Lấy thông tin package
+        $stmt = $pdo->prepare("SELECT * FROM maintenancepackages WHERE id = ?");
+        $stmt->execute([$package_id]);
+        $package = $stmt->fetch();
+
+        if (!$package) {
+            http_response_code(400);
+            echo json_encode(["error" => "Gói bảo trì không tồn tại"]);
+            exit;
+        }
+
+        $end_date = date('Y-m-d', strtotime($start_date . ' + ' . $package['duration_months'] . ' months'));
+        $amount = $custom_price ? $custom_price : $package['price'];
+        $app_trans_id = 'ADMIN_' . date('ymd') . '_' . $user_id . '_' . time();
+
+        // Tạo order do admin
+        $stmt = $pdo->prepare("
+            INSERT INTO orders (user_id, package_id, payment_status, start_date, end_date, app_trans_id, amount) 
+            VALUES (?,?,?,?,?,?,?)
+        ");
+
+        if ($stmt->execute([$user_id, $package_id, $payment_status, $start_date, $end_date, $app_trans_id, $amount])) {
+            $order_id = $pdo->lastInsertId();
+            echo json_encode([
+                "success" => true,
+                "message" => "Tạo hợp đồng thành công",
+                "order_id" => $order_id,
+                "app_trans_id" => $app_trans_id
+            ]);
+        } else {
+            http_response_code(500);
+            echo json_encode(["error" => "Lỗi server, không thể tạo hợp đồng"]);
+        }
+        exit;
+    }
+
+    // User đăng ký dịch vụ (code cũ) 
     $user_id = $data['user_id'] ?? 0;
     $package_id = $data['package_id'] ?? 0;
-    $payment_method = $data['payment_method'] ?? 'zalopay';
     $start_date = $data['start_date'] ?? date('Y-m-d');
 
     if (!$user_id || !$package_id) {
@@ -86,49 +138,40 @@ if ($method === 'POST') {
     if ($stmt->execute([$user_id, $package_id, 'pending', $start_date, $end_date, $app_trans_id, $amount])) {
         $order_id = $pdo->lastInsertId();
 
-        if ($payment_method === 'zalopay') {
-            // Đánh dấu rằng file đang được include, không phải gọi trực tiếp
-            $GLOBALS['zalopay_included'] = true;
+        // Luôn sử dụng ZaloPay cho user registration
+        // Đánh dấu rằng file đang được include, không phải gọi trực tiếp
+        $GLOBALS['zalopay_included'] = true;
 
-            // Gọi ZaloPay API để tạo payment URL
-            include_once __DIR__ . '/zalopay_create.php';
+        // Gọi ZaloPay API để tạo payment URL
+        include_once __DIR__ . '/zalopay_create.php';
 
-            // Debug info
-            if (env('APP_DEBUG', false)) {
-                error_log("ZaloPay Debug - Order ID: $order_id, Amount: $amount, App Trans ID: $app_trans_id");
-            }
+        // Debug info
+        if (env('APP_DEBUG', false)) {
+            error_log("ZaloPay Debug - Order ID: $order_id, Amount: $amount, App Trans ID: $app_trans_id");
+        }
 
-            $zalopay_result = createZaloPayOrder($order_id, $amount, "Thanh toán gói bảo trì: " . $package['name'], $app_trans_id);
+        $zalopay_result = createZaloPayOrder($order_id, $amount, "Thanh toán gói bảo trì: " . $package['name'], $app_trans_id);
 
-            // Debug response
-            if (env('APP_DEBUG', false)) {
-                error_log("ZaloPay Response: " . json_encode($zalopay_result));
-            }
+        // Debug response
+        if (env('APP_DEBUG', false)) {
+            error_log("ZaloPay Response: " . json_encode($zalopay_result));
+        }
 
-            if ($zalopay_result && $zalopay_result['return_code'] == 1) {
-                echo json_encode([
-                    "success" => true,
-                    "message" => "Đăng ký dịch vụ thành công",
-                    "order_id" => $order_id,
-                    "payment_url" => $zalopay_result['order_url'],
-                    "order_url" => $zalopay_result['order_url'], // Backwards compatibility
-                    "app_trans_id" => $app_trans_id,
-                    "zp_trans_token" => $zalopay_result['zp_trans_token']
-                ]);
-            } else {
-                echo json_encode([
-                    "success" => false,
-                    "error" => "Không thể tạo liên kết thanh toán ZaloPay",
-                    "details" => $zalopay_result['return_message'] ?? 'Unknown error'
-                ]);
-            }
-        } else {
-            // Thanh toán thủ công hoặc phương thức khác
+        if ($zalopay_result && $zalopay_result['return_code'] == 1) {
             echo json_encode([
                 "success" => true,
                 "message" => "Đăng ký dịch vụ thành công",
                 "order_id" => $order_id,
-                "app_trans_id" => $app_trans_id
+                "payment_url" => $zalopay_result['order_url'],
+                "order_url" => $zalopay_result['order_url'], // Backwards compatibility
+                "app_trans_id" => $app_trans_id,
+                "zp_trans_token" => $zalopay_result['zp_trans_token']
+            ]);
+        } else {
+            echo json_encode([
+                "success" => false,
+                "error" => "Không thể tạo liên kết thanh toán ZaloPay",
+                "details" => $zalopay_result['return_message'] ?? 'Unknown error'
             ]);
         }
     } else {
