@@ -49,7 +49,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
         { label: 'Quản lý lịch', icon: <Schedule />, path: '/admin-schedules' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
-        { label: 'Nhắc nhở', icon: <Notifications />, path: '/reminders' },
       ];
     } else if (role === 'technician') {
       return [
@@ -61,7 +60,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
           path: '/technician-schedules',
         },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
-        { label: 'Nhắc nhở', icon: <Notifications />, path: '/reminders' },
       ];
     } else {
       return [
@@ -80,7 +78,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
           icon: <Schedule />,
           path: '/book-schedule',
         },
-        { label: 'Nhắc nhở', icon: <Notifications />, path: '/reminders' },
       ];
     }
   }, [role]);

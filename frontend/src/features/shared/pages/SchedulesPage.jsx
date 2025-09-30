@@ -247,7 +247,7 @@ export default function SchedulesPage() {
                   <TableCell>Kỹ thuật viên</TableCell>
                   <TableCell>Trạng thái</TableCell>
                   <TableCell>Ghi chú</TableCell>
-                  <TableCell align='center'>Hành động</TableCell>
+                  {/* <TableCell align='center'>Hành động</TableCell> */}
                 </TableRow>
               </TableHead>
               <TableBody>
