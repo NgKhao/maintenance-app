@@ -72,13 +72,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
           icon: <Description />,
           path: '/contracts',
         },
+
+        { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
+        { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
         {
           label: 'Đặt lịch bảo trì',
           icon: <Schedule />,
           path: '/book-schedule',
         },
-        { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
-        { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
         { label: 'Nhắc nhở', icon: <Notifications />, path: '/reminders' },
       ];
     }

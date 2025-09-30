@@ -35,8 +35,17 @@ import {
   Build as BuildIcon,
   QrCode as SerialIcon,
   CheckCircle as StatusIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Save as SaveIcon,
+  Cancel as CancelIcon,
 } from '@mui/icons-material';
-import { getDevices, addDevice } from '../../../api/devices';
+import {
+  getDevices,
+  addDevice,
+  updateDevice,
+  deleteDevice,
+} from '../../../api/devices';
 
 export default function DevicesPage() {
   const [devices, setDevices] = useState([]);
@@ -51,6 +60,8 @@ export default function DevicesPage() {
     serial_number: '',
     status: 'normal',
   });
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({});
   const [error, setError] = useState('');
 
   // Lấy thông tin user từ localStorage
@@ -149,10 +160,6 @@ export default function DevicesPage() {
     }
   };
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   const handleAdd = () => {
     // Chỉ khách hàng (user) mới được thêm thiết bị
     if (role !== 'user') {
@@ -191,6 +198,56 @@ export default function DevicesPage() {
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || 'Lỗi khi lưu thiết bị');
+    }
+  };
+
+  const handleEdit = (device) => {
+    setEditingId(device.id);
+    setEditData({
+      name: device.name,
+      serial_number: device.serial_number,
+      status: device.status,
+      technician_note: device.technician_note || '',
+    });
+  };
+
+  const handleSave = async (id) => {
+    try {
+      await updateDevice({ id, ...editData });
+      setEditingId(null);
+      setEditData({});
+      fetchDevices();
+      setError('');
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || 'Lỗi khi cập nhật thiết bị');
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditData({});
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa thiết bị này?')) {
+      try {
+        await deleteDevice(id);
+        fetchDevices();
+        setError('');
+      } catch (err) {
+        console.error(err);
+        setError(err.response?.data?.error || 'Lỗi khi xóa thiết bị');
+      }
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (editingId) {
+      setEditData((prev) => ({ ...prev, [name]: value }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -359,13 +416,14 @@ export default function DevicesPage() {
                   {(role === 'technician' || role === 'admin') && (
                     <TableCell>Ghi chú kỹ thuật</TableCell>
                   )}
+                  <TableCell width='120'>Thao tác</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredDevices.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={role === 'admin' ? 6 : 5}
+                      colSpan={role === 'admin' ? 7 : 6}
                       align='center'
                     >
                       <Typography variant='body2' color='text.secondary' py={4}>
@@ -380,22 +438,59 @@ export default function DevicesPage() {
                     <TableRow key={device.id} hover>
                       <TableCell>{index + 1}</TableCell>
                       <TableCell>
-                        <Typography variant='body2' fontWeight='medium'>
-                          {highlightText(device.name, searchTerm)}
-                        </Typography>
+                        {editingId === device.id ? (
+                          <TextField
+                            fullWidth
+                            size='small'
+                            name='name'
+                            value={editData.name || ''}
+                            onChange={handleInputChange}
+                          />
+                        ) : (
+                          <Typography variant='body2' fontWeight='medium'>
+                            {highlightText(device.name, searchTerm)}
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Typography variant='body2'>
-                          {highlightText(device.serial_number, searchTerm)}
-                        </Typography>
+                        {editingId === device.id ? (
+                          <TextField
+                            fullWidth
+                            size='small'
+                            name='serial_number'
+                            value={editData.serial_number || ''}
+                            onChange={handleInputChange}
+                          />
+                        ) : (
+                          <Typography variant='body2'>
+                            {highlightText(device.serial_number, searchTerm)}
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={getStatusText(device.status)}
-                          color={getStatusColor(device.status)}
-                          size='small'
-                          variant='filled'
-                        />
+                        {editingId === device.id ? (
+                          <TextField
+                            fullWidth
+                            size='small'
+                            select
+                            name='status'
+                            value={editData.status || 'normal'}
+                            onChange={handleInputChange}
+                          >
+                            <MenuItem value='normal'>Bình thường</MenuItem>
+                            <MenuItem value='issue'>Có vấn đề</MenuItem>
+                            <MenuItem value='maintenance'>
+                              Đang bảo trì
+                            </MenuItem>
+                          </TextField>
+                        ) : (
+                          <Chip
+                            label={getStatusText(device.status)}
+                            color={getStatusColor(device.status)}
+                            size='small'
+                            variant='filled'
+                          />
+                        )}
                       </TableCell>
                       {role === 'admin' && (
                         <TableCell>
@@ -414,13 +509,75 @@ export default function DevicesPage() {
                       )}
                       {(role === 'technician' || role === 'admin') && (
                         <TableCell>
-                          <Typography variant='body2'>
-                            {device.technician_note || (
-                              <em style={{ color: '#666' }}>Chưa có ghi chú</em>
-                            )}
-                          </Typography>
+                          {editingId === device.id ? (
+                            <TextField
+                              fullWidth
+                              size='small'
+                              multiline
+                              rows={2}
+                              name='technician_note'
+                              value={editData.technician_note || ''}
+                              onChange={handleInputChange}
+                              placeholder='Ghi chú kỹ thuật...'
+                            />
+                          ) : (
+                            <Typography variant='body2'>
+                              {device.technician_note || (
+                                <em style={{ color: '#666' }}>
+                                  Chưa có ghi chú
+                                </em>
+                              )}
+                            </Typography>
+                          )}
                         </TableCell>
                       )}
+                      <TableCell>
+                        {editingId === device.id ? (
+                          <Box display='flex'>
+                            <IconButton
+                              color='primary'
+                              onClick={() => handleSave(device.id)}
+                              disabled={loading}
+                            >
+                              <SaveIcon />
+                            </IconButton>
+
+                            <IconButton
+                              color='secondary'
+                              onClick={handleCancel}
+                              disabled={loading}
+                            >
+                              <CancelIcon />
+                            </IconButton>
+                          </Box>
+                        ) : (
+                          <Box display='flex'>
+                            {((role === 'user' && device.user_id === user.id) ||
+                              role === 'technician' ||
+                              role === 'admin') && (
+                              <IconButton
+                                color='primary'
+                                onClick={() => handleEdit(device)}
+                                disabled={loading}
+                                title='Chỉnh sửa'
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            )}
+                            {((role === 'user' && device.user_id === user.id) ||
+                              role === 'admin') && (
+                              <IconButton
+                                color='error'
+                                onClick={() => handleDelete(device.id)}
+                                disabled={loading}
+                                title='Xóa'
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            )}
+                          </Box>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
