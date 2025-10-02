@@ -5,7 +5,6 @@ import {
   Typography,
   Card,
   CardContent,
-  Grid,
   Button,
   Chip,
   CircularProgress,
@@ -166,13 +165,23 @@ const PackagesViewPage = () => {
             </Button>
           </Paper>
         ) : (
-          <Grid container spacing={4}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+              },
+              gap: 4,
+            }}
+          >
             {packages.map((pkg, index) => {
               const isPopular = index === 1; // Đặt gói giữa là popular
 
               return (
-                <Grid item xs={12} md={4} key={pkg.id}>
-                  <Card
+                <Card
+                  key={pkg.id}
                     sx={{
                       height: '100%',
                       display: 'flex',
@@ -386,10 +395,9 @@ const PackagesViewPage = () => {
                       </Button>
                     </CardContent>
                   </Card>
-                </Grid>
               );
             })}
-          </Grid>
+          </Box>
         )}
 
         {/* Call to Action Section */}
