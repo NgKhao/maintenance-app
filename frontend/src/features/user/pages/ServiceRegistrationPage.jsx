@@ -21,10 +21,16 @@ import {
   ArrowForward as ForwardIcon,
 } from '@mui/icons-material';
 import { registerServiceWithZaloPay } from '../../../api/orders';
-import axios from 'axios';
+import { usePackages } from '../../../hooks';
 
 export default function ServiceRegistrationPage() {
-  const [packages, setPackages] = useState([]);
+  // Sử dụng custom hook để quản lý packages data
+  const {
+    packages,
+    loading: packagesLoading,
+    error: packagesError,
+  } = usePackages();
+
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0); // 0: chọn gói, 1: xác nhận, 2: hoàn thành
@@ -35,21 +41,12 @@ export default function ServiceRegistrationPage() {
 
   const steps = ['Chọn gói bảo trì', 'Xác nhận thông tin', 'Hoàn thành'];
 
+  // Cập nhật error state nếu có lỗi từ packages hook
   useEffect(() => {
-    fetchPackages();
-  }, []);
-
-  const fetchPackages = async () => {
-    try {
-      const res = await axios.get(
-        'http://localhost:8000/index.php?api=packages'
-      );
-      setPackages(res.data);
-    } catch (err) {
-      console.error('Lỗi khi tải gói bảo trì:', err);
-      setError('Lỗi khi tải danh sách gói bảo trì');
+    if (packagesError) {
+      setError(packagesError);
     }
-  };
+  }, [packagesError]);
 
   const handleSelectPackage = (pkg) => {
     setSelectedPackage(pkg);
@@ -260,11 +257,17 @@ export default function ServiceRegistrationPage() {
         </Alert>
       )}
 
-      {packages.length === 0 ? (
+      {packagesLoading ? (
         <Box textAlign='center' py={8}>
           <CircularProgress />
           <Typography variant='body2' color='text.secondary' mt={2}>
             Đang tải danh sách gói bảo trì...
+          </Typography>
+        </Box>
+      ) : packages.length === 0 ? (
+        <Box textAlign='center' py={8}>
+          <Typography variant='body1' color='text.secondary'>
+            Không có gói bảo trì nào
           </Typography>
         </Box>
       ) : (

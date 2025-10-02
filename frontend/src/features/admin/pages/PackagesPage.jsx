@@ -29,11 +29,22 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
+import { usePackagesManagement } from '../../../hooks';
 import { authStorage } from '../../../utils/storage';
 
 export default function PackagesPage() {
-  const [data, setData] = useState([]);
+  // Sử dụng custom hook để quản lý packages
+  const {
+    packages: data,
+    loading,
+    error: dataError,
+    submitLoading,
+    submitError,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+  } = usePackagesManagement();
+
   const [formVisible, setFormVisible] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -43,30 +54,19 @@ export default function PackagesPage() {
   });
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const role = authStorage.getRole() || '';
-
   const canEdit = role === 'admin';
 
-  const API_URL = 'http://localhost:8000/index.php?api=packages';
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(API_URL);
-      setData(res.data);
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi tải dữ liệu');
-    }
-    setLoading(false);
-  };
-
+  // Cập nhật error state từ hook
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (dataError) {
+      setError(dataError);
+    } else if (submitError) {
+      setError(submitError);
+    }
+  }, [dataError, submitError]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -104,19 +104,25 @@ export default function PackagesPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const form = new FormData();
-      form.append('name', formData.name);
-      form.append('description', formData.description || '');
-      form.append('price', formData.price || '');
-      form.append('duration_months', formData.duration_months || 12);
+    const result = await handleCreate({
+      name: formData.name,
+      description: formData.description || '',
+      price: formData.price || '',
+      duration_months: formData.duration_months || 12,
+    });
 
-      await axios.post(API_URL, form);
+    if (result.success) {
       setFormVisible(false);
-      fetchData();
       setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi thêm gói bảo trì');
+      // Reset form
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        duration_months: '12',
+      });
+    } else {
+      setError(result.error);
     }
   };
 
@@ -131,20 +137,14 @@ export default function PackagesPage() {
   };
 
   const handleSaveEdit = async (id) => {
-    try {
-      const form = new FormData();
-      form.append('id', id);
-      Object.keys(editData).forEach((key) => {
-        form.append(key, editData[key] || '');
-      });
+    const result = await handleUpdate(id, editData);
 
-      await axios.put(API_URL, form);
+    if (result.success) {
       setEditingId(null);
       setEditData({});
-      fetchData();
       setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi cập nhật gói bảo trì');
+    } else {
+      setError(result.error);
     }
   };
 
@@ -153,7 +153,7 @@ export default function PackagesPage() {
     setEditData({});
   };
 
-  const handleDelete = async (id) => {
+  const handleDeletePackage = async (id) => {
     if (!canEdit) {
       setError('Bạn không có quyền xóa gói bảo trì');
       return;
@@ -161,12 +161,12 @@ export default function PackagesPage() {
 
     if (!window.confirm('Bạn có chắc muốn xóa gói bảo trì này?')) return;
 
-    try {
-      await axios.delete(`${API_URL}&id=${id}`);
-      fetchData();
+    const result = await handleDelete(id);
+
+    if (result.success) {
       setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi xóa gói bảo trì');
+    } else {
+      setError(result.error);
     }
   };
 
@@ -347,9 +347,10 @@ export default function PackagesPage() {
                                 </IconButton>
                                 <IconButton
                                   size='small'
-                                  onClick={() => handleDelete(pkg.id)}
+                                  onClick={() => handleDeletePackage(pkg.id)}
                                   color='error'
                                   title='Xóa'
+                                  disabled={submitLoading}
                                 >
                                   <DeleteIcon />
                                 </IconButton>
@@ -435,8 +436,8 @@ export default function PackagesPage() {
 
           <DialogActions>
             <Button onClick={() => setFormVisible(false)}>Hủy</Button>
-            <Button type='submit' variant='contained'>
-              Thêm gói bảo trì
+            <Button type='submit' variant='contained' disabled={submitLoading}>
+              {submitLoading ? 'Đang xử lý...' : 'Thêm gói bảo trì'}
             </Button>
           </DialogActions>
         </Box>

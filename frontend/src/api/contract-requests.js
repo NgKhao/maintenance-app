@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getPackages } from './packages';
 
 const API_URL = 'http://localhost:8000/index.php?api=contract_requests';
 
@@ -82,11 +83,8 @@ export const createContractByAdmin = async (contractData) => {
   return res.data;
 };
 
-// Lấy danh sách packages để hiển thị trong form
-export const getPackages = async () => {
-  const res = await axios.get('http://localhost:8000/index.php?api=packages');
-  return res.data;
-};
+// Re-export getPackages để tương thích với code hiện tại
+export { getPackages };
 
 // Lấy danh sách users để hiển thị trong form admin
 export const getUsers = async () => {
