@@ -112,11 +112,11 @@ const AppLayout = () => {
           <Route path='/profile' element={<ProfilePage />} />
 
           <Route path='/dashboard' element={<DashboardPage role={role} />} />
-          
+
           {/* Redirect authenticated users away from public routes */}
           <Route path='/' element={<Navigate to='/dashboard' />} />
           <Route path='/home' element={<Navigate to='/dashboard' />} />
-          
+
           <Route path='*' element={<Navigate to='/dashboard' />} />
         </Routes>
       </Box>
