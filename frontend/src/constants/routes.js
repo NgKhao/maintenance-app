@@ -5,6 +5,7 @@ export const ROUTES = {
   REGISTER: '/register',
 
   // Common routes
+  HOME: '/home',
   DASHBOARD: '/dashboard',
   DEVICES: '/devices',
   ORDERS: '/orders',

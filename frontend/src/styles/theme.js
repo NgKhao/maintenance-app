@@ -2,12 +2,12 @@ import { createTheme } from '@mui/material/styles';
 
 export const theme = createTheme({
   palette: {
-    primary: {
-      main: '#4f46e5', // indigo-600
-      light: '#6366f1', // indigo-500
-      dark: '#3730a3', // indigo-700
-      contrastText: '#ffffff',
-    },
+    // primary: {
+    //   main: '#4f46e5', // indigo-600
+    //   light: '#6366f1', // indigo-500
+    //   dark: '#3730a3', // indigo-700
+    //   contrastText: '#ffffff',
+    // },
     secondary: {
       main: '#06b6d4', // cyan-500
       light: '#22d3ee', // cyan-400
@@ -122,6 +122,7 @@ export const theme = createTheme({
     MuiTextField: {
       defaultProps: {
         variant: 'outlined',
+        fullWidth: true,
       },
       styleOverrides: {
         root: {
@@ -129,6 +130,21 @@ export const theme = createTheme({
             borderRadius: 8,
           },
         },
+      },
+    },
+    MuiFormControl: {
+      defaultProps: {
+        fullWidth: true,
+      },
+    },
+    MuiSelect: {
+      defaultProps: {
+        fullWidth: true,
+      },
+    },
+    MuiAutocomplete: {
+      defaultProps: {
+        fullWidth: true,
       },
     },
     MuiCard: {

@@ -18,7 +18,6 @@ import {
   Devices,
   Assignment,
   Schedule,
-  Notifications,
   Description,
   Add,
 } from '@mui/icons-material';

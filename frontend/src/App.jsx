@@ -20,7 +20,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { AuthProvider, useAuth } from './contexts';
 import { LoginForm, RegisterForm } from './features/auth';
 import AppLayout from './components/layout/AppLayout.jsx';
-import theme from './styles/theme';
+import HomePage from './components/HomePage.jsx';
+import { theme } from './styles/theme';
 
 const App = () => {
   return (
@@ -59,68 +60,119 @@ const AppContent = () => {
     );
   }
 
-  return !isAuthenticated ? <AuthRoutes /> : <AppLayout />;
+  return !isAuthenticated ? <PublicRoutes /> : <AppLayout />;
 };
 
-// Auth Routes Component
-const AuthRoutes = () => (
-  <Box
-    sx={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #e0f2fe 0%, #e8eaf6 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      p: 2,
-    }}
-  >
-    <Box sx={{ maxWidth: 400, width: '100%' }}>
-      <Box textAlign='center' mb={4}>
-        <Box display='flex' justifyContent='center' mb={2}>
-          <Avatar
-            sx={{
-              width: 64,
-              height: 64,
-              bgcolor: 'primary.main',
-              borderRadius: 3,
-            }}
-          >
-            <SettingsIcon sx={{ fontSize: 32 }} />
-          </Avatar>
-        </Box>
-        <Typography variant='h3' component='h1' gutterBottom>
-          Maintenance Pro
-        </Typography>
-        <Typography variant='body1' color='text.secondary'>
-          Hệ thống quản lý bảo trì thiết bị gia dụng
-        </Typography>
-      </Box>
+// Public Routes Component (for unauthenticated users)
+const PublicRoutes = () => (
+  <Routes>
+    {/* Homepage as main landing page - only for public users */}
+    <Route path='/' element={<HomePage />} />
 
-      <Card elevation={3}>
-        <CardContent sx={{ p: 4 }}>
-          <Routes>
-            <Route
-              path='/login'
-              element={
+    {/* Auth pages with centered layout */}
+    <Route
+      path='/login'
+      element={
+        <Box
+          sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #e0f2fe 0%, #e8eaf6 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 2,
+          }}
+        >
+          <Box sx={{ maxWidth: 400, width: '100%' }}>
+            <Box textAlign='center' mb={4}>
+              <Box display='flex' justifyContent='center' mb={2}>
+                <Avatar
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    bgcolor: 'primary.main',
+                    borderRadius: 3,
+                  }}
+                >
+                  <SettingsIcon sx={{ fontSize: 32 }} />
+                </Avatar>
+              </Box>
+              <Typography variant='h3' component='h1' gutterBottom>
+                Maintenance Pro
+              </Typography>
+              <Typography variant='body1' color='text.secondary'>
+                Đăng nhập vào hệ thống
+              </Typography>
+            </Box>
+
+            <Card elevation={3}>
+              <CardContent sx={{ p: 4 }}>
                 <LoginForm
                   onSwitch={() => (window.location.href = '/register')}
                 />
-              }
-            />
-            <Route
-              path='/register'
-              element={
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+      }
+    />
+
+    <Route
+      path='/register'
+      element={
+        <Box
+          sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #e0f2fe 0%, #e8eaf6 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 2,
+          }}
+        >
+          <Box sx={{ maxWidth: 400, width: '100%' }}>
+            <Box textAlign='center' mb={4}>
+              <Box display='flex' justifyContent='center' mb={2}>
+                <Avatar
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    bgcolor: 'primary.main',
+                    borderRadius: 3,
+                  }}
+                >
+                  <SettingsIcon sx={{ fontSize: 32 }} />
+                </Avatar>
+              </Box>
+              <Typography variant='h3' component='h1' gutterBottom>
+                Maintenance Pro
+              </Typography>
+              <Typography variant='body1' color='text.secondary'>
+                Tạo tài khoản mới
+              </Typography>
+            </Box>
+
+            <Card elevation={3}>
+              <CardContent sx={{ p: 4 }}>
                 <RegisterForm
                   onSwitch={() => (window.location.href = '/login')}
                 />
-              }
-            />
-            <Route path='*' element={<Navigate to='/login' />} />
-          </Routes>
-        </CardContent>
-      </Card>
-    </Box>
-  </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+      }
+    />
+
+    {/* Redirect protected routes to login */}
+    <Route path='/dashboard' element={<Navigate to='/login' />} />
+    <Route path='/devices' element={<Navigate to='/login' />} />
+    <Route path='/schedules' element={<Navigate to='/login' />} />
+    <Route path='/profile' element={<Navigate to='/login' />} />
+
+    {/* Default redirect to homepage */}
+    <Route path='*' element={<Navigate to='/' />} />
+  </Routes>
 );
 
 export default App;
