@@ -21,6 +21,7 @@ import { AuthProvider, useAuth } from './contexts';
 import { LoginForm, RegisterForm } from './features/auth';
 import AppLayout from './components/layout/AppLayout.jsx';
 import HomePage from './components/HomePage.jsx';
+import PackagesViewPage from './components/PackagesViewPage.jsx';
 import { theme } from './styles/theme';
 
 const App = () => {
@@ -68,6 +69,9 @@ const PublicRoutes = () => (
   <Routes>
     {/* Homepage as main landing page - only for public users */}
     <Route path='/' element={<HomePage />} />
+
+    {/* Public packages view page */}
+    <Route path='/packages' element={<PackagesViewPage />} />
 
     {/* Auth pages with centered layout */}
     <Route

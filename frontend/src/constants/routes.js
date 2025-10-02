@@ -28,4 +28,7 @@ export const ROUTES = {
   BOOK_SCHEDULE: '/book-schedule',
   TECHNICIANS: '/technicians',
   PAYMENT_RESULT: '/payment-result',
+
+  // Public routes
+  PACKAGES_VIEW: '/packages',
 };

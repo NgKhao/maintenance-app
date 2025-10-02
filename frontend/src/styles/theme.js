@@ -166,13 +166,6 @@ export const theme = createTheme({
         },
       },
     },
-    MuiDrawer: {
-      styleOverrides: {
-        paper: {
-          borderRight: '1px solid #e5e7eb',
-        },
-      },
-    },
   },
   spacing: 8,
   shape: {
