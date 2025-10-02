@@ -46,6 +46,7 @@ import {
   MonetizationOn as MonetizationOnIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import bg from '../assets/bg.jpg';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -114,7 +115,10 @@ const HomePage = () => {
         {/* Hero Section */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)',
+            background: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${bg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
             color: 'white',
             py: { xs: 8, md: 12 },
             position: 'relative',
@@ -139,6 +143,7 @@ const HomePage = () => {
                     fontWeight: 700,
                     mb: 3,
                     lineHeight: 1.2,
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
                   }}
                 >
                   Hệ thống quản lý bảo trì thiết bị
@@ -211,22 +216,14 @@ const HomePage = () => {
                     alignItems: 'center',
                   }}
                 >
-                  <Box
+                  {/* <Box
                     sx={{
-                      width: { xs: 300, md: 400 },
-                      height: { xs: 300, md: 400 },
+                      width: { xs: 500, md: 600 },
+                      height: { xs: 500, md: 400 },
                       bgcolor: 'rgba(255,255,255,0.1)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backdropFilter: 'blur(10px)',
+                      background: `url(${banner})`,
                     }}
-                  >
-                    <BuildIcon
-                      sx={{ fontSize: { xs: 120, md: 160 }, opacity: 0.8 }}
-                    />
-                  </Box>
+                  ></Box> */}
                 </Box>
               </Box>
             </Box>
@@ -271,6 +268,7 @@ const HomePage = () => {
                         p: 2,
                         textAlign: 'center',
                         height: '100%',
+
                         boxShadow: 3,
                         '&:hover': {
                           transform: 'translateY(-5px)',
