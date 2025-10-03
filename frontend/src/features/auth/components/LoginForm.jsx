@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
+import { Box, TextField, Button, Alert, CircularProgress } from '@mui/material';
 import { useForm } from '../../../hooks';
 import { authService } from '../../../services';
 import { useAuth } from '../../../contexts';
@@ -23,7 +16,7 @@ const validationRules = {
   },
 };
 
-const LoginForm = ({ onSwitch }) => {
+const LoginForm = () => {
   const { login, setError, error } = useAuth();
   const { formData, errors, handleInputChange, handleBlur, validate } = useForm(
     { email: '', password: '' },
@@ -58,9 +51,7 @@ const LoginForm = ({ onSwitch }) => {
 
   return (
     <Box>
-      <Typography variant='h4' component='h2' textAlign='center' mb={3}>
-        Đăng nhập
-      </Typography>
+      {/* Title handled by AuthLogin component */}
 
       {error && (
         <Alert severity='error' sx={{ mb: 2 }}>
@@ -115,18 +106,7 @@ const LoginForm = ({ onSwitch }) => {
         </Button>
       </Box>
 
-      <Box textAlign='center'>
-        <Typography variant='body2' color='text.secondary'>
-          Chưa có tài khoản?{' '}
-          <Button
-            variant='text'
-            onClick={() => onSwitch('register')}
-            sx={{ p: 0, textTransform: 'none' }}
-          >
-            Đăng ký
-          </Button>
-        </Typography>
-      </Box>
+      {/* Navigation handled by AuthLogin component */}
     </Box>
   );
 };

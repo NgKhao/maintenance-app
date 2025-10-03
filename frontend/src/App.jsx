@@ -7,21 +7,14 @@ import {
 } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import {
-  Box,
-  CircularProgress,
-  Typography,
-  Card,
-  CardContent,
-  Avatar,
-} from '@mui/material';
-import SettingsIcon from '@mui/icons-material/Settings';
+import { Box, CircularProgress, Typography } from '@mui/material';
 
 import { AuthProvider, useAuth } from './contexts';
-import { LoginForm, RegisterForm } from './features/auth';
 import AppLayout from './components/layout/AppLayout.jsx';
 import HomePage from './components/HomePage.jsx';
 import PackagesViewPage from './components/PackagesViewPage.jsx';
+import AuthLogin from './features/auth/components/AuthLogin.jsx';
+import AuthRegister from './features/auth/components/AuthRegister.jsx';
 import { theme } from './styles/theme';
 
 const App = () => {
@@ -73,100 +66,9 @@ const PublicRoutes = () => (
     {/* Public packages view page */}
     <Route path='/packages' element={<PackagesViewPage />} />
 
-    {/* Auth pages with centered layout */}
-    <Route
-      path='/login'
-      element={
-        <Box
-          sx={{
-            minHeight: '100vh',
-            background: 'linear-gradient(135deg, #e0f2fe 0%, #e8eaf6 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            p: 2,
-          }}
-        >
-          <Box sx={{ maxWidth: 400, width: '100%' }}>
-            <Box textAlign='center' mb={4}>
-              <Box display='flex' justifyContent='center' mb={2}>
-                <Avatar
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    bgcolor: 'primary.main',
-                    borderRadius: 3,
-                  }}
-                >
-                  <SettingsIcon sx={{ fontSize: 32 }} />
-                </Avatar>
-              </Box>
-              <Typography variant='h3' component='h1' gutterBottom>
-                Maintenance Pro
-              </Typography>
-              <Typography variant='body1' color='text.secondary'>
-                Đăng nhập vào hệ thống
-              </Typography>
-            </Box>
-
-            <Card elevation={3}>
-              <CardContent sx={{ p: 4 }}>
-                <LoginForm
-                  onSwitch={() => (window.location.href = '/register')}
-                />
-              </CardContent>
-            </Card>
-          </Box>
-        </Box>
-      }
-    />
-
-    <Route
-      path='/register'
-      element={
-        <Box
-          sx={{
-            minHeight: '100vh',
-            background: 'linear-gradient(135deg, #e0f2fe 0%, #e8eaf6 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            p: 2,
-          }}
-        >
-          <Box sx={{ maxWidth: 400, width: '100%' }}>
-            <Box textAlign='center' mb={4}>
-              <Box display='flex' justifyContent='center' mb={2}>
-                <Avatar
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    bgcolor: 'primary.main',
-                    borderRadius: 3,
-                  }}
-                >
-                  <SettingsIcon sx={{ fontSize: 32 }} />
-                </Avatar>
-              </Box>
-              <Typography variant='h3' component='h1' gutterBottom>
-                Maintenance Pro
-              </Typography>
-              <Typography variant='body1' color='text.secondary'>
-                Tạo tài khoản mới
-              </Typography>
-            </Box>
-
-            <Card elevation={3}>
-              <CardContent sx={{ p: 4 }}>
-                <RegisterForm
-                  onSwitch={() => (window.location.href = '/login')}
-                />
-              </CardContent>
-            </Card>
-          </Box>
-        </Box>
-      }
-    />
+    {/* Auth pages with header and footer */}
+    <Route path='/login' element={<AuthLogin />} />
+    <Route path='/register' element={<AuthRegister />} />
 
     {/* Redirect protected routes to login */}
     <Route path='/dashboard' element={<Navigate to='/login' />} />

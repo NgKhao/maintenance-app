@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline } from '@mui/material';
-import Header from './Header';
+import UniversalHeader from './UniversalHeader';
 import Sidebar from './Sidebar';
 import DashboardPage from './DashboardPage';
 
@@ -42,10 +42,9 @@ const AppLayout = () => {
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
 
-      <Header
+      <UniversalHeader
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        user={user}
       />
 
       <Sidebar

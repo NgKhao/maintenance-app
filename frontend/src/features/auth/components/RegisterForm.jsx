@@ -1,12 +1,6 @@
 import React from 'react';
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
+import { Box, TextField, Button, Alert, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from '../../../hooks';
 import { authService } from '../../../services';
 
@@ -31,7 +25,8 @@ const validationRules = {
   },
 };
 
-const RegisterForm = ({ onSwitch }) => {
+const RegisterForm = () => {
+  const navigate = useNavigate();
   const {
     formData,
     errors,
@@ -81,7 +76,7 @@ const RegisterForm = ({ onSwitch }) => {
 
       if (response.success) {
         alert('Đăng ký thành công! Vui lòng đăng nhập.');
-        onSwitch('login');
+        navigate('/login');
       } else {
         setErrors((prev) => ({
           ...prev,
@@ -100,9 +95,7 @@ const RegisterForm = ({ onSwitch }) => {
 
   return (
     <Box>
-      <Typography variant='h4' component='h2' textAlign='center' mb={3}>
-        Đăng ký
-      </Typography>
+      {/* Title handled by AuthRegister component */}
 
       {errors.general && (
         <Alert severity='error' sx={{ mb: 2 }}>
@@ -188,18 +181,7 @@ const RegisterForm = ({ onSwitch }) => {
         </Button>
       </Box>
 
-      <Box textAlign='center'>
-        <Typography variant='body2' color='text.secondary'>
-          Đã có tài khoản?{' '}
-          <Button
-            variant='text'
-            onClick={() => onSwitch('login')}
-            sx={{ p: 0, textTransform: 'none' }}
-          >
-            Đăng nhập
-          </Button>
-        </Typography>
-      </Box>
+      {/* Navigation handled by AuthRegister component */}
     </Box>
   );
 };
