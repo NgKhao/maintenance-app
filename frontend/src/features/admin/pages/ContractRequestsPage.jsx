@@ -25,7 +25,6 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
-  Grid,
   InputAdornment,
 } from '@mui/material';
 import {
@@ -200,8 +199,18 @@ export default function ContractRequestsPage({ user }) {
       {/* Search and Stats */}
       <Card sx={{ mb: 2 }}>
         <CardContent sx={{ py: 2 }}>
-          <Grid container spacing={2} alignItems='center'>
-            <Grid item xs={12} md={8}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '2fr 1fr',
+              },
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
+            <Box>
               <TextField
                 fullWidth
                 placeholder='Tìm kiếm theo khách hàng, gói dịch vụ, loại yêu cầu, ghi chú...'
@@ -228,29 +237,27 @@ export default function ContractRequestsPage({ user }) {
                   ),
                 }}
               />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                }}
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{ fontWeight: 'bold' }}
               >
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  {filteredRequests.length} / {requests.length}
-                </Typography>
-                <Typography variant='caption' color='text.secondary'>
-                  yêu cầu
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
+                {filteredRequests.length} / {requests.length}
+              </Typography>
+              <Typography variant='caption' color='text.secondary'>
+                yêu cầu
+              </Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
@@ -261,7 +268,7 @@ export default function ContractRequestsPage({ user }) {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>STT</TableCell>
                   <TableCell>Khách hàng</TableCell>
                   <TableCell>Loại yêu cầu</TableCell>
                   <TableCell>Gói hiện tại</TableCell>
@@ -283,9 +290,9 @@ export default function ContractRequestsPage({ user }) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredRequests.map((request) => (
+                  filteredRequests.map((request, index) => (
                     <TableRow key={request.id}>
-                      <TableCell>{request.id}</TableCell>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>
                         <Box>
                           <Typography variant='body2' fontWeight='bold'>

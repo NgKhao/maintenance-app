@@ -23,7 +23,6 @@ import {
   CircularProgress,
   Alert,
   InputAdornment,
-  Grid,
 } from '@mui/material';
 import {
   PersonAdd as PersonAddIcon,
@@ -429,12 +428,22 @@ export default function UsersPage() {
       {/* Search and Stats */}
       <Card sx={{ mb: 2 }}>
         <CardContent sx={{ py: 2 }}>
-          <Grid container spacing={2} alignItems='center'>
-            <Grid item xs={12} md={8}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '2fr 1fr',
+              },
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
+            <Box>
               <TextField
                 id='user-search-input'
                 fullWidth
-                placeholder='Tìm kiếm theo tên, email, số điện thoại, vai trò... (Ctrl+F)'
+                placeholder='Tìm kiếm theo tên, email, số điện thoại, vai trò...'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 variant='outlined'
@@ -458,29 +467,27 @@ export default function UsersPage() {
                   ),
                 }}
               />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                }}
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{ fontWeight: 'bold' }}
               >
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  {filteredData.length} / {data.length}
-                </Typography>
-                <Typography variant='caption' color='text.secondary'>
-                  người dùng
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
+                {filteredData.length} / {data.length}
+              </Typography>
+              <Typography variant='caption' color='text.secondary'>
+                người dùng
+              </Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
@@ -684,71 +691,67 @@ export default function UsersPage() {
         <DialogTitle>Thêm người dùng mới</DialogTitle>
         <Box component='form' onSubmit={handleCreate}>
           <DialogContent>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label='Tên'
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  required
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label='Email'
-                  type='email'
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  required
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label='Số điện thoại'
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  required
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label='Mật khẩu'
-                  type='password'
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  required
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  select
-                  label='Vai trò'
-                  value={formData.role}
-                  onChange={(e) =>
-                    setFormData({ ...formData, role: e.target.value })
-                  }
-                >
-                  {getRoleOptions().map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-            </Grid>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: 2,
+              }}
+            >
+              <TextField
+                fullWidth
+                label='Tên'
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                required
+              />
+              <TextField
+                fullWidth
+                label='Email'
+                type='email'
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                required
+              />
+              <TextField
+                fullWidth
+                label='Số điện thoại'
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                required
+              />
+              <TextField
+                fullWidth
+                label='Mật khẩu'
+                type='password'
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                required
+              />
+              <TextField
+                fullWidth
+                select
+                label='Vai trò'
+                value={formData.role}
+                onChange={(e) =>
+                  setFormData({ ...formData, role: e.target.value })
+                }
+              >
+                {getRoleOptions().map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setFormVisible(false)}>Hủy</Button>

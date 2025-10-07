@@ -19,7 +19,6 @@ import {
   TextField,
   CircularProgress,
   Alert,
-  Grid,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -224,7 +223,7 @@ export default function PackagesPage() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>STT</TableCell>
                   <TableCell>Tên gói</TableCell>
                   <TableCell>Mô tả</TableCell>
                   <TableCell>Giá</TableCell>
@@ -243,9 +242,9 @@ export default function PackagesPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.map((pkg) => (
+                  data.map((pkg, index) => (
                     <TableRow key={pkg.id}>
-                      <TableCell>{pkg.id}</TableCell>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>
                         {editingId === pkg.id ? (
                           <TextField
@@ -379,34 +378,41 @@ export default function PackagesPage() {
 
         <Box component='form' onSubmit={handleSubmit}>
           <DialogContent>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label='Tên gói'
-                  name='name'
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  variant='outlined'
-                />
-              </Grid>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: 2,
+                '& > .grid-row': {
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                  gap: 2,
+                },
+              }}
+            >
+              <TextField
+                fullWidth
+                label='Tên gói'
+                name='name'
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                variant='outlined'
+              />
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label='Mô tả'
-                  name='description'
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  variant='outlined'
-                  placeholder='Mô tả chi tiết về gói bảo trì...'
-                />
-              </Grid>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label='Mô tả'
+                name='description'
+                value={formData.description}
+                onChange={handleInputChange}
+                variant='outlined'
+                placeholder='Mô tả chi tiết về gói bảo trì...'
+              />
 
-              <Grid item xs={12} sm={6}>
+              <Box className='grid-row'>
                 <TextField
                   fullWidth
                   label='Giá (VND)'
@@ -417,9 +423,6 @@ export default function PackagesPage() {
                   required
                   variant='outlined'
                 />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label='Thời gian (tháng)'
@@ -430,8 +433,8 @@ export default function PackagesPage() {
                   required
                   variant='outlined'
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </DialogContent>
 
           <DialogActions>

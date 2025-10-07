@@ -12,7 +12,6 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
-  Grid,
   Autocomplete,
   InputAdornment,
   Dialog,
@@ -254,8 +253,18 @@ export default function ContractManagementPage({ user }) {
       {/* Search and Stats */}
       <Card sx={{ mb: 2 }}>
         <CardContent sx={{ py: 2 }}>
-          <Grid container spacing={2} alignItems='center'>
-            <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '2fr 1fr 1fr',
+              },
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
+            <Box>
               <TextField
                 fullWidth
                 placeholder='Tìm kiếm khách hàng, gói dịch vụ, mã giao dịch...'
@@ -282,8 +291,8 @@ export default function ContractManagementPage({ user }) {
                   ),
                 }}
               />
-            </Grid>
-            <Grid item xs={12} md={3}>
+            </Box>
+            <Box>
               <FormControl fullWidth size='small'>
                 <InputLabel>Trạng thái thanh toán</InputLabel>
                 <Select
@@ -297,8 +306,8 @@ export default function ContractManagementPage({ user }) {
                   <MenuItem value='failed'>Thanh toán thất bại</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} md={3}>
+            </Box>
+            <Box>
               <Box
                 sx={{
                   display: 'flex',
@@ -318,8 +327,8 @@ export default function ContractManagementPage({ user }) {
                   hợp đồng
                 </Typography>
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
@@ -347,7 +356,7 @@ export default function ContractManagementPage({ user }) {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>ID</TableCell>
+                    <TableCell>STT</TableCell>
                     <TableCell>Khách hàng</TableCell>
                     <TableCell>Gói dịch vụ</TableCell>
                     <TableCell>Giá trị</TableCell>
@@ -356,9 +365,9 @@ export default function ContractManagementPage({ user }) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredContracts.map((contract) => (
+                  {filteredContracts.map((contract, index) => (
                     <TableRow key={contract.id}>
-                      <TableCell>{contract.id}</TableCell>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>
                         <Box>
                           <Typography variant='body2' fontWeight='medium'>
@@ -440,9 +449,18 @@ export default function ContractManagementPage({ user }) {
           </Typography>
 
           <Box component='form' onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  md: 'repeat(2, 1fr)',
+                },
+                gap: 3,
+              }}
+            >
               {/* Khách hàng */}
-              <Grid item xs={12} md={6}>
+              <Box>
                 <Autocomplete
                   options={users}
                   getOptionLabel={(option) =>
@@ -467,10 +485,10 @@ export default function ContractManagementPage({ user }) {
                     />
                   )}
                 />
-              </Grid>
+              </Box>
 
               {/* Gói bảo trì */}
-              <Grid item xs={12} md={6}>
+              <Box>
                 <FormControl
                   fullWidth
                   error={touched.package_id && !!errors.package_id}
@@ -500,10 +518,10 @@ export default function ContractManagementPage({ user }) {
                     </Typography>
                   )}
                 </FormControl>
-              </Grid>
+              </Box>
 
               {/* Trạng thái thanh toán */}
-              <Grid item xs={12} md={6}>
+              <Box>
                 <FormControl
                   fullWidth
                   error={touched.payment_status && !!errors.payment_status}
@@ -520,10 +538,10 @@ export default function ContractManagementPage({ user }) {
                     <MenuItem value='paid'>Đã thanh toán</MenuItem>
                   </Select>
                 </FormControl>
-              </Grid>
+              </Box>
 
               {/* Ngày bắt đầu */}
-              <Grid item xs={12} md={6}>
+              <Box>
                 <TextField
                   fullWidth
                   type='date'
@@ -536,10 +554,10 @@ export default function ContractManagementPage({ user }) {
                   helperText={touched.start_date && errors.start_date}
                   InputLabelProps={{ shrink: true }}
                 />
-              </Grid>
+              </Box>
 
               {/* Giá tùy chỉnh */}
-              <Grid item xs={12} md={6}>
+              <Box>
                 <TextField
                   fullWidth
                   type='number'
@@ -555,10 +573,10 @@ export default function ContractManagementPage({ user }) {
                   }}
                   helperText='Để trống nếu sử dụng giá gói mặc định'
                 />
-              </Grid>
+              </Box>
 
               {/* Ghi chú admin */}
-              <Grid item xs={12}>
+              <Box sx={{ gridColumn: '1 / -1' }}>
                 <TextField
                   fullWidth
                   multiline
@@ -570,18 +588,27 @@ export default function ContractManagementPage({ user }) {
                   onBlur={handleBlur}
                   placeholder='Nhập ghi chú, lý do tạo hợp đồng...'
                 />
-              </Grid>
+              </Box>
 
               {/* Thông tin tóm tắt */}
               {selectedPackage && (
-                <Grid item xs={12}>
+                <Box sx={{ gridColumn: '1 / -1' }}>
                   <Card variant='outlined' sx={{ bgcolor: 'grey.50' }}>
                     <CardContent>
                       <Typography variant='h6' gutterBottom>
                         Thông tin hợp đồng
                       </Typography>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns: {
+                            xs: '1fr',
+                            sm: 'repeat(2, 1fr)',
+                          },
+                          gap: 2,
+                        }}
+                      >
+                        <Box>
                           <Typography variant='body2'>
                             <strong>Gói:</strong> {selectedPackage.name}
                           </Typography>
@@ -589,8 +616,8 @@ export default function ContractManagementPage({ user }) {
                             <strong>Thời hạn:</strong>{' '}
                             {selectedPackage.duration_months} tháng
                           </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
+                        </Box>
+                        <Box>
                           <Typography variant='body2'>
                             <strong>Giá gốc:</strong>{' '}
                             {selectedPackage.price?.toLocaleString()} VND
@@ -604,9 +631,9 @@ export default function ContractManagementPage({ user }) {
                               : selectedPackage.price?.toLocaleString()}{' '}
                             VND
                           </Typography>
-                        </Grid>
+                        </Box>
                         {formData.start_date && (
-                          <Grid item xs={12}>
+                          <Box sx={{ gridColumn: '1 / -1' }}>
                             <Typography variant='body2'>
                               <strong>Thời gian:</strong>{' '}
                               {formatDate(formData.start_date)} -{' '}
@@ -624,14 +651,14 @@ export default function ContractManagementPage({ user }) {
                                   .split('T')[0]
                               )}
                             </Typography>
-                          </Grid>
+                          </Box>
                         )}
-                      </Grid>
+                      </Box>
                     </CardContent>
                   </Card>
-                </Grid>
+                </Box>
               )}
-            </Grid>
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions>

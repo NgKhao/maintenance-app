@@ -26,7 +26,6 @@ import {
   Select,
   InputAdornment,
   Paper,
-  Grid,
 } from '@mui/material';
 import {
   Assignment as AssignmentIcon,
@@ -256,9 +255,20 @@ function AdminSchedulesPage() {
       {/* Search and Filter Bar */}
       <Card sx={{ mb: 2 }}>
         <CardContent sx={{ py: 2 }}>
-          <Grid container spacing={2} alignItems='center'>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: '1fr 1fr 1fr',
+                md: '3fr 1fr 1fr',
+              },
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
             {/* Search Field */}
-            <Grid item xs={12} sm={12} md={7}>
+            <Box>
               <TextField
                 fullWidth
                 placeholder='Tìm kiếm theo khách hàng, thiết bị, kỹ thuật viên...'
@@ -285,10 +295,10 @@ function AdminSchedulesPage() {
                   ),
                 }}
               />
-            </Grid>
+            </Box>
 
             {/* Status Filter */}
-            <Grid item xs={12} sm={8} md={3}>
+            <Box>
               <FormControl fullWidth size='small'>
                 <InputLabel>Trạng thái</InputLabel>
                 <Select
@@ -304,33 +314,31 @@ function AdminSchedulesPage() {
                   <MenuItem value='completed'>Hoàn thành</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
+            </Box>
 
             {/* Results Counter */}
-            <Grid item xs={12} sm={4} md={2}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: '40px',
-                  textAlign: 'center',
-                }}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '40px',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{ fontWeight: 'bold' }}
               >
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  {filteredSchedules.length} / {schedules.length}
-                </Typography>
-                <Typography variant='caption' color='text.secondary'>
-                  lịch bảo trì
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
+                {filteredSchedules.length} / {schedules.length}
+              </Typography>
+              <Typography variant='caption' color='text.secondary'>
+                lịch bảo trì
+              </Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
@@ -341,6 +349,7 @@ function AdminSchedulesPage() {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell>STT</TableCell>
                   <TableCell>
                     <Box display='flex' alignItems='center'>
                       <PersonIcon sx={{ mr: 1, fontSize: 16 }} />
@@ -372,7 +381,7 @@ function AdminSchedulesPage() {
               <TableBody>
                 {filteredSchedules.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align='center'>
+                    <TableCell colSpan={7} align='center'>
                       <Typography variant='body2' color='text.secondary' py={4}>
                         {searchTerm
                           ? 'Không tìm thấy lịch bảo trì nào phù hợp'
@@ -381,8 +390,9 @@ function AdminSchedulesPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredSchedules.map((schedule) => (
+                  filteredSchedules.map((schedule, index) => (
                     <TableRow key={schedule.id} hover>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>
                         <Box>
                           <Typography variant='body2' fontWeight='medium'>
@@ -480,56 +490,56 @@ function AdminSchedulesPage() {
 
           <Box component='form' onSubmit={handleAssign}>
             <DialogContent>
-              <Grid container spacing={2}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr',
+                  gap: 2,
+                }}
+              >
                 {/* Schedule Info */}
-                <Grid item xs={12}>
-                  <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
-                    <Typography variant='body2' gutterBottom>
-                      <strong>Khách hàng:</strong>{' '}
-                      {selectedSchedule.customer_name}
-                    </Typography>
-                    <Typography variant='body2'>
-                      <strong>Thiết bị:</strong> {selectedSchedule.device_name}
-                    </Typography>
-                  </Paper>
-                </Grid>
+                <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Typography variant='body2' gutterBottom>
+                    <strong>Khách hàng:</strong>{' '}
+                    {selectedSchedule.customer_name}
+                  </Typography>
+                  <Typography variant='body2'>
+                    <strong>Thiết bị:</strong> {selectedSchedule.device_name}
+                  </Typography>
+                </Paper>
 
                 {/* Technician Selection */}
-                <Grid item xs={12}>
-                  <FormControl fullWidth required>
-                    <InputLabel>Chọn kỹ thuật viên</InputLabel>
-                    <Select
-                      name='technician_id'
-                      label='Chọn kỹ thuật viên'
-                      defaultValue=''
-                    >
-                      {technicians.map((tech) => (
-                        <MenuItem key={tech.id} value={tech.id}>
-                          {tech.name} - {tech.phone}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+                <FormControl fullWidth required>
+                  <InputLabel>Chọn kỹ thuật viên</InputLabel>
+                  <Select
+                    name='technician_id'
+                    label='Chọn kỹ thuật viên'
+                    defaultValue=''
+                  >
+                    {technicians.map((tech) => (
+                      <MenuItem key={tech.id} value={tech.id}>
+                        {tech.name} - {tech.phone}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
                 {/* Date Selection */}
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label='Ngày hẹn'
-                    name='scheduled_date'
-                    type='date'
-                    defaultValue={selectedSchedule.scheduled_date}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    inputProps={{
-                      min: new Date().toISOString().split('T')[0],
-                    }}
-                    required
-                  />
-                </Grid>
-              </Grid>
+                <TextField
+                  fullWidth
+                  label='Ngày hẹn'
+                  name='scheduled_date'
+                  type='date'
+                  defaultValue={selectedSchedule.scheduled_date}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  inputProps={{
+                    min: new Date().toISOString().split('T')[0],
+                  }}
+                  required
+                />
+              </Box>
             </DialogContent>
 
             <DialogActions>

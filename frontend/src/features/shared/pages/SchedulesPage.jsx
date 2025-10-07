@@ -21,7 +21,6 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
-  Grid,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -242,6 +241,7 @@ export default function SchedulesPage() {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell>STT</TableCell>
                   <TableCell>Thiết bị</TableCell>
                   <TableCell>Ngày bảo trì</TableCell>
                   <TableCell>Kỹ thuật viên</TableCell>
@@ -253,15 +253,16 @@ export default function SchedulesPage() {
               <TableBody>
                 {schedules.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align='center'>
+                    <TableCell colSpan={7} align='center'>
                       <Typography variant='body2' color='text.secondary'>
                         Không có lịch bảo trì nào
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  schedules.map((schedule) => (
+                  schedules.map((schedule, index) => (
                     <TableRow key={schedule.id}>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>
                         <Typography variant='body2'>
                           {schedule.device_name}
@@ -349,75 +350,73 @@ export default function SchedulesPage() {
 
         <Box component='form' onSubmit={handleSubmit}>
           <DialogContent>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  select
-                  label='Đơn hàng'
-                  name='order_id'
-                  value={formData.order_id}
-                  onChange={handleInputChange}
-                  required
-                  variant='outlined'
-                >
-                  {orders.map((order) => (
-                    <MenuItem key={order.id} value={order.id}>
-                      {order.package_name} - {order.user_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: 2,
+              }}
+            >
+              <TextField
+                fullWidth
+                select
+                label='Đơn hàng'
+                name='order_id'
+                value={formData.order_id}
+                onChange={handleInputChange}
+                required
+                variant='outlined'
+              >
+                {orders.map((order) => (
+                  <MenuItem key={order.id} value={order.id}>
+                    {order.package_name} - {order.user_name}
+                  </MenuItem>
+                ))}
+              </TextField>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  select
-                  label='Thiết bị'
-                  name='device_id'
-                  value={formData.device_id}
-                  onChange={handleInputChange}
-                  required
-                  variant='outlined'
-                >
-                  {devices.map((device) => (
-                    <MenuItem key={device.id} value={device.id}>
-                      {device.name} ({device.serial_number})
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
+              <TextField
+                fullWidth
+                select
+                label='Thiết bị'
+                name='device_id'
+                value={formData.device_id}
+                onChange={handleInputChange}
+                required
+                variant='outlined'
+              >
+                {devices.map((device) => (
+                  <MenuItem key={device.id} value={device.id}>
+                    {device.name} ({device.serial_number})
+                  </MenuItem>
+                ))}
+              </TextField>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  type='datetime-local'
-                  label='Ngày giờ bảo trì'
-                  name='scheduled_date'
-                  value={formData.scheduled_date}
-                  onChange={handleInputChange}
-                  required
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  variant='outlined'
-                />
-              </Grid>
+              <TextField
+                fullWidth
+                type='datetime-local'
+                label='Ngày giờ bảo trì'
+                name='scheduled_date'
+                value={formData.scheduled_date}
+                onChange={handleInputChange}
+                required
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                variant='outlined'
+              />
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label='Ghi chú'
-                  name='note'
-                  value={formData.note}
-                  onChange={handleInputChange}
-                  placeholder='Ghi chú về lịch bảo trì...'
-                  variant='outlined'
-                />
-              </Grid>
-            </Grid>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label='Ghi chú'
+                name='note'
+                value={formData.note}
+                onChange={handleInputChange}
+                placeholder='Ghi chú về lịch bảo trì...'
+                variant='outlined'
+              />
+            </Box>
           </DialogContent>
 
           <DialogActions>
