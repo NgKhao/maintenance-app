@@ -12,12 +12,16 @@ import {
   TableRow,
   Button,
   CircularProgress,
-  Alert
+  Alert,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import {
   Schedule as ScheduleIcon,
   Check as CheckIcon,
-  Schedule as BusyIcon
+  Schedule as BusyIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 
@@ -25,6 +29,22 @@ export default function TechnicianSchedulesPage() {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter schedules based on search term
+  const filteredSchedules = schedules.filter((schedule) => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      schedule.user_name?.toLowerCase().includes(searchLower) ||
+      schedule.device_name?.toLowerCase().includes(searchLower) ||
+      schedule.note?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+  };
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const email = user.email;
@@ -68,7 +88,12 @@ export default function TechnicianSchedulesPage() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='400px'
+      >
         <CircularProgress />
       </Box>
     );
@@ -77,17 +102,44 @@ export default function TechnicianSchedulesPage() {
   return (
     <Box>
       <Box mb={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant='h4' component='h1' gutterBottom>
           <ScheduleIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
           Lịch chờ duyệt
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant='body1' color='text.secondary'>
           Danh sách lịch bảo trì được phân công cho bạn
         </Typography>
       </Box>
 
+      {/* Search Box */}
+      <Box mb={3}>
+        <TextField
+          placeholder='Tìm kiếm theo khách hàng, thiết bị, ghi chú...'
+          variant='outlined'
+          size='small'
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ width: { xs: '100%', md: '400px' } }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position='start'>
+                <SearchIcon />
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm && (
+              <InputAdornment position='end'>
+                <ClearIcon
+                  sx={{ cursor: 'pointer' }}
+                  onClick={handleClearSearch}
+                />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity='error' sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
@@ -98,65 +150,72 @@ export default function TechnicianSchedulesPage() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>STT</TableCell>
                   <TableCell>Khách hàng</TableCell>
                   <TableCell>Thiết bị</TableCell>
                   <TableCell>Ngày thực hiện</TableCell>
                   <TableCell>Ghi chú</TableCell>
-                  <TableCell align="center">Hành động</TableCell>
+                  <TableCell align='center'>Hành động</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {schedules.length === 0 ? (
+                {filteredSchedules.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      <Typography variant="body2" color="text.secondary">
-                        Không có lịch nào chờ duyệt
+                    <TableCell colSpan={6} align='center'>
+                      <Typography variant='body2' color='text.secondary'>
+                        {schedules.length === 0
+                          ? 'Không có lịch nào chờ duyệt'
+                          : 'Không tìm thấy kết quả phù hợp'}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  schedules.map((schedule) => (
+                  filteredSchedules.map((schedule, index) => (
                     <TableRow key={schedule.id} hover>
-                      <TableCell>{schedule.id}</TableCell>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>
-                        <Typography variant="body2">
+                        <Typography variant='body2'>
                           {schedule.user_name}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
+                        <Typography variant='body2'>
                           {schedule.device_name}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {schedule.scheduled_date ? 
-                          new Date(schedule.scheduled_date).toLocaleString('vi-VN') : 
-                          ''
-                        }
+                        {schedule.scheduled_date
+                          ? new Date(schedule.scheduled_date).toLocaleString(
+                              'vi-VN'
+                            )
+                          : ''}
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
+                        <Typography variant='body2'>
                           {schedule.note || 'Không có ghi chú'}
                         </Typography>
                       </TableCell>
-                      <TableCell align="center">
-                        <Box display="flex" gap={1} justifyContent="center">
+                      <TableCell align='center'>
+                        <Box display='flex' gap={1} justifyContent='center'>
                           <Button
-                            variant="contained"
-                            color="success"
-                            size="small"
+                            variant='contained'
+                            color='success'
+                            size='small'
                             startIcon={<CheckIcon />}
-                            onClick={() => handleUpdateStatus(schedule.id, 'completed')}
+                            onClick={() =>
+                              handleUpdateStatus(schedule.id, 'completed')
+                            }
                           >
                             Hoàn thành
                           </Button>
                           <Button
-                            variant="contained"
-                            color="warning"
-                            size="small"
+                            variant='contained'
+                            color='warning'
+                            size='small'
                             startIcon={<BusyIcon />}
-                            onClick={() => handleUpdateStatus(schedule.id, 'busy')}
+                            onClick={() =>
+                              handleUpdateStatus(schedule.id, 'busy')
+                            }
                           >
                             Bận
                           </Button>

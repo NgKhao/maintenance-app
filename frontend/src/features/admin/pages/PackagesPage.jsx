@@ -19,6 +19,7 @@ import {
   TextField,
   CircularProgress,
   Alert,
+  InputAdornment,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -27,6 +28,8 @@ import {
   Inventory as PackagesIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import { usePackagesManagement } from '../../../hooks';
 import { authStorage } from '../../../utils/storage';
@@ -54,9 +57,20 @@ export default function PackagesPage() {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const role = authStorage.getRole() || '';
   const canEdit = role === 'admin';
+
+  // Filter packages based on search term
+  const filteredPackages = data.filter((pkg) => {
+    const matchesSearch =
+      searchTerm === '' ||
+      pkg.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pkg.description?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesSearch;
+  });
 
   // Cập nhật error state từ hook
   useEffect(() => {
@@ -217,6 +231,71 @@ export default function PackagesPage() {
         </Alert>
       )}
 
+      {/* Search Box */}
+      <Card sx={{ mb: 2 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '3fr 1fr',
+              },
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
+            <Box>
+              <TextField
+                fullWidth
+                placeholder='Tìm kiếm theo tên gói, mô tả...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                variant='outlined'
+                size='small'
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <SearchIcon color='action' />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        onClick={() => setSearchTerm('')}
+                        size='small'
+                        edge='end'
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{ fontWeight: 'bold' }}
+              >
+                {filteredPackages.length} / {data.length}
+              </Typography>
+              <Typography variant='caption' color='text.secondary'>
+                gói bảo trì
+              </Typography>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent>
           <TableContainer>
@@ -233,16 +312,18 @@ export default function PackagesPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {data.length === 0 ? (
+                {filteredPackages.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align='center'>
                       <Typography variant='body2' color='text.secondary'>
-                        Không có gói bảo trì nào
+                        {searchTerm
+                          ? 'Không tìm thấy gói bảo trì phù hợp'
+                          : 'Không có gói bảo trì nào'}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.map((pkg, index) => (
+                  filteredPackages.map((pkg, index) => (
                     <TableRow key={pkg.id}>
                       <TableCell>{index + 1}</TableCell>
                       <TableCell>

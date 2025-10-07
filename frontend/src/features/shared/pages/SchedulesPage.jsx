@@ -21,12 +21,18 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
   Schedule as ScheduleIcon,
   Check as CheckIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import {
   getSchedules,
@@ -51,11 +57,29 @@ export default function SchedulesPage() {
     note: '',
   });
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   // Lấy thông tin user từ localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const role = user?.role || 'user';
   const canEdit = role === 'admin';
+
+  // Filter schedules based on search term and status
+  const filteredSchedules = schedules.filter((schedule) => {
+    const matchesSearch =
+      searchTerm === '' ||
+      schedule.device_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      schedule.technician_name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      schedule.note?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === 'all' || schedule.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   // Fetch data functions
   const fetchSchedules = useCallback(async () => {
@@ -235,6 +259,87 @@ export default function SchedulesPage() {
         </Alert>
       )}
 
+      {/* Search and Filter Box */}
+      <Card sx={{ mb: 2 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '2fr 1fr 1fr',
+              },
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
+            <Box>
+              <TextField
+                fullWidth
+                placeholder='Tìm kiếm theo thiết bị, kỹ thuật viên, ghi chú...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                variant='outlined'
+                size='small'
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <SearchIcon color='action' />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        onClick={() => setSearchTerm('')}
+                        size='small'
+                        edge='end'
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+            <Box>
+              <FormControl fullWidth size='small'>
+                <InputLabel>Trạng thái</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label='Trạng thái'
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value='all'>Tất cả</MenuItem>
+                  <MenuItem value='pending'>Chờ xử lý</MenuItem>
+                  <MenuItem value='in_progress'>Đang thực hiện</MenuItem>
+                  <MenuItem value='completed'>Hoàn thành</MenuItem>
+                  <MenuItem value='cancelled'>Đã hủy</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{ fontWeight: 'bold' }}
+              >
+                {filteredSchedules.length} / {schedules.length}
+              </Typography>
+              <Typography variant='caption' color='text.secondary'>
+                lịch bảo trì
+              </Typography>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent>
           <TableContainer>
@@ -251,16 +356,18 @@ export default function SchedulesPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {schedules.length === 0 ? (
+                {filteredSchedules.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align='center'>
                       <Typography variant='body2' color='text.secondary'>
-                        Không có lịch bảo trì nào
+                        {searchTerm || statusFilter !== 'all'
+                          ? 'Không tìm thấy lịch bảo trì phù hợp'
+                          : 'Không có lịch bảo trì nào'}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  schedules.map((schedule, index) => (
+                  filteredSchedules.map((schedule, index) => (
                     <TableRow key={schedule.id}>
                       <TableCell>{index + 1}</TableCell>
                       <TableCell>

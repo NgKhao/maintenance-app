@@ -21,7 +21,6 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
-  Grid,
   FormControl,
   InputLabel,
   Select,
@@ -308,9 +307,19 @@ export default function DevicesPage() {
       {/* Search and Filter Bar */}
       <Card sx={{ mb: 2 }}>
         <CardContent sx={{ py: 2 }}>
-          <Grid container spacing={2} alignItems='center'>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '7fr 3fr 2fr',
+              },
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
             {/* Search Field */}
-            <Grid item xs={12} sm={12} md={7}>
+            <Box>
               <TextField
                 fullWidth
                 placeholder={`Tìm kiếm theo tên thiết bị, số serial${
@@ -339,10 +348,10 @@ export default function DevicesPage() {
                   ),
                 }}
               />
-            </Grid>
+            </Box>
 
             {/* Status Filter */}
-            <Grid item xs={12} sm={8} md={3}>
+            <Box>
               <FormControl fullWidth size='small'>
                 <InputLabel>Trạng thái</InputLabel>
                 <Select
@@ -356,10 +365,10 @@ export default function DevicesPage() {
                   <MenuItem value='maintenance'>Đang bảo trì</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
+            </Box>
 
             {/* Results Counter */}
-            <Grid item xs={12} sm={4} md={2}>
+            <Box>
               <Box
                 sx={{
                   display: 'flex',
@@ -381,8 +390,8 @@ export default function DevicesPage() {
                   thiết bị
                 </Typography>
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
@@ -598,9 +607,15 @@ export default function DevicesPage() {
 
         <Box component='form' onSubmit={handleSubmit}>
           <DialogContent>
-            <Grid container spacing={2}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: 2,
+              }}
+            >
               {/* Tên thiết bị */}
-              <Grid item xs={12}>
+              <Box>
                 <TextField
                   fullWidth
                   label='Tên thiết bị'
@@ -610,10 +625,10 @@ export default function DevicesPage() {
                   required
                   variant='outlined'
                 />
-              </Grid>
+              </Box>
 
               {/* Số serial */}
-              <Grid item xs={12}>
+              <Box>
                 <TextField
                   fullWidth
                   label='Số serial'
@@ -623,10 +638,10 @@ export default function DevicesPage() {
                   required
                   variant='outlined'
                 />
-              </Grid>
+              </Box>
 
               {/* Trạng thái */}
-              <Grid item xs={12}>
+              <Box>
                 <TextField
                   fullWidth
                   select
@@ -640,8 +655,8 @@ export default function DevicesPage() {
                   <MenuItem value='issue'>Có vấn đề</MenuItem>
                   <MenuItem value='maintenance'>Đang bảo trì</MenuItem>
                 </TextField>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </DialogContent>
 
           <DialogActions>

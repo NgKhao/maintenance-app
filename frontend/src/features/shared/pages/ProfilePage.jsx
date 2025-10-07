@@ -8,18 +8,15 @@ import {
   Button,
   Tab,
   Tabs,
-  Grid,
   Chip,
   Avatar,
   Alert,
   Snackbar,
   CircularProgress,
-  Divider,
 } from '@mui/material';
 import {
   Person as PersonIcon,
   Lock as LockIcon,
-  BarChart as BarChartIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
@@ -270,8 +267,17 @@ const ProfilePage = () => {
             )}
           </Box>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '1fr 1fr',
+              },
+              gap: 3,
+            }}
+          >
+            <Box>
               <TextField
                 fullWidth
                 label='Tên đầy đủ'
@@ -282,8 +288,8 @@ const ProfilePage = () => {
                 error={!!profileErrors.name}
                 helperText={profileErrors.name}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
+            </Box>
+            <Box>
               <TextField
                 fullWidth
                 label='Email'
@@ -295,8 +301,8 @@ const ProfilePage = () => {
                 error={!!profileErrors.email}
                 helperText={profileErrors.email}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
+            </Box>
+            <Box>
               <TextField
                 fullWidth
                 label='Số điện thoại'
@@ -307,16 +313,16 @@ const ProfilePage = () => {
                 error={!!profileErrors.phone}
                 helperText={profileErrors.phone}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
+            </Box>
+            <Box>
               <TextField
                 fullWidth
                 label='Ngày tạo tài khoản'
                 value={formatDate(profileData?.created_at)}
                 disabled
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box sx={{ gridColumn: { xs: '1', md: '1 / -1' } }}>
               <TextField
                 fullWidth
                 label='Địa chỉ'
@@ -329,8 +335,8 @@ const ProfilePage = () => {
                 error={!!profileErrors.address}
                 helperText={profileErrors.address}
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
 
           {editMode && (
             <Box display='flex' justifyContent='flex-end' gap={2} mt={3}>
@@ -364,8 +370,15 @@ const ProfilePage = () => {
             tự.
           </Typography>
 
-          <Grid container spacing={3} maxWidth={400}>
-            <Grid item xs={12}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '1fr',
+              gap: 3,
+              maxWidth: 400,
+            }}
+          >
+            <Box>
               <TextField
                 fullWidth
                 label='Mật khẩu hiện tại'
@@ -376,8 +389,8 @@ const ProfilePage = () => {
                 error={!!passwordErrors.current_password}
                 helperText={passwordErrors.current_password}
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box>
               <TextField
                 fullWidth
                 label='Mật khẩu mới'
@@ -388,8 +401,8 @@ const ProfilePage = () => {
                 error={!!passwordErrors.new_password}
                 helperText={passwordErrors.new_password}
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box>
               <TextField
                 fullWidth
                 label='Xác nhận mật khẩu mới'
@@ -400,8 +413,8 @@ const ProfilePage = () => {
                 error={!!passwordErrors.confirm_password}
                 helperText={passwordErrors.confirm_password}
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box>
               <Button
                 fullWidth
                 variant='contained'
@@ -410,8 +423,8 @@ const ProfilePage = () => {
               >
                 {changingPassword ? 'Đang đổi mật khẩu...' : 'Đổi mật khẩu'}
               </Button>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </TabPanel>
       </Card>
 
