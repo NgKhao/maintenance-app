@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -37,6 +37,8 @@ import {
   Engineering as EngineeringIcon,
   Visibility as VisibilityIcon,
 } from '@mui/icons-material';
+import { usePagination } from '../../../hooks';
+import { TablePagination } from '../../../components/common';
 
 function AdminSchedulesPage() {
   const [schedules, setSchedules] = useState([]);
@@ -48,6 +50,33 @@ function AdminSchedulesPage() {
   const [message, setMessage] = useState('');
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+
+  // Pagination
+  const {
+    currentItems,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    handlePageChange,
+    handleItemsPerPageChange,
+    resetPagination,
+  } = usePagination(filteredSchedules, 5);
+
+  // Keep track of previous search/filter to avoid unnecessary resets
+  const prevSearchTerm = useRef(searchTerm);
+  const prevFilter = useRef(filter);
+
+  // Reset pagination when search or filter changes
+  useEffect(() => {
+    if (
+      prevSearchTerm.current !== searchTerm ||
+      prevFilter.current !== filter
+    ) {
+      resetPagination();
+      prevSearchTerm.current = searchTerm;
+      prevFilter.current = filter;
+    }
+  }, [searchTerm, filter, resetPagination]);
 
   const fetchSchedules = useCallback(async () => {
     try {
@@ -332,7 +361,7 @@ function AdminSchedulesPage() {
                 color='text.secondary'
                 sx={{ fontWeight: 'bold' }}
               >
-                {filteredSchedules.length} / {schedules.length}
+                {totalItems} / {schedules.length}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
                 lịch bảo trì
@@ -390,9 +419,11 @@ function AdminSchedulesPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredSchedules.map((schedule, index) => (
+                  currentItems.map((schedule, index) => (
                     <TableRow key={schedule.id} hover>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </TableCell>
                       <TableCell>
                         <Box>
                           <Typography variant='body2' fontWeight='medium'>
@@ -467,6 +498,18 @@ function AdminSchedulesPage() {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <TablePagination
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemLabel='lịch bảo trì'
+            />
+          )}
         </CardContent>
       </Card>
 

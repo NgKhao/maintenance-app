@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -45,6 +45,8 @@ import {
   updateDevice,
   deleteDevice,
 } from '../../../api/devices';
+import { usePagination } from '../../../hooks';
+import { TablePagination } from '../../../components/common';
 
 export default function DevicesPage() {
   const [devices, setDevices] = useState([]);
@@ -66,6 +68,33 @@ export default function DevicesPage() {
   // Lấy thông tin user từ localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const role = user?.role || 'user';
+
+  // Pagination
+  const {
+    currentItems,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    handlePageChange,
+    handleItemsPerPageChange,
+    resetPagination,
+  } = usePagination(filteredDevices, 5);
+
+  // Keep track of previous search/filter to avoid unnecessary resets
+  const prevSearchTerm = useRef(searchTerm);
+  const prevStatusFilter = useRef(statusFilter);
+
+  // Reset pagination when search or filter changes
+  useEffect(() => {
+    if (
+      prevSearchTerm.current !== searchTerm ||
+      prevStatusFilter.current !== statusFilter
+    ) {
+      resetPagination();
+      prevSearchTerm.current = searchTerm;
+      prevStatusFilter.current = statusFilter;
+    }
+  }, [searchTerm, statusFilter, resetPagination]);
 
   const fetchDevices = useCallback(async () => {
     setLoading(true);
@@ -384,7 +413,7 @@ export default function DevicesPage() {
                   color='text.secondary'
                   sx={{ fontWeight: 'bold' }}
                 >
-                  {filteredDevices.length} / {devices.length}
+                  {totalItems} / {devices.length}
                 </Typography>
                 <Typography variant='caption' color='text.secondary'>
                   thiết bị
@@ -443,9 +472,11 @@ export default function DevicesPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredDevices.map((device, index) => (
+                  currentItems.map((device, index) => (
                     <TableRow key={device.id} hover>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </TableCell>
                       <TableCell>
                         {editingId === device.id ? (
                           <TextField
@@ -593,6 +624,18 @@ export default function DevicesPage() {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <TablePagination
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemLabel='thiết bị'
+            />
+          )}
         </CardContent>
       </Card>
 

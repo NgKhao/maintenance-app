@@ -95,7 +95,7 @@ export default function ContractRequestsPage({ user }) {
 
   // Keep track of previous search term to avoid unnecessary resets
   const prevSearchTerm = useRef(searchTerm);
-  
+
   // Reset pagination when search changes
   useEffect(() => {
     if (prevSearchTerm.current !== searchTerm) {
