@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -36,6 +36,8 @@ import {
   Key as KeyIcon,
 } from '@mui/icons-material';
 import { authStorage } from '../../../utils/storage';
+import { usePagination } from '../../../hooks';
+import { TablePagination } from '../../../components/common';
 
 export default function UsersPage() {
   const [data, setData] = useState([]);
@@ -137,6 +139,28 @@ export default function UsersPage() {
       setFilteredData(filtered);
     }
   }, [data, searchTerm]);
+
+  // Pagination
+  const {
+    currentItems,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    handlePageChange,
+    handleItemsPerPageChange,
+    resetPagination,
+  } = usePagination(filteredData, 5);
+
+  // Keep track of previous search term to avoid unnecessary resets
+  const prevSearchTerm = useRef(searchTerm);
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    if (prevSearchTerm.current !== searchTerm) {
+      resetPagination();
+      prevSearchTerm.current = searchTerm;
+    }
+  }, [searchTerm, resetPagination]);
 
   // Keyboard shortcut for search (Ctrl+F)
   useEffect(() => {
@@ -481,7 +505,7 @@ export default function UsersPage() {
                 color='text.secondary'
                 sx={{ fontWeight: 'bold' }}
               >
-                {filteredData.length} / {data.length}
+                {totalItems} / {data.length}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
                 người dùng
@@ -508,7 +532,7 @@ export default function UsersPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData.length === 0 ? (
+                {currentItems.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={canEdit ? 7 : 6} align='center'>
                       <Typography variant='body2' color='text.secondary' py={4}>
@@ -519,9 +543,11 @@ export default function UsersPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredData.map((user, index) => (
+                  currentItems.map((user, index) => (
                     <TableRow key={user.id} hover>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </TableCell>
                       <TableCell>
                         {editingId === user.id ? (
                           <TextField
@@ -678,6 +704,16 @@ export default function UsersPage() {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination */}
+          <TablePagination
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            itemLabel='người dùng'
+          />
         </CardContent>
       </Card>
 

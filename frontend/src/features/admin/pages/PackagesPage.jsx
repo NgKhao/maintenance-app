@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -32,6 +32,8 @@ import {
   Clear as ClearIcon,
 } from '@mui/icons-material';
 import { usePackagesManagement } from '../../../hooks';
+import { usePagination } from '../../../hooks';
+import { TablePagination } from '../../../components/common';
 import { authStorage } from '../../../utils/storage';
 
 export default function PackagesPage() {
@@ -71,6 +73,28 @@ export default function PackagesPage() {
 
     return matchesSearch;
   });
+
+  // Pagination
+  const {
+    currentItems,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    handlePageChange,
+    handleItemsPerPageChange,
+    resetPagination,
+  } = usePagination(filteredPackages, 5);
+
+  // Keep track of previous search term to avoid unnecessary resets
+  const prevSearchTerm = useRef(searchTerm);
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    if (prevSearchTerm.current !== searchTerm) {
+      resetPagination();
+      prevSearchTerm.current = searchTerm;
+    }
+  }, [searchTerm, resetPagination]);
 
   // Cập nhật error state từ hook
   useEffect(() => {
@@ -286,7 +310,7 @@ export default function PackagesPage() {
                 color='text.secondary'
                 sx={{ fontWeight: 'bold' }}
               >
-                {filteredPackages.length} / {data.length}
+                {totalItems} / {data.length}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
                 gói bảo trì
@@ -312,7 +336,7 @@ export default function PackagesPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredPackages.length === 0 ? (
+                {currentItems.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align='center'>
                       <Typography variant='body2' color='text.secondary'>
@@ -323,9 +347,11 @@ export default function PackagesPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredPackages.map((pkg, index) => (
+                  currentItems.map((pkg, index) => (
                     <TableRow key={pkg.id}>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </TableCell>
                       <TableCell>
                         {editingId === pkg.id ? (
                           <TextField
@@ -445,6 +471,16 @@ export default function PackagesPage() {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination */}
+          <TablePagination
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            itemLabel='gói bảo trì'
+          />
         </CardContent>
       </Card>
 

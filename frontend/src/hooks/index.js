@@ -3,3 +3,4 @@ export * from './useApiCall';
 export * from './useForm';
 export * from './usePackages';
 export * from './usePackagesManagement';
+export { default as usePagination } from './usePagination';
