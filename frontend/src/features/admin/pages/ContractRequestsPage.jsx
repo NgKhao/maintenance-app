@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Card,
@@ -40,6 +40,8 @@ import {
   processContractRequest,
 } from '../../../api/contract-requests';
 import { formatDate, formatDateTime } from '../../../utils/formatters';
+import { usePagination } from '../../../hooks';
+import { TablePagination } from '../../../components/common';
 
 export default function ContractRequestsPage({ user }) {
   const [requests, setRequests] = useState([]);
@@ -79,6 +81,28 @@ export default function ContractRequestsPage({ user }) {
       setFilteredRequests(filtered);
     }
   }, [requests, searchTerm]);
+
+  // Pagination
+  const {
+    currentItems,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    handlePageChange,
+    handleItemsPerPageChange,
+    resetPagination,
+  } = usePagination(filteredRequests, 5);
+
+  // Keep track of previous search term to avoid unnecessary resets
+  const prevSearchTerm = useRef(searchTerm);
+  
+  // Reset pagination when search changes
+  useEffect(() => {
+    if (prevSearchTerm.current !== searchTerm) {
+      resetPagination();
+      prevSearchTerm.current = searchTerm;
+    }
+  }, [searchTerm, resetPagination]);
 
   // Fetch contract requests
   useEffect(() => {
@@ -251,7 +275,7 @@ export default function ContractRequestsPage({ user }) {
                 color='text.secondary'
                 sx={{ fontWeight: 'bold' }}
               >
-                {filteredRequests.length} / {requests.length}
+                {totalItems} / {requests.length}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
                 yêu cầu
@@ -290,9 +314,11 @@ export default function ContractRequestsPage({ user }) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredRequests.map((request, index) => (
+                  currentItems.map((request, index) => (
                     <TableRow key={request.id}>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </TableCell>
                       <TableCell>
                         <Box>
                           <Typography variant='body2' fontWeight='bold'>
@@ -410,6 +436,18 @@ export default function ContractRequestsPage({ user }) {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <TablePagination
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemLabel='yêu cầu'
+            />
+          )}
         </CardContent>
       </Card>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Card,
@@ -43,6 +43,8 @@ import {
 import { getOrders } from '../../../api/orders';
 import { formatDate } from '../../../utils/formatters';
 import { useForm } from '../../../hooks/useForm';
+import { usePagination } from '../../../hooks';
+import { TablePagination } from '../../../components/common';
 
 export default function ContractManagementPage({ user }) {
   const [packages, setPackages] = useState([]);
@@ -142,6 +144,33 @@ export default function ContractManagementPage({ user }) {
 
     return matchesSearch && matchesStatus;
   });
+
+  // Pagination
+  const {
+    currentItems,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    handlePageChange,
+    handleItemsPerPageChange,
+    resetPagination,
+  } = usePagination(filteredContracts, 5);
+
+  // Keep track of previous search/filter to avoid unnecessary resets
+  const prevSearchTerm = useRef(searchTerm);
+  const prevFilterStatus = useRef(filterStatus);
+
+  // Reset pagination when search or filter changes
+  useEffect(() => {
+    if (
+      prevSearchTerm.current !== searchTerm ||
+      prevFilterStatus.current !== filterStatus
+    ) {
+      resetPagination();
+      prevSearchTerm.current = searchTerm;
+      prevFilterStatus.current = filterStatus;
+    }
+  }, [searchTerm, filterStatus, resetPagination]);
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -321,7 +350,7 @@ export default function ContractManagementPage({ user }) {
                   color='text.secondary'
                   sx={{ fontWeight: 'bold' }}
                 >
-                  {filteredContracts.length} / {contracts.length}
+                  {totalItems} / {contracts.length}
                 </Typography>
                 <Typography variant='caption' color='text.secondary'>
                   hợp đồng
@@ -365,9 +394,11 @@ export default function ContractManagementPage({ user }) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredContracts.map((contract, index) => (
+                  {currentItems.map((contract, index) => (
                     <TableRow key={contract.id}>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </TableCell>
                       <TableCell>
                         <Box>
                           <Typography variant='body2' fontWeight='medium'>
@@ -423,7 +454,7 @@ export default function ContractManagementPage({ user }) {
             </TableContainer>
           )}
 
-          {filteredContracts.length === 0 && !loadingContracts && (
+          {currentItems.length === 0 && !loadingContracts && (
             <Box textAlign='center' py={4}>
               <Typography variant='body2' color='text.secondary'>
                 {searchTerm
@@ -431,6 +462,18 @@ export default function ContractManagementPage({ user }) {
                   : 'Chưa có hợp đồng nào'}
               </Typography>
             </Box>
+          )}
+
+          {/* Pagination */}
+          {!loadingContracts && totalItems > 0 && (
+            <TablePagination
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemLabel='hợp đồng'
+            />
           )}
         </CardContent>
       </Card>
