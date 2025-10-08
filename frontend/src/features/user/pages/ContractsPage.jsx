@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   Button,
-  Grid,
   Chip,
   CircularProgress,
   Alert,
@@ -267,9 +266,15 @@ export default function ContractsPage() {
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: '1fr',
+            gap: 3,
+          }}
+        >
           {contracts.map((contract) => (
-            <Grid item xs={12} key={contract.id}>
+            <Box key={contract.id}>
               <Card>
                 <CardContent>
                   <Box
@@ -289,8 +294,19 @@ export default function ContractsPage() {
                     {getStatusChip(contract.payment_status)}
                   </Box>
 
-                  <Grid container spacing={3} mb={3}>
-                    <Grid item xs={12} sm={6} md={3}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: {
+                        xs: '1fr',
+                        sm: '1fr 1fr',
+                        md: 'repeat(4, 1fr)',
+                      },
+                      gap: 3,
+                      mb: 3,
+                    }}
+                  >
+                    <Box>
                       <Typography
                         variant='subtitle2'
                         color='text.secondary'
@@ -304,9 +320,9 @@ export default function ContractsPage() {
                       <Typography variant='body2' color='text.secondary'>
                         {contract.package_description}
                       </Typography>
-                    </Grid>
+                    </Box>
 
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Box>
                       <Typography
                         variant='subtitle2'
                         color='text.secondary'
@@ -324,9 +340,9 @@ export default function ContractsPage() {
                       <Typography variant='body2' color='text.secondary'>
                         {contract.duration_months} tháng
                       </Typography>
-                    </Grid>
+                    </Box>
 
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Box>
                       <Typography
                         variant='subtitle2'
                         color='text.secondary'
@@ -340,9 +356,9 @@ export default function ContractsPage() {
                       <Typography variant='body2'>
                         Đến: {formatDate(contract.end_date)}
                       </Typography>
-                    </Grid>
+                    </Box>
 
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Box>
                       <Typography
                         variant='subtitle2'
                         color='text.secondary'
@@ -365,8 +381,8 @@ export default function ContractsPage() {
                           Đang chờ xác nhận thanh toán từ ZaloPay
                         </Typography>
                       )}
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
 
                   {contract.payment_status === 'paid' && (
                     <>
@@ -446,9 +462,9 @@ export default function ContractsPage() {
                   )}
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
 
       {/* Contract Request Dialog */}

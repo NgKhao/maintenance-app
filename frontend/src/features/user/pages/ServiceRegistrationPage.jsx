@@ -8,7 +8,6 @@ import {
   Stepper,
   Step,
   StepLabel,
-  Grid,
   Paper,
   CircularProgress,
   Alert,
@@ -163,8 +162,17 @@ export default function ServiceRegistrationPage() {
           </Alert>
         )}
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              md: '1fr 1fr',
+            },
+            gap: 3,
+          }}
+        >
+          <Box>
             <Card>
               <CardContent>
                 <Typography variant='h6' gutterBottom>
@@ -186,9 +194,9 @@ export default function ServiceRegistrationPage() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={6}>
+          <Box>
             <Card sx={{ bgcolor: 'grey.50' }}>
               <CardContent>
                 <Typography variant='h6' gutterBottom>
@@ -206,8 +214,8 @@ export default function ServiceRegistrationPage() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         <Box display='flex' gap={2} mt={4}>
           <Button
@@ -271,9 +279,18 @@ export default function ServiceRegistrationPage() {
           </Typography>
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              md: 'repeat(3, 1fr)',
+            },
+            gap: 3,
+          }}
+        >
           {packages.map((pkg) => (
-            <Grid item xs={12} md={4} key={pkg.id}>
+            <Box key={pkg.id}>
               <Card
                 sx={{
                   height: '100%',
@@ -314,9 +331,9 @@ export default function ServiceRegistrationPage() {
                   </Button>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
     </Box>
   );
