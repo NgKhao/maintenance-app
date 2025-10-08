@@ -125,6 +125,12 @@ export default function SchedulesPage() {
     switch (status) {
       case 'pending':
         return 'warning';
+      case 'assigned':
+        return 'primary';
+      case 'confirmed':
+        return 'info';
+      case 'rejected':
+        return 'error';
       case 'in_progress':
         return 'info';
       case 'completed':
@@ -140,6 +146,12 @@ export default function SchedulesPage() {
     switch (status) {
       case 'pending':
         return 'Chờ xử lý';
+      case 'assigned':
+        return 'Đã phân công';
+      case 'confirmed':
+        return 'Đã xác nhận';
+      case 'rejected':
+        return 'Đã từ chối';
       case 'in_progress':
         return 'Đang thực hiện';
       case 'completed':
@@ -328,6 +340,9 @@ export default function SchedulesPage() {
                 >
                   <MenuItem value='all'>Tất cả</MenuItem>
                   <MenuItem value='pending'>Chờ xử lý</MenuItem>
+                  <MenuItem value='assigned'>Đã phân công</MenuItem>
+                  <MenuItem value='confirmed'>Đã xác nhận</MenuItem>
+                  <MenuItem value='rejected'>Đã từ chối</MenuItem>
                   <MenuItem value='in_progress'>Đang thực hiện</MenuItem>
                   <MenuItem value='completed'>Hoàn thành</MenuItem>
                   <MenuItem value='cancelled'>Đã hủy</MenuItem>
@@ -417,7 +432,8 @@ export default function SchedulesPage() {
                       <TableCell align='center'>
                         <Box>
                           {role === 'technician' &&
-                            schedule.status === 'pending' && (
+                            (schedule.status === 'assigned' ||
+                              schedule.status === 'confirmed') && (
                               <IconButton
                                 size='small'
                                 onClick={() =>

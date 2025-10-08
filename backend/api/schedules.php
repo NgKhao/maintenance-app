@@ -24,7 +24,7 @@ if ($method === 'GET') {
             JOIN devices d ON s.device_id = d.id
             LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician'
             WHERE s.user_id = ?
-            ORDER BY s.scheduled_date ASC
+            ORDER BY s.id DESC, s.scheduled_date ASC
         ");
         $stmt->execute([$technician_id]);
     } elseif ($user_id) {
@@ -40,7 +40,7 @@ if ($method === 'GET') {
             JOIN devices d ON s.device_id = d.id
             LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician'
             WHERE o.user_id = ?
-            ORDER BY s.scheduled_date ASC
+            ORDER BY s.id DESC, s.scheduled_date ASC
         ");
         $stmt->execute([$user_id]);
     } else {
@@ -55,7 +55,7 @@ if ($method === 'GET') {
             JOIN users u ON o.user_id = u.id
             JOIN devices d ON s.device_id = d.id
             LEFT JOIN users t ON s.user_id = t.id AND t.role = 'technician'
-            ORDER BY s.scheduled_date ASC
+            ORDER BY s.id DESC, s.scheduled_date ASC
         ");
     }
 
@@ -114,7 +114,7 @@ if ($method === 'POST') {
     }
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO maintenanceschedules (order_id, user_id, device_id, scheduled_date, note, status) VALUES (?, ?, ?, ?, ?, 'pending')");
+        $stmt = $pdo->prepare("INSERT INTO maintenanceschedules (order_id, user_id, device_id, scheduled_date, note, status) VALUES (?, ?, ?, ?, ?, 'assigned')");
         if ($stmt->execute([$order_id, $technician_id, $device_id, $scheduled_date, $note])) {
             echo json_encode(["success" => true, "message" => "Đặt lịch bảo trì thành công"]);
         } else {
