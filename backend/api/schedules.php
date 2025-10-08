@@ -66,43 +66,64 @@ if ($method === 'GET') {
 if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
 
-    $order_id = $data['order_id'] ?? 0;
-    $technician_id = $data['technician_id'] ?? 0;
-    $device_id = $data['device_id'] ?? 0;
-    $scheduled_date = $data['scheduled_date'] ?? date('Y-m-d H:i:s');
+    $order_id = intval($data['order_id'] ?? 0);
+    $technician_id = intval($data['technician_id'] ?? 0);
+    $device_id = intval($data['device_id'] ?? 0);
+    $scheduled_date = !empty($data['scheduled_date']) ? $data['scheduled_date'] : date('Y-m-d H:i:s');
     $note = trim($data['note'] ?? '');
 
-    if (!$order_id || !$technician_id || !$device_id) {
+    // Enhanced validation
+    if ($order_id <= 0 || $technician_id <= 0 || $device_id <= 0) {
         http_response_code(400);
         echo json_encode(["error" => "Order, Technician, Device bắt buộc"]);
         exit();
     }
 
-    // Kiểm tra xem order có tồn tại không
-    $stmt = $pdo->prepare("SELECT id FROM orders WHERE id = ?");
-    $stmt->execute([$order_id]);
-    if ($stmt->rowCount() === 0) {
-        http_response_code(400);
-        echo json_encode(["error" => "Đơn hàng không tồn tại"]);
-        exit();
-    }
+    try {
+        // Kiểm tra xem order có tồn tại không
+        $stmt = $pdo->prepare("SELECT id FROM orders WHERE id = ?");
+        $stmt->execute([$order_id]);
+        if ($stmt->rowCount() === 0) {
+            http_response_code(400);
+            echo json_encode(["error" => "Đơn hàng không tồn tại"]);
+            exit();
+        }
 
-    // Kiểm tra xem technician có available không
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE id = ? AND role = 'technician' AND active = 1");
-    $stmt->execute([$technician_id]);
-    $tech = $stmt->fetch();
-    if (!$tech) {
-        http_response_code(400);
-        echo json_encode(["error" => "Kỹ thuật viên không tồn tại hoặc không hoạt động"]);
-        exit();
-    }
+        // Kiểm tra xem technician có available không
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE id = ? AND role = 'technician' AND active = 1");
+        $stmt->execute([$technician_id]);
+        $tech = $stmt->fetch();
+        if (!$tech) {
+            http_response_code(400);
+            echo json_encode(["error" => "Kỹ thuật viên không tồn tại hoặc không hoạt động"]);
+            exit();
+        }
 
-    $stmt = $pdo->prepare("INSERT INTO maintenanceschedules (order_id, user_id, device_id, scheduled_date, note, status) VALUES (?, ?, ?, ?, ?, 'pending')");
-    if ($stmt->execute([$order_id, $technician_id, $device_id, $scheduled_date, $note])) {
-        echo json_encode(["success" => true, "message" => "Đặt lịch bảo trì thành công"]);
-    } else {
+        // Kiểm tra xem device có tồn tại không
+        $stmt = $pdo->prepare("SELECT id FROM devices WHERE id = ?");
+        $stmt->execute([$device_id]);
+        if ($stmt->rowCount() === 0) {
+            http_response_code(400);
+            echo json_encode(["error" => "Thiết bị không tồn tại"]);
+            exit();
+        }
+    } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(["error" => "Lỗi server, không thể đặt lịch"]);
+        echo json_encode(["error" => "Lỗi kiểm tra dữ liệu: " . $e->getMessage()]);
+        exit();
+    }
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO maintenanceschedules (order_id, user_id, device_id, scheduled_date, note, status) VALUES (?, ?, ?, ?, ?, 'pending')");
+        if ($stmt->execute([$order_id, $technician_id, $device_id, $scheduled_date, $note])) {
+            echo json_encode(["success" => true, "message" => "Đặt lịch bảo trì thành công"]);
+        } else {
+            http_response_code(500);
+            echo json_encode(["error" => "Lỗi server, không thể đặt lịch"]);
+        }
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(["error" => "Lỗi database: " . $e->getMessage()]);
     }
     exit();
 }

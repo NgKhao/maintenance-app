@@ -42,11 +42,13 @@ import {
 } from '../../../api/schedules';
 import { getOrders } from '../../../api/orders';
 import { getDevices } from '../../../api/devices';
+import { getTechnicians } from '../../../api/technicians';
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState([]);
   const [orders, setOrders] = useState([]);
   const [devices, setDevices] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formVisible, setFormVisible] = useState(false);
   const [formData, setFormData] = useState({
@@ -99,12 +101,14 @@ export default function SchedulesPage() {
     if (!canEdit) return; // User thường không cần load options
 
     try {
-      const [ordersData, devicesData] = await Promise.all([
+      const [ordersData, devicesData, techniciansData] = await Promise.all([
         getOrders(),
         getDevices(),
+        getTechnicians(),
       ]);
       setOrders(ordersData);
       setDevices(devicesData);
+      setTechnicians(techniciansData);
     } catch (err) {
       console.error(err);
       setError('Lỗi khi tải dữ liệu');
@@ -198,6 +202,19 @@ export default function SchedulesPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form data being sent:', formData);
+
+    // Frontend validation
+    if (
+      !formData.order_id ||
+      !formData.technician_id ||
+      !formData.device_id ||
+      !formData.scheduled_date
+    ) {
+      setError('Vui lòng điền đầy đủ thông tin bắt buộc');
+      return;
+    }
+
     try {
       await createSchedule(formData);
       setFormVisible(false);
@@ -477,6 +494,23 @@ export default function SchedulesPage() {
                 {orders.map((order) => (
                   <MenuItem key={order.id} value={order.id}>
                     {order.package_name} - {order.user_name}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                fullWidth
+                select
+                label='Kỹ thuật viên'
+                name='technician_id'
+                value={formData.technician_id}
+                onChange={handleInputChange}
+                required
+                variant='outlined'
+              >
+                {technicians.map((technician) => (
+                  <MenuItem key={technician.id} value={technician.id}>
+                    {technician.name}
                   </MenuItem>
                 ))}
               </TextField>
