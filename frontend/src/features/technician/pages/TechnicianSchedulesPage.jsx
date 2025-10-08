@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -24,6 +24,8 @@ import {
   Clear as ClearIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
+import { usePagination } from '../../../hooks';
+import { TablePagination } from '../../../components/common';
 
 export default function TechnicianSchedulesPage() {
   const [schedules, setSchedules] = useState([]);
@@ -41,6 +43,28 @@ export default function TechnicianSchedulesPage() {
       schedule.note?.toLowerCase().includes(searchLower)
     );
   });
+
+  // Pagination
+  const {
+    currentItems,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    handlePageChange,
+    handleItemsPerPageChange,
+    resetPagination,
+  } = usePagination(filteredSchedules, 5);
+
+  // Keep track of previous search term to avoid unnecessary resets
+  const prevSearchTerm = useRef(searchTerm);
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    if (prevSearchTerm.current !== searchTerm) {
+      resetPagination();
+      prevSearchTerm.current = searchTerm;
+    }
+  }, [searchTerm, resetPagination]);
 
   const handleClearSearch = () => {
     setSearchTerm('');
@@ -170,9 +194,11 @@ export default function TechnicianSchedulesPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredSchedules.map((schedule, index) => (
+                  currentItems.map((schedule, index) => (
                     <TableRow key={schedule.id} hover>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </TableCell>
                       <TableCell>
                         <Typography variant='body2'>
                           {schedule.user_name}
@@ -227,6 +253,18 @@ export default function TechnicianSchedulesPage() {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <TablePagination
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemLabel='lịch bảo trì'
+            />
+          )}
         </CardContent>
       </Card>
     </Box>

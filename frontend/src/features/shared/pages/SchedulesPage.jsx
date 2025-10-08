@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -43,6 +43,8 @@ import {
 import { getOrders } from '../../../api/orders';
 import { getDevices } from '../../../api/devices';
 import { getTechnicians } from '../../../api/technicians';
+import { usePagination } from '../../../hooks';
+import { TablePagination } from '../../../components/common';
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState([]);
@@ -82,6 +84,33 @@ export default function SchedulesPage() {
 
     return matchesSearch && matchesStatus;
   });
+
+  // Pagination
+  const {
+    currentItems,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    handlePageChange,
+    handleItemsPerPageChange,
+    resetPagination,
+  } = usePagination(filteredSchedules, 5);
+
+  // Keep track of previous search/filter to avoid unnecessary resets
+  const prevSearchTerm = useRef(searchTerm);
+  const prevStatusFilter = useRef(statusFilter);
+
+  // Reset pagination when search or filter changes
+  useEffect(() => {
+    if (
+      prevSearchTerm.current !== searchTerm ||
+      prevStatusFilter.current !== statusFilter
+    ) {
+      resetPagination();
+      prevSearchTerm.current = searchTerm;
+      prevStatusFilter.current = statusFilter;
+    }
+  }, [searchTerm, statusFilter, resetPagination]);
 
   // Fetch data functions
   const fetchSchedules = useCallback(async () => {
@@ -362,7 +391,7 @@ export default function SchedulesPage() {
                 color='text.secondary'
                 sx={{ fontWeight: 'bold' }}
               >
-                {filteredSchedules.length} / {schedules.length}
+                {totalItems} / {schedules.length}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
                 lịch bảo trì
@@ -399,9 +428,11 @@ export default function SchedulesPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredSchedules.map((schedule, index) => (
+                  currentItems.map((schedule, index) => (
                     <TableRow key={schedule.id}>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </TableCell>
                       <TableCell>
                         <Typography variant='body2'>
                           {schedule.device_name}
@@ -476,6 +507,18 @@ export default function SchedulesPage() {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <TablePagination
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemLabel='lịch bảo trì'
+            />
+          )}
         </CardContent>
       </Card>
 
