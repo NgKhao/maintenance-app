@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -23,6 +23,8 @@ import {
   FormControlLabel,
   Radio,
   FormLabel,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import {
   Assignment as ContractIcon,
@@ -32,12 +34,16 @@ import {
   CreditCard as CreditCardIcon,
   Extension as ExtendIcon,
   Stop as TerminateIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import { getUserContracts } from '../../../api/orders';
 import {
   createContractRequest,
   getContractRequests,
 } from '../../../api/contract-requests';
+import usePagination from '../../../hooks/usePagination';
+import TablePagination from '../../../components/common/TablePagination';
 
 export default function ContractsPage() {
   const [contracts, setContracts] = useState([]);
@@ -55,6 +61,7 @@ export default function ContractsPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [userRequests, setUserRequests] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Lấy thông tin user từ localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -130,6 +137,41 @@ export default function ContractsPage() {
       (req) => req.order_id === contractId && req.status === 'pending'
     );
   };
+
+  // Filter contracts based on search term
+  const filteredContracts = contracts.filter((contract) => {
+    const matchesSearch =
+      searchTerm === '' ||
+      contract.package_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contract.package_description
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      contract.id?.toString().includes(searchTerm);
+
+    return matchesSearch;
+  });
+
+  // Pagination
+  const {
+    currentItems,
+    totalItems,
+    currentPage,
+    itemsPerPage,
+    handlePageChange,
+    handleItemsPerPageChange,
+    resetPagination,
+  } = usePagination(filteredContracts, 5);
+
+  // Keep track of previous search term to avoid unnecessary resets
+  const prevSearchTerm = useRef(searchTerm);
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    if (prevSearchTerm.current !== searchTerm) {
+      prevSearchTerm.current = searchTerm;
+      resetPagination();
+    }
+  }, [searchTerm, resetPagination]);
 
   useEffect(() => {
     if (user.id) {
@@ -246,24 +288,94 @@ export default function ContractsPage() {
         </Alert>
       )}
 
-      {contracts.length === 0 ? (
+      {/* Search Bar */}
+      <Card sx={{ mb: 2 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: '3fr 1fr',
+              },
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
+            <Box>
+              <TextField
+                fullWidth
+                placeholder='Tìm kiếm theo tên gói, mô tả, ID hợp đồng...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                variant='outlined'
+                size='small'
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <SearchIcon color='action' />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        onClick={() => setSearchTerm('')}
+                        size='small'
+                        edge='end'
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{ fontWeight: 'bold' }}
+              >
+                {totalItems} / {contracts.length}
+              </Typography>
+              <Typography variant='caption' color='text.secondary'>
+                hợp đồng
+              </Typography>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {filteredContracts.length === 0 ? (
         <Paper elevation={2} sx={{ p: 6, textAlign: 'center' }}>
           <ContractIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant='h5' color='text.secondary' gutterBottom>
-            Chưa có hợp đồng nào
+            {searchTerm
+              ? 'Không tìm thấy hợp đồng phù hợp'
+              : 'Chưa có hợp đồng nào'}
           </Typography>
           <Typography variant='body1' color='text.secondary' mb={3}>
-            Bạn chưa đăng ký dịch vụ bảo trì nào. Hãy đăng ký ngay để bảo vệ
-            thiết bị của bạn!
+            {searchTerm
+              ? 'Thử thay đổi từ khóa tìm kiếm hoặc xóa bộ lọc để xem tất cả hợp đồng'
+              : 'Bạn chưa đăng ký dịch vụ bảo trì nào. Hãy đăng ký ngay để bảo vệ thiết bị của bạn!'}
           </Typography>
-          <Button
-            variant='contained'
-            size='large'
-            startIcon={<AddIcon />}
-            onClick={() => (window.location.href = '/register-service')}
-          >
-            Đăng ký dịch vụ ngay
-          </Button>
+          {!searchTerm && (
+            <Button
+              variant='contained'
+              size='large'
+              startIcon={<AddIcon />}
+              onClick={() => (window.location.href = '/register-service')}
+            >
+              Đăng ký dịch vụ ngay
+            </Button>
+          )}
         </Paper>
       ) : (
         <Box
@@ -273,7 +385,7 @@ export default function ContractsPage() {
             gap: 3,
           }}
         >
-          {contracts.map((contract) => (
+          {currentItems.map((contract) => (
             <Box key={contract.id}>
               <Card>
                 <CardContent>
@@ -465,6 +577,18 @@ export default function ContractsPage() {
             </Box>
           ))}
         </Box>
+      )}
+
+      {/* Pagination */}
+      {filteredContracts.length > 0 && (
+        <TablePagination
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          itemLabel='hợp đồng'
+        />
       )}
 
       {/* Contract Request Dialog */}
