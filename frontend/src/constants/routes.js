@@ -21,6 +21,7 @@ export const ROUTES = {
 
   // Technician routes
   TECHNICIAN_SCHEDULES: '/technician-schedules',
+  TECHNICIAN_MY_SCHEDULES: '/my-schedules',
 
   // User routes
   REGISTER_SERVICE: '/register-service',

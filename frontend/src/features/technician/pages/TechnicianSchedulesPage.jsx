@@ -15,11 +15,12 @@ import {
   Alert,
   TextField,
   InputAdornment,
+  Chip,
 } from '@mui/material';
 import {
   Schedule as ScheduleIcon,
-  Check as CheckIcon,
-  Schedule as BusyIcon,
+  CheckCircle as ConfirmIcon,
+  Cancel as RejectIcon,
   Search as SearchIcon,
   Clear as ClearIcon,
 } from '@mui/icons-material';
@@ -31,10 +32,15 @@ export default function TechnicianSchedulesPage() {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter schedules based on search term
+  // Filter schedules based on search term and status (only show schedules that need technician action)
   const filteredSchedules = schedules.filter((schedule) => {
+    // Only show schedules that need technician approval (pending or assigned)
+    const needsAction = ['pending', 'assigned'].includes(schedule.status);
+    if (!needsAction) return false;
+
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -99,15 +105,57 @@ export default function TechnicianSchedulesPage() {
 
   const handleUpdateStatus = async (id, status) => {
     try {
-      await axios.post(API_URL, {
+      const response = await axios.post(API_URL, {
         schedule_id: id,
         status: status,
       });
       fetchSchedules();
       setError('');
+      setSuccessMessage(
+        response.data.message || 'Cập nhật trạng thái thành công'
+      );
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       setError(err.response?.data?.error || 'Lỗi khi cập nhật trạng thái');
+      setSuccessMessage('');
     }
+  };
+
+  const getStatusChip = (status) => {
+    const statusConfig = {
+      pending: {
+        color: 'warning',
+        text: 'Chờ xử lý',
+      },
+      assigned: {
+        color: 'info',
+        text: 'Đã phân công',
+      },
+      confirmed: {
+        color: 'success',
+        text: 'Đã xác nhận',
+      },
+      rejected: {
+        color: 'error',
+        text: 'Từ chối',
+      },
+      in_progress: {
+        color: 'primary',
+        text: 'Đang thực hiện',
+      },
+      completed: {
+        color: 'success',
+        text: 'Hoàn thành',
+      },
+      cancelled: {
+        color: 'default',
+        text: 'Đã hủy',
+      },
+    };
+
+    const config = statusConfig[status] || statusConfig.pending;
+    return <Chip label={config.text} color={config.color} size='small' />;
   };
 
   if (loading) {
@@ -128,10 +176,11 @@ export default function TechnicianSchedulesPage() {
       <Box mb={4}>
         <Typography variant='h4' component='h1' gutterBottom>
           <ScheduleIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-          Lịch chờ duyệt
+          Lịch cần xác nhận
         </Typography>
         <Typography variant='body1' color='text.secondary'>
-          Danh sách lịch bảo trì được phân công cho bạn
+          Danh sách lịch bảo trì được phân công cho bạn - Vui lòng xác nhận hoặc
+          từ chối
         </Typography>
       </Box>
 
@@ -168,6 +217,12 @@ export default function TechnicianSchedulesPage() {
         </Alert>
       )}
 
+      {successMessage && (
+        <Alert severity='success' sx={{ mb: 3 }}>
+          {successMessage}
+        </Alert>
+      )}
+
       <Card>
         <CardContent>
           <TableContainer>
@@ -178,6 +233,7 @@ export default function TechnicianSchedulesPage() {
                   <TableCell>Khách hàng</TableCell>
                   <TableCell>Thiết bị</TableCell>
                   <TableCell>Ngày thực hiện</TableCell>
+                  <TableCell>Trạng thái</TableCell>
                   <TableCell>Ghi chú</TableCell>
                   <TableCell align='center'>Hành động</TableCell>
                 </TableRow>
@@ -185,10 +241,10 @@ export default function TechnicianSchedulesPage() {
               <TableBody>
                 {filteredSchedules.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align='center'>
+                    <TableCell colSpan={7} align='center'>
                       <Typography variant='body2' color='text.secondary'>
                         {schedules.length === 0
-                          ? 'Không có lịch nào chờ duyệt'
+                          ? 'Không có lịch nào cần xác nhận'
                           : 'Không tìm thấy kết quả phù hợp'}
                       </Typography>
                     </TableCell>
@@ -216,36 +272,44 @@ export default function TechnicianSchedulesPage() {
                             )
                           : ''}
                       </TableCell>
+                      <TableCell>{getStatusChip(schedule.status)}</TableCell>
                       <TableCell>
                         <Typography variant='body2'>
                           {schedule.note || 'Không có ghi chú'}
                         </Typography>
                       </TableCell>
                       <TableCell align='center'>
-                        <Box display='flex' gap={1} justifyContent='center'>
-                          <Button
-                            variant='contained'
-                            color='success'
-                            size='small'
-                            startIcon={<CheckIcon />}
-                            onClick={() =>
-                              handleUpdateStatus(schedule.id, 'completed')
-                            }
-                          >
-                            Hoàn thành
-                          </Button>
-                          <Button
-                            variant='contained'
-                            color='warning'
-                            size='small'
-                            startIcon={<BusyIcon />}
-                            onClick={() =>
-                              handleUpdateStatus(schedule.id, 'busy')
-                            }
-                          >
-                            Bận
-                          </Button>
-                        </Box>
+                        {schedule.status === 'pending' ||
+                        schedule.status === 'assigned' ? (
+                          <Box display='flex' gap={1} justifyContent='center'>
+                            <Button
+                              variant='contained'
+                              color='success'
+                              size='small'
+                              startIcon={<ConfirmIcon />}
+                              onClick={() =>
+                                handleUpdateStatus(schedule.id, 'confirmed')
+                              }
+                            >
+                              Xác nhận
+                            </Button>
+                            <Button
+                              variant='contained'
+                              color='error'
+                              size='small'
+                              startIcon={<RejectIcon />}
+                              onClick={() =>
+                                handleUpdateStatus(schedule.id, 'rejected')
+                              }
+                            >
+                              Từ chối
+                            </Button>
+                          </Box>
+                        ) : (
+                          <Typography variant='body2' color='text.secondary'>
+                            Đã xử lý
+                          </Typography>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

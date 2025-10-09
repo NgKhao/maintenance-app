@@ -14,7 +14,10 @@ import {
   AdminSchedulesPage,
 } from '../../features/admin';
 
-import { TechnicianSchedulesPage } from '../../features/technician';
+import {
+  TechnicianSchedulesPage,
+  TechnicianMySchedulesPage,
+} from '../../features/technician';
 
 import {
   ServiceRegistrationPage,
@@ -86,6 +89,10 @@ const AppLayout = () => {
               <Route
                 path='/technician-schedules'
                 element={<TechnicianSchedulesPage />}
+              />
+              <Route
+                path='/my-schedules'
+                element={<TechnicianMySchedulesPage />}
               />
             </>
           )}

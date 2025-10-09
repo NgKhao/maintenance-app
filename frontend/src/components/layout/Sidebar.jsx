@@ -20,6 +20,7 @@ import {
   Schedule,
   Description,
   Add,
+  Work,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -54,9 +55,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
         { label: 'Tổng quan', icon: <Home />, path: '/dashboard' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
         {
-          label: 'Lịch của tôi',
-          icon: <Schedule />,
+          label: 'Lịch cần xác nhận',
+          icon: <Assignment />,
           path: '/technician-schedules',
+        },
+        {
+          label: 'Lịch của tôi',
+          icon: <Work />,
+          path: '/my-schedules',
         },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
       ];
