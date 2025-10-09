@@ -267,9 +267,9 @@ export default function TechnicianSchedulesPage() {
                       </TableCell>
                       <TableCell>
                         {schedule.scheduled_date
-                          ? new Date(schedule.scheduled_date).toLocaleString(
-                              'vi-VN'
-                            )
+                          ? new Date(
+                              schedule.scheduled_date
+                            ).toLocaleDateString('vi-VN')
                           : ''}
                       </TableCell>
                       <TableCell>{getStatusChip(schedule.status)}</TableCell>

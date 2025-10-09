@@ -1,7 +1,6 @@
 <?php
 // Include CORS helper
 include __DIR__ . '/../config/cors.php';
-setCorsHeaders();
 
 include __DIR__ . '/../config/db.php';
 $method = $_SERVER['REQUEST_METHOD'];

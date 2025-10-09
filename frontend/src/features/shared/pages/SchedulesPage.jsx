@@ -593,8 +593,8 @@ export default function SchedulesPage() {
 
               <TextField
                 fullWidth
-                type='datetime-local'
-                label='Ngày giờ bảo trì'
+                type='date'
+                label='Ngày bảo trì'
                 name='scheduled_date'
                 value={formData.scheduled_date}
                 onChange={handleInputChange}

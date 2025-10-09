@@ -200,7 +200,7 @@ export default function TechnicianMySchedulesPage() {
   };
 
   const formatDate = (dateString) => {
-    return dateString ? new Date(dateString).toLocaleString('vi-VN') : '';
+    return dateString ? new Date(dateString).toLocaleDateString('vi-VN') : '';
   };
 
   if (loading) {
