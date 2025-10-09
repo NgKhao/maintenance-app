@@ -113,9 +113,13 @@ const AppLayout = () => {
 
           {/* Shared routes */}
           <Route path='/devices' element={<DevicesPage />} />
-          <Route path='/schedules' element={<SchedulesPage />} />
           <Route path='/reminders' element={<RemindersPage />} />
           <Route path='/profile' element={<ProfilePage />} />
+
+          {/* SchedulesPage - Only for admin and user (not technician) */}
+          {(role === 'admin' || role === 'user') && (
+            <Route path='/schedules' element={<SchedulesPage />} />
+          )}
 
           <Route path='/dashboard' element={<DashboardPage role={role} />} />
 

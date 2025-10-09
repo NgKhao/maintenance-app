@@ -64,7 +64,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
           icon: <Work />,
           path: '/my-schedules',
         },
-        { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
       ];
     } else {
       return [

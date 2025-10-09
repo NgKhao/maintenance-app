@@ -478,7 +478,7 @@ export default function DevicesPage() {
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </TableCell>
                       <TableCell>
-                        {editingId === device.id ? (
+                        {editingId === device.id && role === 'technican' ? (
                           <TextField
                             fullWidth
                             size='small'
@@ -493,7 +493,7 @@ export default function DevicesPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {editingId === device.id ? (
+                        {editingId === device.id && role === 'technican' ? (
                           <TextField
                             fullWidth
                             size='small'
