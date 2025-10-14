@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3307
--- Thời gian đã tạo: Th10 14, 2025 lúc 06:57 AM
+-- Thời gian đã tạo: Th10 14, 2025 lúc 11:57 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -174,7 +174,8 @@ INSERT INTO `maintenanceschedules` (`id`, `order_id`, `user_id`, `device_id`, `s
 (20, 29, 8, 11, '2025-10-10 14:20:00', 'pending', '', '2025-10-08 07:20:24'),
 (21, 28, 8, 8, '2025-10-09 14:26:00', 'pending', '', '2025-10-08 07:26:09'),
 (22, 26, 7, 10, '2025-10-10 00:00:00', 'confirmed', '', '2025-10-08 07:33:29'),
-(23, 12, 9, 6, '2025-10-12 14:38:00', 'assigned', '', '2025-10-08 07:39:06');
+(23, 12, 9, 6, '2025-10-12 14:38:00', 'assigned', '', '2025-10-08 07:39:06'),
+(24, 30, 7, 9, '2025-10-16 00:00:00', 'confirmed', '', '2025-10-14 06:09:14');
 
 -- --------------------------------------------------------
 
@@ -233,6 +234,22 @@ INSERT INTO `orders` (`id`, `user_id`, `package_id`, `payment_status`, `start_da
 (30, 6, 3, 'pending', '2025-09-30', '2026-09-30', '2025-09-30 16:04:20', '250930_6_1759248260', NULL, 1500000.00, NULL),
 (31, 2, 2, 'paid', '2025-09-30', '2026-09-30', '2025-09-30 16:11:23', 'ADMIN_250930_2_1759248683', NULL, 900000.00, NULL),
 (32, 1000, 2, 'pending', '2025-10-08', '2026-10-08', '2025-10-08 07:05:55', 'ADMIN_251008_1000_1759907155', NULL, 900000.00, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `reviews`
+--
+
+CREATE TABLE `reviews` (
+  `id` int(11) NOT NULL,
+  `schedule_id` int(11) NOT NULL COMMENT 'ID lịch bảo trì',
+  `user_id` int(11) NOT NULL COMMENT 'ID khách hàng đánh giá',
+  `technician_id` int(11) NOT NULL COMMENT 'ID kỹ thuật viên được đánh giá',
+  `rating` tinyint(1) NOT NULL COMMENT 'Điểm đánh giá từ 1-5',
+  `comment` text DEFAULT NULL COMMENT 'Nhận xét của khách hàng',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ;
 
 -- --------------------------------------------------------
 
@@ -324,6 +341,15 @@ ALTER TABLE `orders`
   ADD KEY `package_id` (`package_id`);
 
 --
+-- Chỉ mục cho bảng `reviews`
+--
+ALTER TABLE `reviews`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_schedule_review` (`schedule_id`),
+  ADD KEY `idx_reviews_technician_id` (`technician_id`),
+  ADD KEY `fk_reviews_user` (`user_id`);
+
+--
 -- Chỉ mục cho bảng `users`
 --
 ALTER TABLE `users`
@@ -362,13 +388,19 @@ ALTER TABLE `maintenancereminders`
 -- AUTO_INCREMENT cho bảng `maintenanceschedules`
 --
 ALTER TABLE `maintenanceschedules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT cho bảng `orders`
 --
 ALTER TABLE `orders`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+
+--
+-- AUTO_INCREMENT cho bảng `reviews`
+--
+ALTER TABLE `reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT cho bảng `users`
@@ -414,6 +446,14 @@ ALTER TABLE `maintenanceschedules`
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`package_id`) REFERENCES `maintenancepackages` (`id`) ON DELETE CASCADE;
+
+--
+-- Các ràng buộc cho bảng `reviews`
+--
+ALTER TABLE `reviews`
+  ADD CONSTRAINT `fk_reviews_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `maintenanceschedules` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_reviews_technician` FOREIGN KEY (`technician_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_reviews_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
