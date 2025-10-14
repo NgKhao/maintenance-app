@@ -4,6 +4,13 @@ include __DIR__ . '/../config/cors.php';
 setCorsHeaders();
 
 include __DIR__ . '/../config/db.php';
+
+// Load composer autoload for PHPMailer
+require_once __DIR__ . '/../vendor/autoload.php';
+
+// Load EmailService
+require_once __DIR__ . '/../config/EmailService.php';
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
@@ -92,6 +99,48 @@ if ($method === 'POST') {
     // Cập nhật trạng thái và ghi log
     $stmt = $pdo->prepare("UPDATE maintenanceschedules SET status = ?, note = ? WHERE id = ?");
     if ($stmt->execute([$status, $note, $schedule_id])) {
+
+        // Nếu status là 'confirmed', gửi email thông báo cho khách hàng
+        if ($status === 'confirmed') {
+            try {
+                // Lấy thông tin chi tiết của lịch bảo trì để gửi email
+                $stmtSchedule = $pdo->prepare("
+                    SELECT ms.id, 
+                           ms.scheduled_date,
+                           u.name AS user_name, 
+                           u.email AS user_email,
+                           d.name AS device_name, 
+                           d.serial_number,
+                           p.name AS package_name,
+                           tech.name AS technician_name
+                    FROM maintenanceschedules ms
+                    JOIN orders o ON ms.order_id = o.id
+                    JOIN users u ON o.user_id = u.id
+                    JOIN devices d ON ms.device_id = d.id
+                    JOIN maintenancepackages p ON o.package_id = p.id
+                    JOIN users tech ON ms.user_id = tech.id
+                    WHERE ms.id = ?
+                ");
+                $stmtSchedule->execute([$schedule_id]);
+                $scheduleInfo = $stmtSchedule->fetch();
+
+                if ($scheduleInfo && $scheduleInfo['user_email']) {
+                    // Khởi tạo EmailService và gửi email
+                    $emailService = new EmailService();
+                    $emailSent = $emailService->sendMaintenanceConfirmation($scheduleInfo);
+
+                    if ($emailSent) {
+                        error_log("Email confirmation sent to: " . $scheduleInfo['user_email']);
+                    } else {
+                        error_log("Failed to send email to: " . $scheduleInfo['user_email']);
+                    }
+                }
+            } catch (Exception $e) {
+                // Log lỗi nhưng không làm fail request
+                error_log("Email sending error: " . $e->getMessage());
+            }
+        }
+
         echo json_encode([
             "success" => true,
             "message" => "Cập nhật trạng thái thành công: " . $validStatuses[$status]

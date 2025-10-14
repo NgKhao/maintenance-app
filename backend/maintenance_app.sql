@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: localhost:3308
--- Thời gian đã tạo: Th9 30, 2025 lúc 07:10 PM
+-- Máy chủ: 127.0.0.1:3307
+-- Thời gian đã tạo: Th10 14, 2025 lúc 06:57 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -82,7 +82,7 @@ INSERT INTO `devices` (`id`, `user_id`, `name`, `serial_number`, `status`, `crea
 (3, 3, 'Tủ lạnh', 'FR30001', 'issue', '2025-09-10 12:01:13', NULL),
 (4, 4, 'Điều hòa phòng ngủ', 'AC10002', 'maintenance', '2025-09-10 12:01:13', NULL),
 (6, 2, 'bayy', '1111111', 'maintenance', '2025-09-11 04:18:47', NULL),
-(7, 6, 'Bếp điện', '1111111110', 'normal', '2025-09-11 07:04:16', ''),
+(7, 6, 'Bếp điện', '1111111110', 'maintenance', '2025-09-11 07:04:16', 'qsu tốt'),
 (8, 3, 'Máy lạnh phòng ngủ', 'AC10003', 'normal', '2025-09-12 09:59:24', NULL),
 (9, 4, 'Máy rửa chén', 'DW40001', 'normal', '2025-09-12 09:59:24', NULL),
 (10, 2, 'Lò vi sóng', 'MW50001', 'issue', '2025-09-12 09:59:24', 'Cần kiểm tra chức năng hẹn giờ'),
@@ -110,7 +110,8 @@ CREATE TABLE `maintenancepackages` (
 INSERT INTO `maintenancepackages` (`id`, `name`, `description`, `price`, `duration_months`, `created_at`) VALUES
 (1, 'Gói cơ bản', 'Bảo trì thiết bị cơ bản 1 lần/tháng', 500000.00, 12, '2025-09-10 12:01:13'),
 (2, 'Gói nâng cao', 'Bảo trì thiết bị nâng cao 2 lần/tháng', 900000.00, 12, '2025-09-10 12:01:13'),
-(3, 'Gói VIP', 'Bảo trì thiết bị VIP 4 lần/tháng, ưu tiên kỹ thuật viên', 1500000.00, 12, '2025-09-10 12:01:13');
+(3, 'Gói VIP', 'Bảo trì thiết bị VIP 4 lần/tháng, ưu tiên kỹ thuật viên', 1500000.00, 12, '2025-09-10 12:01:13'),
+(5, 'gói phụ', 'aaaaa', 180000.00, 6, '2025-10-08 07:28:15');
 
 -- --------------------------------------------------------
 
@@ -167,9 +168,13 @@ INSERT INTO `maintenanceschedules` (`id`, `order_id`, `user_id`, `device_id`, `s
 (10, 2, 9, 10, '2025-10-02 09:00:00', 'pending', 'Sửa chữa lò vi sóng', '2025-09-12 09:59:24'),
 (11, 3, 7, 11, '2025-10-05 11:00:00', 'in_progress', 'Bảo trì quạt trần', '2025-09-12 09:59:24'),
 (15, 5, 7, 7, '2025-09-14 00:00:00', 'completed', '', '2025-09-12 14:12:05'),
-(16, 5, 7, 7, '2025-09-14 00:00:00', 'assigned', 'vỡ đuôi xe', '2025-09-12 14:27:10'),
-(18, 5, 7, 7, '2025-09-15 00:00:00', 'assigned', 'hư đèn', '2025-09-12 15:31:54'),
-(19, 5, 7, 7, '2025-10-13 00:00:00', 'assigned', '.......', '2025-09-12 16:17:35');
+(16, 5, 7, 7, '2025-09-14 00:00:00', 'completed', '', '2025-09-12 14:27:10'),
+(18, 5, 7, 7, '2025-09-15 00:00:00', 'completed', '', '2025-09-12 15:31:54'),
+(19, 5, 7, 7, '2025-10-13 00:00:00', 'confirmed', '', '2025-09-12 16:17:35'),
+(20, 29, 8, 11, '2025-10-10 14:20:00', 'pending', '', '2025-10-08 07:20:24'),
+(21, 28, 8, 8, '2025-10-09 14:26:00', 'pending', '', '2025-10-08 07:26:09'),
+(22, 26, 7, 10, '2025-10-10 00:00:00', 'confirmed', '', '2025-10-08 07:33:29'),
+(23, 12, 9, 6, '2025-10-12 14:38:00', 'assigned', '', '2025-10-08 07:39:06');
 
 -- --------------------------------------------------------
 
@@ -226,7 +231,8 @@ INSERT INTO `orders` (`id`, `user_id`, `package_id`, `payment_status`, `start_da
 (28, 6, 2, 'paid', '2025-09-29', '2027-09-29', '2025-09-29 06:32:37', 'ADMIN_250929_6_1759127557', NULL, 900000.00, NULL),
 (29, 6, 2, 'pending', '2025-09-30', '2026-09-30', '2025-09-30 16:02:44', '250930_6_1759248164', NULL, 900000.00, NULL),
 (30, 6, 3, 'pending', '2025-09-30', '2026-09-30', '2025-09-30 16:04:20', '250930_6_1759248260', NULL, 1500000.00, NULL),
-(31, 2, 2, 'paid', '2025-09-30', '2026-09-30', '2025-09-30 16:11:23', 'ADMIN_250930_2_1759248683', NULL, 900000.00, NULL);
+(31, 2, 2, 'paid', '2025-09-30', '2026-09-30', '2025-09-30 16:11:23', 'ADMIN_250930_2_1759248683', NULL, 900000.00, NULL),
+(32, 1000, 2, 'pending', '2025-10-08', '2026-10-08', '2025-10-08 07:05:55', 'ADMIN_251008_1000_1759907155', NULL, 900000.00, NULL);
 
 -- --------------------------------------------------------
 
@@ -344,7 +350,7 @@ ALTER TABLE `devices`
 -- AUTO_INCREMENT cho bảng `maintenancepackages`
 --
 ALTER TABLE `maintenancepackages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT cho bảng `maintenancereminders`
@@ -356,13 +362,13 @@ ALTER TABLE `maintenancereminders`
 -- AUTO_INCREMENT cho bảng `maintenanceschedules`
 --
 ALTER TABLE `maintenanceschedules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT cho bảng `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT cho bảng `users`
