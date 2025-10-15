@@ -33,6 +33,7 @@ import {
   Check as CheckIcon,
   Search as SearchIcon,
   Clear as ClearIcon,
+  Star as StarIcon,
 } from '@mui/icons-material';
 import {
   getSchedules,
@@ -45,6 +46,7 @@ import { getDevices } from '../../../api/devices';
 import { getTechnicians } from '../../../api/technicians';
 import { usePagination } from '../../../hooks';
 import { TablePagination } from '../../../components/common';
+import ReviewDialog from '../../user/components/ReviewDialog';
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState([]);
@@ -63,6 +65,9 @@ export default function SchedulesPage() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [reviewedSchedules, setReviewedSchedules] = useState(new Set());
 
   // Lấy thông tin user từ localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -241,6 +246,30 @@ export default function SchedulesPage() {
     }
   };
 
+  const handleOpenReview = (schedule) => {
+    setSelectedSchedule(schedule);
+    setReviewDialogOpen(true);
+  };
+
+  const handleCloseReview = () => {
+    setReviewDialogOpen(false);
+    setSelectedSchedule(null);
+  };
+
+  const handleReviewSuccess = () => {
+    setError('');
+    // Đánh dấu lịch này đã được review
+    if (selectedSchedule) {
+      setReviewedSchedules((prev) => new Set([...prev, selectedSchedule.id]));
+    }
+    // Có thể refresh lại danh sách nếu cần
+    // fetchSchedules();
+  };
+
+  const isScheduleReviewed = (scheduleId) => {
+    return reviewedSchedules.has(scheduleId);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Form data being sent:', formData);
@@ -413,7 +442,7 @@ export default function SchedulesPage() {
                   <TableCell>Kỹ thuật viên</TableCell>
                   <TableCell>Trạng thái</TableCell>
                   <TableCell>Ghi chú</TableCell>
-                  {/* <TableCell align='center'>Hành động</TableCell> */}
+                  <TableCell align='center'>Hành động</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -461,7 +490,31 @@ export default function SchedulesPage() {
                         </Typography>
                       </TableCell>
                       <TableCell align='center'>
-                        <Box>
+                        <Box display='flex' gap={1} justifyContent='center'>
+                          {role === 'user' && (
+                            <Button
+                              size='small'
+                              variant={
+                                schedule.status === 'completed' &&
+                                !isScheduleReviewed(schedule.id)
+                                  ? 'contained'
+                                  : 'outlined'
+                              }
+                              onClick={() => handleOpenReview(schedule)}
+                              color='primary'
+                              startIcon={<StarIcon />}
+                              disabled={
+                                schedule.status !== 'completed' ||
+                                isScheduleReviewed(schedule.id)
+                              }
+                            >
+                              {isScheduleReviewed(schedule.id)
+                                ? 'Đã đánh giá'
+                                : schedule.status === 'completed'
+                                ? 'Đánh giá'
+                                : 'Chưa thể đánh giá'}
+                            </Button>
+                          )}
                           {role === 'technician' &&
                             (schedule.status === 'assigned' ||
                               schedule.status === 'confirmed') && (
@@ -627,6 +680,16 @@ export default function SchedulesPage() {
           </DialogActions>
         </Box>
       </Dialog>
+
+      {/* Review Dialog */}
+      {selectedSchedule && (
+        <ReviewDialog
+          open={reviewDialogOpen}
+          onClose={handleCloseReview}
+          schedule={selectedSchedule}
+          onSuccess={handleReviewSuccess}
+        />
+      )}
     </Box>
   );
 }

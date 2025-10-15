@@ -15,6 +15,8 @@ export const API_CONFIG = {
     ADMIN_SCHEDULES: '/index.php?api=admin_schedules',
     TECHNICIAN_APPROVE: '/index.php?api=technician_approve',
     BOOK_SCHEDULE: '/index.php?api=book_schedule',
+    REVIEWS: '/api/reviews.php',
+    TECHNICIAN_STATS: '/api/technician_stats.php',
   },
 };
 

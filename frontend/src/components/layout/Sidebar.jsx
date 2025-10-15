@@ -21,6 +21,7 @@ import {
   Description,
   Add,
   Work,
+  Star,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,6 +50,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
         { label: 'Quản lý lịch', icon: <Schedule />, path: '/admin-schedules' },
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
+        { label: 'Đánh giá KTV', icon: <Star />, path: '/technician-reviews' },
       ];
     } else if (role === 'technician') {
       return [
@@ -63,6 +65,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
           label: 'Lịch của tôi',
           icon: <Work />,
           path: '/my-schedules',
+        },
+        {
+          label: 'Đánh giá của tôi',
+          icon: <Star />,
+          path: '/my-reviews',
         },
       ];
     } else {

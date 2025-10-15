@@ -12,11 +12,13 @@ import {
   ContractRequestsPage,
   ContractManagementPage,
   AdminSchedulesPage,
+  AdminTechnicianReviewsPage,
 } from '../../features/admin';
 
 import {
   TechnicianSchedulesPage,
   TechnicianMySchedulesPage,
+  TechnicianReviewsPage,
 } from '../../features/technician';
 
 import {
@@ -80,6 +82,10 @@ const AppLayout = () => {
                 element={<ContractManagementPage user={user} />}
               />
               <Route path='/admin-schedules' element={<AdminSchedulesPage />} />
+              <Route
+                path='/technician-reviews'
+                element={<AdminTechnicianReviewsPage />}
+              />
             </>
           )}
 
@@ -94,6 +100,7 @@ const AppLayout = () => {
                 path='/my-schedules'
                 element={<TechnicianMySchedulesPage />}
               />
+              <Route path='/my-reviews' element={<TechnicianReviewsPage />} />
             </>
           )}
 
