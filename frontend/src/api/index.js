@@ -5,3 +5,4 @@ export * from './devices';
 export * from './orders';
 export * from './packages';
 export * from './schedules';
+export * from './admin-stats';

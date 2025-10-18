@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3307
--- Thời gian đã tạo: Th10 14, 2025 lúc 11:57 AM
+-- Thời gian đã tạo: Th10 18, 2025 lúc 04:36 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -85,7 +85,7 @@ INSERT INTO `devices` (`id`, `user_id`, `name`, `serial_number`, `status`, `crea
 (7, 6, 'Bếp điện', '1111111110', 'maintenance', '2025-09-11 07:04:16', 'qsu tốt'),
 (8, 3, 'Máy lạnh phòng ngủ', 'AC10003', 'normal', '2025-09-12 09:59:24', NULL),
 (9, 4, 'Máy rửa chén', 'DW40001', 'normal', '2025-09-12 09:59:24', NULL),
-(10, 2, 'Lò vi sóng', 'MW50001', 'issue', '2025-09-12 09:59:24', 'Cần kiểm tra chức năng hẹn giờ'),
+(10, 2, 'Lò vi sóng', 'MW50001', 'normal', '2025-09-12 09:59:24', 'đã ổn định'),
 (11, 3, 'Quạt trần phòng khách', 'CF60001', 'maintenance', '2025-09-12 09:59:24', 'Đã thay bộ điều khiển');
 
 -- --------------------------------------------------------
@@ -173,7 +173,7 @@ INSERT INTO `maintenanceschedules` (`id`, `order_id`, `user_id`, `device_id`, `s
 (19, 5, 7, 7, '2025-10-13 00:00:00', 'confirmed', '', '2025-09-12 16:17:35'),
 (20, 29, 8, 11, '2025-10-10 14:20:00', 'pending', '', '2025-10-08 07:20:24'),
 (21, 28, 8, 8, '2025-10-09 14:26:00', 'pending', '', '2025-10-08 07:26:09'),
-(22, 26, 7, 10, '2025-10-10 00:00:00', 'confirmed', '', '2025-10-08 07:33:29'),
+(22, 26, 7, 10, '2025-10-10 00:00:00', 'completed', '', '2025-10-08 07:33:29'),
 (23, 12, 9, 6, '2025-10-12 14:38:00', 'assigned', '', '2025-10-08 07:39:06'),
 (24, 30, 7, 9, '2025-10-16 00:00:00', 'confirmed', '', '2025-10-14 06:09:14');
 
@@ -250,6 +250,13 @@ CREATE TABLE `reviews` (
   `comment` text DEFAULT NULL COMMENT 'Nhận xét của khách hàng',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ;
+
+--
+-- Đang đổ dữ liệu cho bảng `reviews`
+--
+
+INSERT INTO `reviews` (`id`, `schedule_id`, `user_id`, `technician_id`, `rating`, `comment`, `created_at`) VALUES
+(1, 22, 6, 7, 5, 'kỹ thuật viên tận tình, giỏi', '2025-10-15 03:23:54');
 
 -- --------------------------------------------------------
 

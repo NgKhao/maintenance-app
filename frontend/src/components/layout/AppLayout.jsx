@@ -13,6 +13,7 @@ import {
   ContractManagementPage,
   AdminSchedulesPage,
   AdminTechnicianReviewsPage,
+  AdminDashboardPage,
 } from '../../features/admin';
 
 import {
@@ -71,6 +72,7 @@ const AppLayout = () => {
           {/* Admin routes */}
           {role === 'admin' && (
             <>
+              <Route path='/admin-stats' element={<AdminDashboardPage />} />
               <Route path='/users' element={<UsersPage />} />
               <Route path='/packages' element={<PackagesPage />} />
               <Route

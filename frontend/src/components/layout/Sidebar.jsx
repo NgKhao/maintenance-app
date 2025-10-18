@@ -22,6 +22,7 @@ import {
   Add,
   Work,
   Star,
+  BarChart,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -51,6 +52,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
         { label: 'Thiết bị', icon: <Devices />, path: '/devices' },
         { label: 'Lịch bảo trì', icon: <Schedule />, path: '/schedules' },
         { label: 'Đánh giá KTV', icon: <Star />, path: '/technician-reviews' },
+        {
+          label: 'Thống kê & Báo cáo',
+          icon: <BarChart />,
+          path: '/admin-stats',
+        },
       ];
     } else if (role === 'technician') {
       return [

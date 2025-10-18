@@ -5,3 +5,4 @@ export { default as ContractRequestsPage } from './pages/ContractRequestsPage.js
 export { default as ContractManagementPage } from './pages/ContractManagementPage.jsx';
 export { default as AdminSchedulesPage } from './pages/AdminSchedulesPage.jsx';
 export { default as AdminTechnicianReviewsPage } from './pages/AdminTechnicianReviewsPage.jsx';
+export { default as AdminDashboardPage } from './pages/AdminDashboardPage.jsx';

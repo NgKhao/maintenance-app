@@ -18,6 +18,7 @@ export const ROUTES = {
   CONTRACT_REQUESTS: '/contract-requests',
   CONTRACT_MANAGEMENT: '/contract-management',
   ADMIN_SCHEDULES: '/admin-schedules',
+  ADMIN_STATS: '/admin-stats',
 
   // Technician routes
   TECHNICIAN_SCHEDULES: '/technician-schedules',
