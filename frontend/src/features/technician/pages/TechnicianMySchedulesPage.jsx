@@ -36,6 +36,7 @@ import {
 import axios from 'axios';
 import { usePagination } from '../../../hooks';
 import { TablePagination } from '../../../components/common';
+import { ChatButton } from '../../../components/chat';
 
 export default function TechnicianMySchedulesPage() {
   const [schedules, setSchedules] = useState([]);
@@ -374,23 +375,23 @@ export default function TechnicianMySchedulesPage() {
                         </Typography>
                       </TableCell>
                       <TableCell align='center'>
-                        {schedule.status === 'confirmed' ? (
-                          <Button
-                            variant='contained'
-                            color='primary'
-                            size='small'
-                            startIcon={<StartIcon />}
-                            onClick={() =>
-                              handleUpdateScheduleStatus(
-                                schedule.id,
-                                'in_progress'
-                              )
-                            }
-                          >
-                            Bắt đầu
-                          </Button>
-                        ) : schedule.status === 'in_progress' ? (
-                          <Box display='flex' gap={1}>
+                        <Box display='flex' gap={1} justifyContent='center'>
+                          {schedule.status === 'confirmed' ? (
+                            <Button
+                              variant='contained'
+                              color='primary'
+                              size='small'
+                              startIcon={<StartIcon />}
+                              onClick={() =>
+                                handleUpdateScheduleStatus(
+                                  schedule.id,
+                                  'in_progress'
+                                )
+                              }
+                            >
+                              Bắt đầu
+                            </Button>
+                          ) : schedule.status === 'in_progress' ? (
                             <Button
                               variant='outlined'
                               color='primary'
@@ -407,12 +408,32 @@ export default function TechnicianMySchedulesPage() {
                             >
                               Cập nhật thiết bị
                             </Button>
-                          </Box>
-                        ) : (
-                          <Typography variant='body2' color='text.secondary'>
-                            Đã hoàn thành
-                          </Typography>
-                        )}
+                          ) : (
+                            <Typography variant='body2' color='text.secondary'>
+                              Đã hoàn thành
+                            </Typography>
+                          )}
+
+                          {/* Chat button - chỉ hiện khi confirmed/in_progress */}
+                          {(schedule.status === 'confirmed' ||
+                            schedule.status === 'in_progress') && (
+                            <ChatButton
+                              scheduleId={schedule.id}
+                              scheduleDetails={{
+                                customerId: schedule.customer_id,
+                                technicianId: user.id,
+                                customerName: schedule.user_name,
+                                technicianName: user.name,
+                                deviceName: schedule.device_name,
+                                scheduledDate: schedule.scheduled_date,
+                              }}
+                              currentUserId={user.id}
+                              currentUserName={user.name}
+                              currentUserRole='technician'
+                              showAlways={true}
+                            />
+                          )}
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))

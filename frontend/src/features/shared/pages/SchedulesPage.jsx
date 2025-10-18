@@ -47,6 +47,7 @@ import { getTechnicians } from '../../../api/technicians';
 import { usePagination } from '../../../hooks';
 import { TablePagination } from '../../../components/common';
 import ReviewDialog from '../../user/components/ReviewDialog';
+import { ChatButton } from '../../../components/chat';
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState([]);
@@ -492,28 +493,52 @@ export default function SchedulesPage() {
                       <TableCell align='center'>
                         <Box display='flex' gap={1} justifyContent='center'>
                           {role === 'user' && (
-                            <Button
-                              size='small'
-                              variant={
-                                schedule.status === 'completed' &&
-                                !isScheduleReviewed(schedule.id)
-                                  ? 'contained'
-                                  : 'outlined'
-                              }
-                              onClick={() => handleOpenReview(schedule)}
-                              color='primary'
-                              startIcon={<StarIcon />}
-                              disabled={
-                                schedule.status !== 'completed' ||
-                                isScheduleReviewed(schedule.id)
-                              }
-                            >
-                              {isScheduleReviewed(schedule.id)
-                                ? 'Đã đánh giá'
-                                : schedule.status === 'completed'
-                                ? 'Đánh giá'
-                                : 'Chưa thể đánh giá'}
-                            </Button>
+                            <>
+                              <Button
+                                size='small'
+                                variant={
+                                  schedule.status === 'completed' &&
+                                  !isScheduleReviewed(schedule.id)
+                                    ? 'contained'
+                                    : 'outlined'
+                                }
+                                onClick={() => handleOpenReview(schedule)}
+                                color='primary'
+                                startIcon={<StarIcon />}
+                                disabled={
+                                  schedule.status !== 'completed' ||
+                                  isScheduleReviewed(schedule.id)
+                                }
+                              >
+                                {isScheduleReviewed(schedule.id)
+                                  ? 'Đã đánh giá'
+                                  : schedule.status === 'completed'
+                                  ? 'Đánh giá'
+                                  : 'Chưa thể đánh giá'}
+                              </Button>
+
+                              {/* Chat button - chỉ hiện khi confirmed/in_progress */}
+                              {(schedule.status === 'confirmed' ||
+                                schedule.status === 'in_progress') && (
+                                <ChatButton
+                                  scheduleId={schedule.id}
+                                  scheduleDetails={{
+                                    customerId: user.id,
+                                    technicianId: schedule.technician_id,
+                                    customerName: user.name,
+                                    technicianName:
+                                      schedule.technician_name ||
+                                      'Kỹ thuật viên',
+                                    deviceName: schedule.device_name,
+                                    scheduledDate: schedule.scheduled_date,
+                                  }}
+                                  currentUserId={user.id}
+                                  currentUserName={user.name}
+                                  currentUserRole='user'
+                                  showAlways={true}
+                                />
+                              )}
+                            </>
                           )}
                           {role === 'technician' &&
                             (schedule.status === 'assigned' ||

@@ -46,6 +46,7 @@ if ($method === 'GET') {
                ms.scheduled_date, 
                ms.note, 
                ms.status,
+               o.user_id AS customer_id,
                u.name AS user_name, 
                u.email AS user_email,
                u.phone AS user_phone,
