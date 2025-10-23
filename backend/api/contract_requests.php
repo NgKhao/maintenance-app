@@ -121,27 +121,98 @@ if ($method === 'POST') {
         }
 
         try {
-            // Tạo yêu cầu mới
-            $stmt = $pdo->prepare("
-                INSERT INTO contract_requests (
-                    order_id, request_type, note, 
-                    extend_package_id, extend_months, requested_end_date
-                ) VALUES (?,?,?,?,?,?)
-            ");
+            $pdo->beginTransaction();
 
-            if ($stmt->execute([$order_id, $request_type, $note, $extend_package_id, $extend_months, $requested_end_date])) {
-                $request_id = $pdo->lastInsertId();
+            // **NẾU LÀ GIA HẠN → TẠO ORDER GIA HẠN + ZALOPAY**
+            if ($request_type === 'extend') {
+                if (!$extend_months) {
+                    http_response_code(400);
+                    echo json_encode(["error" => "Số tháng gia hạn bắt buộc"]);
+                    exit;
+                }
 
+                // Lấy thông tin package để tính giá
+                $stmt = $pdo->prepare("SELECT p.name, p.price FROM maintenancepackages p JOIN orders o ON o.package_id = p.id WHERE o.id = ?");
+                $stmt->execute([$order_id]);
+                $package = $stmt->fetch();
+
+                // Tính giá gia hạn (chia đều theo tháng)
+                $extension_price = ($package['price'] / 12) * $extend_months;
+                $app_trans_id = date('ymd') . '_' . time() . '_EXT' . $order_id;
+
+                // Tạo extension order
+                $stmt = $pdo->prepare("
+                    INSERT INTO orders (
+                        user_id, package_id, payment_status, 
+                        start_date, end_date, app_trans_id, amount,
+                        is_extension, parent_order_id, extension_months
+                    ) 
+                    SELECT user_id, package_id, 'pending', NOW(), NOW(), ?, ?, 1, id, ?
+                    FROM orders WHERE id = ?
+                ");
+                $stmt->execute([$app_trans_id, $extension_price, $extend_months, $order_id]);
+
+                $extension_order_id = $pdo->lastInsertId();
+
+                // Gọi ZaloPay Create Order
+                $GLOBALS['zalopay_included'] = true;
+                require_once __DIR__ . '/zalopay_create.php';
+                $zalopay_result = createZaloPayOrder(
+                    $extension_order_id,
+                    $extension_price,
+                    "Gia hạn hợp đồng #{$order_id} - {$package['name']} ({$extend_months} tháng)",
+                    $app_trans_id
+                );
+
+                if ($zalopay_result['return_code'] != 1) {
+                    throw new Exception("Lỗi tạo thanh toán ZaloPay: " . ($zalopay_result['return_message'] ?? 'Unknown error'));
+                }
+
+                // Tạo contract_request với trạng thái 'pending_payment'
+                $stmt = $pdo->prepare("
+                    INSERT INTO contract_requests (
+                        order_id, request_type, note, 
+                        extend_months, old_end_date, extension_order_id,
+                        status
+                    ) VALUES (?, 'extend', ?, ?, ?, ?, 'pending_payment')
+                ");
+                $stmt->execute([
+                    $order_id,
+                    $note,
+                    $extend_months,
+                    $order['end_date'],
+                    $extension_order_id
+                ]);
+
+                $pdo->commit();
                 echo json_encode([
                     "success" => true,
-                    "message" => "Yêu cầu đã được gửi thành công",
-                    "request_id" => $request_id
+                    "message" => "Vui lòng thanh toán để hoàn tất yêu cầu gia hạn",
+                    "payment_url" => $zalopay_result['order_url'],
+                    "extension_order_id" => $extension_order_id,
+                    "amount" => $extension_price
                 ]);
-            } else {
-                http_response_code(500);
-                echo json_encode(["error" => "Không thể tạo yêu cầu"]);
+            }
+            // **NẾU LÀ KẾT THÚC → TẠO REQUEST TRỰC TIẾP**
+            else {
+                $stmt = $pdo->prepare("
+                    INSERT INTO contract_requests (
+                        order_id, request_type, note, 
+                        requested_end_date, old_end_date
+                    ) VALUES (?, 'terminate', ?, ?, ?)
+                ");
+                $stmt->execute([
+                    $order_id,
+                    $note,
+                    $requested_end_date,
+                    $order['end_date']
+                ]);
+
+                $pdo->commit();
+                echo json_encode(["success" => true, "message" => "Tạo yêu cầu kết thúc thành công"]);
             }
         } catch (Exception $e) {
+            $pdo->rollBack();
             http_response_code(500);
             echo json_encode(["error" => "Lỗi server: " . $e->getMessage()]);
         }
@@ -193,11 +264,24 @@ if ($method === 'POST') {
 
             if ($status === 'approved') {
                 if ($request['request_type'] === 'extend') {
+                    // **Kiểm tra extension order đã thanh toán chưa**
+                    if (!$request['extension_order_id']) {
+                        throw new Exception("Không tìm thấy đơn gia hạn");
+                    }
+
+                    $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
+                    $stmt->execute([$request['extension_order_id']]);
+                    $extension_order = $stmt->fetch();
+
+                    if (!$extension_order || $extension_order['payment_status'] !== 'paid') {
+                        throw new Exception("Đơn gia hạn chưa được thanh toán");
+                    }
+
                     // Gia hạn hợp đồng
                     $extend_months = $request['extend_months'] ?: 12; // Default 12 tháng
                     $new_end_date = date('Y-m-d', strtotime($request['current_end_date'] . ' + ' . $extend_months . ' months'));
 
-                    // Cập nhật ngày kết thúc
+                    // Cập nhật ngày kết thúc của HỢP ĐỒNG GỐC
                     $stmt = $pdo->prepare("UPDATE orders SET end_date = ? WHERE id = ?");
                     $stmt->execute([$new_end_date, $request['order_id']]);
 

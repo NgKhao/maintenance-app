@@ -107,7 +107,14 @@ export default function ContractsPage() {
         requestData.requested_end_date = requestForm.requested_end_date;
       }
 
-      await createContractRequest(requestData);
+      const response = await createContractRequest(requestData);
+
+      // **NẾU LÀ GIA HẠN → Chuyển đến trang thanh toán ZaloPay**
+      if (requestForm.type === 'extend' && response.payment_url) {
+        // Chuyển thẳng đến ZaloPay không dùng alert
+        window.location.href = response.payment_url;
+        return; // Không close dialog vì đang redirect
+      }
 
       // Refresh requests
       await fetchUserRequests();
@@ -134,7 +141,9 @@ export default function ContractsPage() {
   // Check if contract has pending request
   const hasPendingRequest = (contractId) => {
     return userRequests.some(
-      (req) => req.order_id === contractId && req.status === 'pending'
+      (req) =>
+        req.order_id === contractId &&
+        (req.status === 'pending' || req.status === 'pending_payment')
     );
   };
 
@@ -606,7 +615,13 @@ export default function ContractsPage() {
                           {/* Show pending request status */}
                           {hasPendingRequest(contract.id) && (
                             <Alert severity='info' sx={{ mt: 2 }}>
-                              Có yêu cầu đang chờ xử lý cho hợp đồng này
+                              {userRequests.find(
+                                (req) =>
+                                  req.order_id === contract.id &&
+                                  req.status === 'pending_payment'
+                              )
+                                ? 'Có yêu cầu gia hạn đang chờ thanh toán. Vui lòng hoàn tất thanh toán trước khi tạo yêu cầu mới.'
+                                : 'Có yêu cầu đang chờ xử lý cho hợp đồng này'}
                             </Alert>
                           )}
                         </>

@@ -103,6 +103,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ");
 
         if ($stmt->execute([$zp_trans_id, $app_trans_id])) {
+            // **NẾU LÀ EXTENSION ORDER → CẬP NHẬT CONTRACT_REQUEST**
+            if ($order['is_extension'] == 1 && $order['parent_order_id']) {
+                // Cập nhật status từ 'pending_payment' → 'pending' (chờ admin duyệt)
+                $stmt = $pdo->prepare("
+                    UPDATE contract_requests 
+                    SET status = 'pending',
+                        request_date = NOW()
+                    WHERE extension_order_id = ? AND status = 'pending_payment'
+                ");
+                $result = $stmt->execute([$order['id']]);
+
+                // Log cho debug
+                if (env('APP_DEBUG', false)) {
+                    error_log("Updated contract_request for extension_order_id: {$order['id']}, affected rows: " . $stmt->rowCount());
+                }
+
+                // Nếu không có request nào được cập nhật (có thể đã bị xóa), tạo mới
+                if ($stmt->rowCount() == 0) {
+                    $stmt = $pdo->prepare("
+                        INSERT INTO contract_requests (
+                            order_id, request_type, note, 
+                            extend_months, old_end_date, extension_order_id,
+                            status, request_date
+                        ) 
+                        SELECT 
+                            parent_order_id, 
+                            'extend', 
+                            CONCAT('Thanh toán gia hạn ', extension_months, ' tháng'),
+                            extension_months,
+                            (SELECT end_date FROM orders WHERE id = parent_order_id),
+                            ?,
+                            'pending',
+                            NOW()
+                        FROM orders WHERE id = ?
+                    ");
+                    $stmt->execute([$order['id'], $order['id']]);
+
+                    if (env('APP_DEBUG', false)) {
+                        error_log("Created new contract_request for extension_order_id: {$order['id']}");
+                    }
+                }
+            }
+
             // Log thành công
             if (env('APP_DEBUG', false)) {
                 error_log("Payment successful for order ID: {$order['id']}, app_trans_id: {$app_trans_id}");

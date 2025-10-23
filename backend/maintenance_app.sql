@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3307
--- Thời gian đã tạo: Th10 18, 2025 lúc 04:36 AM
+-- Thời gian đã tạo: Th10 23, 2025 lúc 08:14 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -31,30 +31,34 @@ CREATE TABLE `contract_requests` (
   `id` int(11) NOT NULL,
   `order_id` int(11) NOT NULL,
   `request_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `status` enum('pending','pending_payment','approved','rejected') DEFAULT 'pending',
   `note` text DEFAULT NULL,
   `request_type` enum('extend','terminate') NOT NULL,
   `extend_package_id` int(11) DEFAULT NULL,
-  `extend_months` int(11) DEFAULT NULL,
+  `extend_months` int(11) DEFAULT NULL COMMENT 'Số tháng muốn gia hạn (dùng cho tính tiền)',
   `requested_end_date` date DEFAULT NULL,
   `admin_id` int(11) DEFAULT NULL,
   `admin_note` text DEFAULT NULL,
   `processed_date` timestamp NULL DEFAULT NULL,
   `old_end_date` date DEFAULT NULL,
-  `new_end_date` date DEFAULT NULL
+  `new_end_date` date DEFAULT NULL,
+  `extension_order_id` int(11) DEFAULT NULL COMMENT 'ID của order gia hạn được tạo khi duyệt'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `contract_requests`
 --
 
-INSERT INTO `contract_requests` (`id`, `order_id`, `request_date`, `status`, `note`, `request_type`, `extend_package_id`, `extend_months`, `requested_end_date`, `admin_id`, `admin_note`, `processed_date`, `old_end_date`, `new_end_date`) VALUES
-(1, 1, '2025-09-10 12:01:13', 'pending', 'Khách hàng chuyển địa chỉ mới, yêu cầu kết thúc hợp đồng', 'extend', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2, 2, '2025-09-10 12:01:13', 'approved', 'Hợp đồng kết thúc sớm do chuyển nhà', 'extend', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3, 3, '2025-09-12 09:59:24', 'pending', 'Yêu cầu kết thúc do không hài lòng với dịch vụ', 'extend', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(4, 25, '2025-09-29 05:39:27', 'approved', 'Test extend request', 'extend', NULL, 6, NULL, 1, 'Duyet gia han', '2025-09-29 05:39:36', '2026-09-28', '2027-03-28'),
-(5, 27, '2025-09-29 06:10:09', 'approved', '', 'extend', NULL, 12, NULL, 1, '', '2025-09-29 06:10:35', '2026-09-29', '2027-09-29'),
-(6, 28, '2025-09-30 16:08:16', 'approved', 'hợp llý....', 'extend', NULL, 12, NULL, 1, '......', '2025-09-30 16:10:17', '2026-09-29', '2027-09-29');
+INSERT INTO `contract_requests` (`id`, `order_id`, `request_date`, `status`, `note`, `request_type`, `extend_package_id`, `extend_months`, `requested_end_date`, `admin_id`, `admin_note`, `processed_date`, `old_end_date`, `new_end_date`, `extension_order_id`) VALUES
+(1, 1, '2025-09-10 12:01:13', 'pending', 'Khách hàng chuyển địa chỉ mới, yêu cầu kết thúc hợp đồng', 'extend', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(2, 2, '2025-09-10 12:01:13', 'approved', 'Hợp đồng kết thúc sớm do chuyển nhà', 'extend', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(3, 3, '2025-09-12 09:59:24', 'pending', 'Yêu cầu kết thúc do không hài lòng với dịch vụ', 'extend', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(4, 25, '2025-09-29 05:39:27', 'approved', 'Test extend request', 'extend', NULL, 6, NULL, 1, 'Duyet gia han', '2025-09-29 05:39:36', '2026-09-28', '2027-03-28', NULL),
+(5, 27, '2025-09-29 06:10:09', 'approved', '', 'extend', NULL, 12, NULL, 1, '', '2025-09-29 06:10:35', '2026-09-29', '2027-09-29', NULL),
+(6, 28, '2025-09-30 16:08:16', 'approved', 'hợp llý....', 'extend', NULL, 12, NULL, 1, '......', '2025-09-30 16:10:17', '2026-09-29', '2027-09-29', NULL),
+(7, 28, '2025-10-23 15:40:02', 'approved', '', 'extend', NULL, 12, NULL, 1, '', '2025-10-23 15:46:35', '2027-09-29', '2028-09-29', NULL),
+(8, 27, '2025-10-23 15:42:19', 'approved', '', 'terminate', NULL, NULL, '2025-11-22', 1, '', '2025-10-23 15:42:39', '2027-09-29', '2025-11-22', NULL),
+(10, 33, '2025-10-23 18:07:37', 'pending', '', 'extend', NULL, 6, NULL, NULL, NULL, NULL, '2026-10-23', NULL, 35);
 
 -- --------------------------------------------------------
 
@@ -80,7 +84,7 @@ INSERT INTO `devices` (`id`, `user_id`, `name`, `serial_number`, `status`, `crea
 (1, 2, 'Máy lạnh Phòng khách', 'AC10001', 'normal', '2025-09-10 12:01:13', NULL),
 (2, 2, 'Máy giặt', 'WM20001', 'normal', '2025-09-10 12:01:13', NULL),
 (3, 3, 'Tủ lạnh', 'FR30001', 'issue', '2025-09-10 12:01:13', NULL),
-(4, 4, 'Điều hòa phòng ngủ', 'AC10002', 'maintenance', '2025-09-10 12:01:13', NULL),
+(4, 4, 'Điều hòa phòng ngủ', 'AC10002', 'normal', '2025-09-10 12:01:13', ''),
 (6, 2, 'bayy', '1111111', 'maintenance', '2025-09-11 04:18:47', NULL),
 (7, 6, 'Bếp điện', '1111111110', 'maintenance', '2025-09-11 07:04:16', 'qsu tốt'),
 (8, 3, 'Máy lạnh phòng ngủ', 'AC10003', 'normal', '2025-09-12 09:59:24', NULL),
@@ -111,7 +115,7 @@ INSERT INTO `maintenancepackages` (`id`, `name`, `description`, `price`, `durati
 (1, 'Gói cơ bản', 'Bảo trì thiết bị cơ bản 1 lần/tháng', 500000.00, 12, '2025-09-10 12:01:13'),
 (2, 'Gói nâng cao', 'Bảo trì thiết bị nâng cao 2 lần/tháng', 900000.00, 12, '2025-09-10 12:01:13'),
 (3, 'Gói VIP', 'Bảo trì thiết bị VIP 4 lần/tháng, ưu tiên kỹ thuật viên', 1500000.00, 12, '2025-09-10 12:01:13'),
-(5, 'gói phụ', 'aaaaa', 180000.00, 6, '2025-10-08 07:28:15');
+(5, 'Gói phụu', 'aaaaa', 180000.00, 6, '2025-10-08 07:28:15');
 
 -- --------------------------------------------------------
 
@@ -170,12 +174,14 @@ INSERT INTO `maintenanceschedules` (`id`, `order_id`, `user_id`, `device_id`, `s
 (15, 5, 7, 7, '2025-09-14 00:00:00', 'completed', '', '2025-09-12 14:12:05'),
 (16, 5, 7, 7, '2025-09-14 00:00:00', 'completed', '', '2025-09-12 14:27:10'),
 (18, 5, 7, 7, '2025-09-15 00:00:00', 'completed', '', '2025-09-12 15:31:54'),
-(19, 5, 7, 7, '2025-10-13 00:00:00', 'confirmed', '', '2025-09-12 16:17:35'),
+(19, 5, 7, 7, '2025-10-13 00:00:00', 'in_progress', '', '2025-09-12 16:17:35'),
 (20, 29, 8, 11, '2025-10-10 14:20:00', 'pending', '', '2025-10-08 07:20:24'),
 (21, 28, 8, 8, '2025-10-09 14:26:00', 'pending', '', '2025-10-08 07:26:09'),
 (22, 26, 7, 10, '2025-10-10 00:00:00', 'completed', '', '2025-10-08 07:33:29'),
 (23, 12, 9, 6, '2025-10-12 14:38:00', 'assigned', '', '2025-10-08 07:39:06'),
-(24, 30, 7, 9, '2025-10-16 00:00:00', 'confirmed', '', '2025-10-14 06:09:14');
+(24, 30, 7, 9, '2025-10-16 00:00:00', 'confirmed', '', '2025-10-14 06:09:14'),
+(25, 29, 7, 8, '2025-10-19 00:00:00', 'confirmed', '', '2025-10-18 09:09:33'),
+(26, 29, 7, 4, '2025-10-24 00:00:00', 'completed', '', '2025-10-23 15:32:20');
 
 -- --------------------------------------------------------
 
@@ -194,46 +200,51 @@ CREATE TABLE `orders` (
   `app_trans_id` varchar(50) DEFAULT NULL COMMENT 'Mã giao dịch unique của app',
   `zalo_trans_id` varchar(50) DEFAULT NULL COMMENT 'Mã giao dịch từ ZaloPay',
   `amount` decimal(15,2) DEFAULT NULL COMMENT 'Số tiền thanh toán',
-  `paid_at` timestamp NULL DEFAULT NULL COMMENT 'Thời điểm thanh toán thành công'
+  `paid_at` timestamp NULL DEFAULT NULL COMMENT 'Thời điểm thanh toán thành công',
+  `is_extension` tinyint(1) DEFAULT 0 COMMENT '1 = Đơn gia hạn, 0 = Đơn mới',
+  `parent_order_id` int(11) DEFAULT NULL COMMENT 'ID của hợp đồng gốc (nếu là gia hạn)',
+  `extension_months` int(11) DEFAULT NULL COMMENT 'Số tháng gia hạn'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `orders`
 --
 
-INSERT INTO `orders` (`id`, `user_id`, `package_id`, `payment_status`, `start_date`, `end_date`, `created_at`, `app_trans_id`, `zalo_trans_id`, `amount`, `paid_at`) VALUES
-(1, 2, 1, 'paid', '2025-09-01', '2026-08-31', '2025-09-10 12:01:13', NULL, NULL, NULL, NULL),
-(2, 3, 2, 'paid', '2025-08-15', '2026-08-14', '2025-09-10 12:01:13', NULL, NULL, NULL, NULL),
-(3, 4, 3, 'pending', '2025-09-10', '2026-09-09', '2025-09-10 12:01:13', NULL, NULL, NULL, NULL),
-(4, 5, 1, 'paid', '2025-09-11', '2026-09-11', '2025-09-11 05:09:07', NULL, NULL, NULL, NULL),
-(5, 6, 2, 'paid', '2025-09-11', '2026-09-11', '2025-09-11 07:06:00', NULL, NULL, NULL, NULL),
-(6, 6, 2, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:06:09', NULL, NULL, NULL, NULL),
-(7, 6, 3, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:16:52', NULL, NULL, NULL, NULL),
-(8, 6, 3, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:22:55', NULL, NULL, NULL, NULL),
-(9, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:03:59', '250928_6_1759079039', NULL, 900000.00, NULL),
-(10, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:04:11', '250928_6_1759079051', NULL, 900000.00, NULL),
-(11, 2, 1, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:07:51', '250928_2_1759079271', NULL, 500000.00, NULL),
-(12, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:08:00', '250928_6_1759079280', NULL, 900000.00, NULL),
-(13, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:08:05', '250928_6_1759079285', NULL, 900000.00, NULL),
-(14, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:08:30', '250928_6_1759079310', NULL, 900000.00, NULL),
-(15, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:11:48', '250928_6_1759079508', NULL, 900000.00, NULL),
-(16, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:12:46', '250928_6_1759079566', NULL, 900000.00, NULL),
-(17, 6, 2, 'paid', '2025-09-28', '2026-09-28', '2025-09-28 17:13:01', '250928_6_1759079581', NULL, 900000.00, NULL),
-(18, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:14:57', '250928_6_1759079697', NULL, 1500000.00, NULL),
-(19, 6, 1, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:29:26', '250928_6_1759080566', NULL, 500000.00, NULL),
-(20, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:30:43', '250928_6_1759080643', NULL, 1500000.00, NULL),
-(21, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:30:51', '250928_6_1759080651', NULL, 1500000.00, NULL),
-(22, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:32:34', '250928_6_1759080754', NULL, 1500000.00, NULL),
-(23, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:40:00', '250928_6_1759081200', NULL, 1500000.00, NULL),
-(24, 6, 1, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:45:36', '250928_6_1759081536', NULL, 500000.00, NULL),
-(25, 6, 1, 'paid', '2025-09-28', '2027-03-28', '2025-09-28 17:56:50', '250928_6_1759082210', '240928123456', 500000.00, '2025-09-28 17:57:09'),
-(26, 6, 1, 'paid', '2025-09-28', '2026-09-28', '2025-09-28 17:58:09', '250928_6_1759082289', '250929000000582', 500000.00, '2025-09-28 17:59:56'),
-(27, 6, 1, 'paid', '2025-09-29', '2027-09-29', '2025-09-29 05:39:03', 'ADMIN_250929_6_1759124343', NULL, 500000.00, NULL),
-(28, 6, 2, 'paid', '2025-09-29', '2027-09-29', '2025-09-29 06:32:37', 'ADMIN_250929_6_1759127557', NULL, 900000.00, NULL),
-(29, 6, 2, 'pending', '2025-09-30', '2026-09-30', '2025-09-30 16:02:44', '250930_6_1759248164', NULL, 900000.00, NULL),
-(30, 6, 3, 'pending', '2025-09-30', '2026-09-30', '2025-09-30 16:04:20', '250930_6_1759248260', NULL, 1500000.00, NULL),
-(31, 2, 2, 'paid', '2025-09-30', '2026-09-30', '2025-09-30 16:11:23', 'ADMIN_250930_2_1759248683', NULL, 900000.00, NULL),
-(32, 1000, 2, 'pending', '2025-10-08', '2026-10-08', '2025-10-08 07:05:55', 'ADMIN_251008_1000_1759907155', NULL, 900000.00, NULL);
+INSERT INTO `orders` (`id`, `user_id`, `package_id`, `payment_status`, `start_date`, `end_date`, `created_at`, `app_trans_id`, `zalo_trans_id`, `amount`, `paid_at`, `is_extension`, `parent_order_id`, `extension_months`) VALUES
+(1, 2, 1, 'paid', '2025-09-01', '2026-08-31', '2025-09-10 12:01:13', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(2, 3, 2, 'paid', '2025-08-15', '2026-08-14', '2025-09-10 12:01:13', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(3, 4, 3, 'pending', '2025-09-10', '2026-09-09', '2025-09-10 12:01:13', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(4, 5, 1, 'paid', '2025-09-11', '2026-09-11', '2025-09-11 05:09:07', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(5, 6, 2, 'paid', '2025-09-11', '2026-09-11', '2025-09-11 07:06:00', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(6, 6, 2, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:06:09', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(7, 6, 3, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:16:52', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(8, 6, 3, 'pending', '2025-09-12', '2026-09-12', '2025-09-12 16:22:55', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(9, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:03:59', '250928_6_1759079039', NULL, 900000.00, NULL, 0, NULL, NULL),
+(10, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:04:11', '250928_6_1759079051', NULL, 900000.00, NULL, 0, NULL, NULL),
+(11, 2, 1, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:07:51', '250928_2_1759079271', NULL, 500000.00, NULL, 0, NULL, NULL),
+(12, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:08:00', '250928_6_1759079280', NULL, 900000.00, NULL, 0, NULL, NULL),
+(13, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:08:05', '250928_6_1759079285', NULL, 900000.00, NULL, 0, NULL, NULL),
+(14, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:08:30', '250928_6_1759079310', NULL, 900000.00, NULL, 0, NULL, NULL),
+(15, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:11:48', '250928_6_1759079508', NULL, 900000.00, NULL, 0, NULL, NULL),
+(16, 6, 2, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:12:46', '250928_6_1759079566', NULL, 900000.00, NULL, 0, NULL, NULL),
+(17, 6, 2, 'paid', '2025-09-28', '2026-09-28', '2025-09-28 17:13:01', '250928_6_1759079581', NULL, 900000.00, NULL, 0, NULL, NULL),
+(18, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:14:57', '250928_6_1759079697', NULL, 1500000.00, NULL, 0, NULL, NULL),
+(19, 6, 1, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:29:26', '250928_6_1759080566', NULL, 500000.00, NULL, 0, NULL, NULL),
+(20, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:30:43', '250928_6_1759080643', NULL, 1500000.00, NULL, 0, NULL, NULL),
+(21, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:30:51', '250928_6_1759080651', NULL, 1500000.00, NULL, 0, NULL, NULL),
+(22, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:32:34', '250928_6_1759080754', NULL, 1500000.00, NULL, 0, NULL, NULL),
+(23, 6, 3, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:40:00', '250928_6_1759081200', NULL, 1500000.00, NULL, 0, NULL, NULL),
+(24, 6, 1, 'pending', '2025-09-28', '2026-09-28', '2025-09-28 17:45:36', '250928_6_1759081536', NULL, 500000.00, NULL, 0, NULL, NULL),
+(25, 6, 1, 'paid', '2025-09-28', '2027-03-28', '2025-09-28 17:56:50', '250928_6_1759082210', '240928123456', 500000.00, '2025-09-28 17:57:09', 0, NULL, NULL),
+(26, 6, 1, 'paid', '2025-09-28', '2026-09-28', '2025-09-28 17:58:09', '250928_6_1759082289', '250929000000582', 500000.00, '2025-09-28 17:59:56', 0, NULL, NULL),
+(27, 6, 1, 'paid', '2025-09-29', '2025-11-22', '2025-09-29 05:39:03', 'ADMIN_250929_6_1759124343', NULL, 500000.00, NULL, 0, NULL, NULL),
+(28, 6, 2, 'paid', '2025-09-29', '2028-09-29', '2025-09-29 06:32:37', 'ADMIN_250929_6_1759127557', NULL, 900000.00, NULL, 0, NULL, NULL),
+(29, 6, 2, 'pending', '2025-09-30', '2026-09-30', '2025-09-30 16:02:44', '250930_6_1759248164', NULL, 900000.00, NULL, 0, NULL, NULL),
+(30, 6, 3, 'pending', '2025-09-30', '2026-09-30', '2025-09-30 16:04:20', '250930_6_1759248260', NULL, 1500000.00, NULL, 0, NULL, NULL),
+(31, 2, 2, 'paid', '2025-09-30', '2026-09-30', '2025-09-30 16:11:23', 'ADMIN_250930_2_1759248683', NULL, 900000.00, NULL, 0, NULL, NULL),
+(32, 1000, 2, 'pending', '2025-10-08', '2026-10-08', '2025-10-08 07:05:55', 'ADMIN_251008_1000_1759907155', NULL, 900000.00, NULL, 0, NULL, NULL),
+(33, 6, 1, 'paid', '2025-10-23', '2026-10-23', '2025-10-23 16:56:52', '251023_6_1761238612', '251023000125115', 500000.00, '2025-10-23 16:58:14', 0, NULL, NULL),
+(35, 6, 1, 'paid', '2025-10-24', '2025-10-24', '2025-10-23 18:06:35', '251023_1761242795_EXT33', '251024000000447', 250000.00, '2025-10-23 18:07:37', 1, 33, 6);
 
 -- --------------------------------------------------------
 
@@ -256,7 +267,8 @@ CREATE TABLE `reviews` (
 --
 
 INSERT INTO `reviews` (`id`, `schedule_id`, `user_id`, `technician_id`, `rating`, `comment`, `created_at`) VALUES
-(1, 22, 6, 7, 5, 'kỹ thuật viên tận tình, giỏi', '2025-10-15 03:23:54');
+(1, 22, 6, 7, 5, 'kỹ thuật viên tận tình, giỏi', '2025-10-15 03:23:54'),
+(2, 26, 6, 7, 5, 'tuyệt vời', '2025-10-23 15:37:21');
 
 -- --------------------------------------------------------
 
@@ -306,7 +318,8 @@ ALTER TABLE `contract_requests`
   ADD KEY `fk_contract_requests_extend_package` (`extend_package_id`),
   ADD KEY `idx_contract_requests_type_status` (`request_type`,`status`),
   ADD KEY `idx_contract_requests_order_id` (`order_id`),
-  ADD KEY `idx_contract_requests_admin_id` (`admin_id`);
+  ADD KEY `idx_contract_requests_admin_id` (`admin_id`),
+  ADD KEY `idx_extension_order` (`extension_order_id`);
 
 --
 -- Chỉ mục cho bảng `devices`
@@ -345,7 +358,8 @@ ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `app_trans_id` (`app_trans_id`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `package_id` (`package_id`);
+  ADD KEY `package_id` (`package_id`),
+  ADD KEY `idx_parent_order` (`parent_order_id`);
 
 --
 -- Chỉ mục cho bảng `reviews`
@@ -371,7 +385,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT cho bảng `contract_requests`
 --
 ALTER TABLE `contract_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT cho bảng `devices`
@@ -395,13 +409,13 @@ ALTER TABLE `maintenancereminders`
 -- AUTO_INCREMENT cho bảng `maintenanceschedules`
 --
 ALTER TABLE `maintenanceschedules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT cho bảng `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT cho bảng `reviews`
@@ -424,6 +438,7 @@ ALTER TABLE `users`
 --
 ALTER TABLE `contract_requests`
   ADD CONSTRAINT `contract_requests_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `contract_requests_ibfk_2` FOREIGN KEY (`extension_order_id`) REFERENCES `orders` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_contract_requests_admin` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_contract_requests_extend_package` FOREIGN KEY (`extend_package_id`) REFERENCES `maintenancepackages` (`id`) ON DELETE SET NULL;
 
@@ -452,7 +467,8 @@ ALTER TABLE `maintenanceschedules`
 --
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`package_id`) REFERENCES `maintenancepackages` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`package_id`) REFERENCES `maintenancepackages` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`parent_order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `reviews`
