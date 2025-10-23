@@ -138,6 +138,16 @@ export default function ContractsPage() {
     );
   };
 
+  // Check if contract has been terminated (approved terminate request)
+  const isContractTerminated = (contractId) => {
+    return userRequests.some(
+      (req) =>
+        req.order_id === contractId &&
+        req.request_type === 'terminate' &&
+        req.status === 'approved'
+    );
+  };
+
   // Filter contracts based on search term
   const filteredContracts = contracts.filter((contract) => {
     const matchesSearch =
@@ -505,70 +515,101 @@ export default function ContractsPage() {
                         alignItems='center'
                       >
                         <Box display='flex' alignItems='center'>
-                          <CheckIcon sx={{ color: 'success.main', mr: 1 }} />
-                          <Typography variant='body2' color='text.secondary'>
-                            Hợp đồng đang hoạt động - Dịch vụ bảo trì sẽ được
-                            thực hiện theo lịch
-                          </Typography>
+                          {isContractTerminated(contract.id) ? (
+                            <>
+                              <TerminateIcon
+                                sx={{ color: 'error.main', mr: 1 }}
+                              />
+                              <Typography
+                                variant='body2'
+                                color='error.main'
+                                sx={{ fontWeight: 500 }}
+                              >
+                                Hợp đồng đã được kết thúc - Dịch vụ bảo trì đã
+                                ngừng
+                              </Typography>
+                            </>
+                          ) : (
+                            <>
+                              <CheckIcon
+                                sx={{ color: 'success.main', mr: 1 }}
+                              />
+                              <Typography
+                                variant='body2'
+                                color='text.secondary'
+                              >
+                                Hợp đồng đang hoạt động - Dịch vụ bảo trì sẽ
+                                được thực hiện theo lịch
+                              </Typography>
+                            </>
+                          )}
                         </Box>
-                        <Button
-                          variant='text'
-                          endIcon={<ScheduleIcon />}
-                          onClick={() => (window.location.href = '/schedules')}
-                        >
-                          Xem lịch bảo trì
-                        </Button>
+                        {!isContractTerminated(contract.id) && (
+                          <Button
+                            variant='text'
+                            endIcon={<ScheduleIcon />}
+                            onClick={() =>
+                              (window.location.href = '/schedules')
+                            }
+                          >
+                            Xem lịch bảo trì
+                          </Button>
+                        )}
                       </Box>
 
-                      {/* Contract Actions */}
-                      <Divider sx={{ my: 2 }} />
-                      <Box display='flex' gap={1} flexWrap='wrap'>
-                        <Button
-                          variant='outlined'
-                          size='small'
-                          startIcon={<ExtendIcon />}
-                          onClick={() => {
-                            setRequestDialog({ open: true, contract });
-                            setRequestForm({
-                              type: 'extend',
-                              extend_months: 12,
-                              requested_end_date: '',
-                              note: '',
-                            });
-                          }}
-                          disabled={hasPendingRequest(contract.id)}
-                        >
-                          Yêu cầu gia hạn
-                        </Button>
-                        <Button
-                          variant='outlined'
-                          size='small'
-                          color='warning'
-                          startIcon={<TerminateIcon />}
-                          onClick={() => {
-                            setRequestDialog({ open: true, contract });
-                            setRequestForm({
-                              type: 'terminate',
-                              extend_months: 12,
-                              requested_end_date: new Date(
-                                Date.now() + 30 * 24 * 60 * 60 * 1000
-                              )
-                                .toISOString()
-                                .split('T')[0],
-                              note: '',
-                            });
-                          }}
-                          disabled={hasPendingRequest(contract.id)}
-                        >
-                          Yêu cầu kết thúc
-                        </Button>
-                      </Box>
+                      {/* Contract Actions - Only show if not terminated */}
+                      {!isContractTerminated(contract.id) && (
+                        <>
+                          <Divider sx={{ my: 2 }} />
+                          <Box display='flex' gap={1} flexWrap='wrap'>
+                            <Button
+                              variant='outlined'
+                              size='small'
+                              startIcon={<ExtendIcon />}
+                              onClick={() => {
+                                setRequestDialog({ open: true, contract });
+                                setRequestForm({
+                                  type: 'extend',
+                                  extend_months: 12,
+                                  requested_end_date: '',
+                                  note: '',
+                                });
+                              }}
+                              disabled={hasPendingRequest(contract.id)}
+                            >
+                              Yêu cầu gia hạn
+                            </Button>
+                            <Button
+                              variant='outlined'
+                              size='small'
+                              color='warning'
+                              startIcon={<TerminateIcon />}
+                              onClick={() => {
+                                setRequestDialog({ open: true, contract });
+                                setRequestForm({
+                                  type: 'terminate',
+                                  extend_months: 12,
+                                  requested_end_date: new Date(
+                                    Date.now() + 30 * 24 * 60 * 60 * 1000
+                                  )
+                                    .toISOString()
+                                    .split('T')[0],
+                                  note: '',
+                                });
+                              }}
+                              disabled={hasPendingRequest(contract.id)}
+                            >
+                              Yêu cầu kết thúc
+                            </Button>
+                          </Box>
 
-                      {/* Show pending request status */}
-                      {hasPendingRequest(contract.id) && (
-                        <Alert severity='info' sx={{ mt: 2 }}>
-                          Có yêu cầu đang chờ xử lý cho hợp đồng này
-                        </Alert>
+                          {/* Show pending request status */}
+                          {hasPendingRequest(contract.id) && (
+                            <Alert severity='info' sx={{ mt: 2 }}>
+                              Có yêu cầu đang chờ xử lý cho hợp đồng này
+                            </Alert>
+                          )}
+                        </>
                       )}
                     </>
                   )}
