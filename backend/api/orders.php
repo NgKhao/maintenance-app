@@ -12,15 +12,32 @@ if ($method === 'GET') {
 
     if ($action === 'contracts' && $user_id) {
         // Lấy hợp đồng của user với thông tin chi tiết
+        // CHỈ LẤY HỢP ĐỒNG GỐC (is_extension = 0), kèm tổng giá trị đã gia hạn
         $stmt = $pdo->prepare("
             SELECT o.*, 
                    u.name as user_name, u.email as user_email,
                    p.name as package_name, p.description as package_description, 
-                   p.price as package_price, p.duration_months
+                   p.price as package_price, p.duration_months,
+                   -- Tổng số tiền đã thanh toán cho gia hạn
+                   COALESCE((
+                       SELECT SUM(ext.amount) 
+                       FROM orders ext 
+                       WHERE ext.parent_order_id = o.id 
+                       AND ext.is_extension = 1 
+                       AND ext.payment_status = 'paid'
+                   ), 0) as total_extension_paid,
+                   -- Tổng số tháng đã gia hạn
+                   COALESCE((
+                       SELECT SUM(ext.extension_months) 
+                       FROM orders ext 
+                       WHERE ext.parent_order_id = o.id 
+                       AND ext.is_extension = 1 
+                       AND ext.payment_status = 'paid'
+                   ), 0) as total_extension_months
             FROM orders o
             JOIN users u ON o.user_id = u.id
             JOIN maintenancepackages p ON o.package_id = p.id
-            WHERE o.user_id = ?
+            WHERE o.user_id = ? AND o.is_extension = 0
             ORDER BY o.created_at DESC
         ");
         $stmt->execute([$user_id]);

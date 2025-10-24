@@ -466,11 +466,27 @@ export default function ContractsPage() {
                         color='primary.main'
                         gutterBottom
                       >
-                        {formatPrice(contract.package_price)}
+                        {formatPrice(
+                          parseFloat(contract.package_price) +
+                            parseFloat(contract.total_extension_paid || 0)
+                        )}
                       </Typography>
                       <Typography variant='body2' color='text.secondary'>
-                        {contract.duration_months} tháng
+                        {contract.duration_months +
+                          parseInt(contract.total_extension_months || 0)}{' '}
+                        tháng
                       </Typography>
+                      {contract.total_extension_paid > 0 && (
+                        <Typography
+                          variant='caption'
+                          color='success.main'
+                          sx={{ fontStyle: 'italic', display: 'block', mt: 1 }}
+                        >
+                          (Đã gia hạn:{' '}
+                          {formatPrice(contract.total_extension_paid)} -{' '}
+                          {contract.total_extension_months} tháng)
+                        </Typography>
+                      )}
                     </Box>
 
                     <Box>
