@@ -120,7 +120,16 @@ export default function TechnicianMySchedulesPage() {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}?email=${email}`);
-      setSchedules(res.data);
+      const sortedSchedules = [...(res.data || [])].sort((a, b) => {
+        const dateA = a?.scheduled_date
+          ? new Date(a.scheduled_date).getTime()
+          : 0;
+        const dateB = b?.scheduled_date
+          ? new Date(b.scheduled_date).getTime()
+          : 0;
+        return dateB - dateA;
+      });
+      setSchedules(sortedSchedules);
       setError('');
     } catch (err) {
       console.error('Error fetching schedules:', err);

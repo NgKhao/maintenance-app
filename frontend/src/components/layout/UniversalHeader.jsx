@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts';
 
 const DRAWER_WIDTH = 240;
+const DESKTOP_DRAWER_BREAKPOINT = 'lg';
 
 const UniversalHeader = ({ isPublic = false, sidebarOpen, setSidebarOpen }) => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -114,8 +115,10 @@ const UniversalHeader = ({ isPublic = false, sidebarOpen, setSidebarOpen }) => {
     <AppBar
       position='fixed'
       sx={{
-        width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
-        ml: { sm: `${DRAWER_WIDTH}px` },
+        width: {
+          [DESKTOP_DRAWER_BREAKPOINT]: `calc(100% - ${DRAWER_WIDTH}px)`,
+        },
+        ml: { [DESKTOP_DRAWER_BREAKPOINT]: `${DRAWER_WIDTH}px` },
       }}
     >
       <Toolbar>
@@ -124,7 +127,7 @@ const UniversalHeader = ({ isPublic = false, sidebarOpen, setSidebarOpen }) => {
           aria-label='open drawer'
           edge='start'
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          sx={{ mr: 2, display: { sm: 'none' } }}
+          sx={{ mr: 2, display: { [DESKTOP_DRAWER_BREAKPOINT]: 'none' } }}
         >
           <MenuIcon />
         </IconButton>
@@ -136,7 +139,7 @@ const UniversalHeader = ({ isPublic = false, sidebarOpen, setSidebarOpen }) => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Typography
             variant='body2'
-            sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}
+            sx={{ mr: 2, display: { xs: 'none', md: 'block' } }}
           >
             Xin chào, {user?.name}
           </Typography>

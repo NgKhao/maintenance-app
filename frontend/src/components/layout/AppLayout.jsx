@@ -39,6 +39,8 @@ import {
 
 import { useAuth } from '../../contexts';
 
+const DESKTOP_DRAWER_BREAKPOINT = 'lg';
+
 const AppLayout = () => {
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile-first: closed by default
@@ -63,9 +65,11 @@ const AppLayout = () => {
         component='main'
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - 240px)` },
+          p: { xs: 1.5, sm: 2, md: 2.5 },
+          width: { [DESKTOP_DRAWER_BREAKPOINT]: `calc(100% - 240px)` },
+          maxWidth: '100%',
           mt: { xs: 7, sm: 8 }, // Account for AppBar height
+          overflowX: 'hidden',
         }}
       >
         <Routes>

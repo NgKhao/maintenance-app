@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -15,7 +15,13 @@ import {
   Person as PersonIcon,
   Build as BuildIcon,
 } from '@mui/icons-material';
-import { sendMessage, subscribeToMessages } from '../../services/chatService';
+import {
+  sendMessage,
+  subscribeToMessages,
+  markMessagesAsRead,
+  setTypingStatus,
+  subscribeToConversation,
+} from '../../services/chatService';
 
 /**
  * Component chat window - Hiển thị cuộc trò chuyện
@@ -34,7 +40,14 @@ export default function ChatWindow({
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [conversationLive, setConversationLive] = useState(conversation);
   const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const isTypingRef = useRef(false);
+
+  useEffect(() => {
+    setConversationLive(conversation);
+  }, [conversation]);
 
   // Auto scroll to bottom khi có tin nhắn mới
   const scrollToBottom = () => {
@@ -56,6 +69,88 @@ export default function ChatWindow({
     return () => unsubscribe();
   }, [conversation?.id]);
 
+  useEffect(() => {
+    if (!conversation?.id) return;
+
+    const unsubscribe = subscribeToConversation(conversation.id, (conv) => {
+      setConversationLive(conv);
+    });
+
+    return () => unsubscribe();
+  }, [conversation?.id]);
+
+  useEffect(() => {
+    if (!conversation?.id || !messages.length) return;
+
+    markMessagesAsRead(conversation.id, currentUserId).catch((error) => {
+      console.error('Error marking read in realtime effect:', error);
+    });
+  }, [conversation?.id, messages, currentUserId]);
+
+  const startTyping = async () => {
+    if (!conversation?.id || isTypingRef.current) return;
+
+    isTypingRef.current = true;
+    try {
+      await setTypingStatus(conversation.id, {
+        isTyping: true,
+        userId: currentUserId,
+        userName: currentUserName,
+        userRole: currentUserRole,
+      });
+    } catch (error) {
+      console.error('Error starting typing status:', error);
+    }
+  };
+
+  const stopTyping = useCallback(async () => {
+    if (!conversation?.id || !isTypingRef.current) return;
+
+    isTypingRef.current = false;
+    try {
+      await setTypingStatus(conversation.id, {
+        isTyping: false,
+      });
+    } catch (error) {
+      console.error('Error stopping typing status:', error);
+    }
+  }, [conversation?.id]);
+
+  const resetTypingTimeout = () => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      stopTyping();
+    }, 1500);
+  };
+
+  const handleInputChange = (value) => {
+    setNewMessage(value);
+
+    if (value.trim()) {
+      startTyping();
+      resetTypingTimeout();
+      return;
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    stopTyping();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      stopTyping();
+    };
+  }, [stopTyping]);
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || sending) return;
 
@@ -69,6 +164,7 @@ export default function ChatWindow({
         newMessage
       );
       setNewMessage('');
+      await stopTyping();
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Lỗi khi gửi tin nhắn');
@@ -128,6 +224,14 @@ export default function ChatWindow({
     );
   }
 
+  const ownMessages = messages.filter((msg) => msg.senderId === currentUserId);
+  const lastOwnMessageId = ownMessages.length
+    ? ownMessages[ownMessages.length - 1].id
+    : null;
+  const isOtherUserTyping =
+    Boolean(conversationLive?.typingUserId) &&
+    conversationLive?.typingUserId !== currentUserId;
+
   return (
     <Paper
       elevation={3}
@@ -161,15 +265,22 @@ export default function ChatWindow({
           <Box>
             <Typography variant='subtitle2' fontWeight='bold'>
               {currentUserRole === 'user'
-                ? conversation.technicianName
-                : conversation.customerName}
+                ? conversationLive?.technicianName || conversation.technicianName
+                : conversationLive?.customerName || conversation.customerName}
             </Typography>
             <Typography variant='caption' sx={{ opacity: 0.9 }}>
-              {conversation.deviceName}
+              {conversationLive?.deviceName || conversation.deviceName}
             </Typography>
           </Box>
         </Box>
-        <IconButton size='small' onClick={onClose} sx={{ color: 'white' }}>
+        <IconButton
+          size='small'
+          onClick={async () => {
+            await stopTyping();
+            onClose();
+          }}
+          sx={{ color: 'white' }}
+        >
           <CloseIcon />
         </IconButton>
       </Box>
@@ -179,7 +290,8 @@ export default function ChatWindow({
         sx={{
           flexGrow: 1,
           overflowY: 'auto',
-          p: 2,
+          px: 1.5,
+          py: 2,
           bgcolor: 'grey.50',
         }}
       >
@@ -205,35 +317,47 @@ export default function ChatWindow({
                 sx={{
                   display: 'flex',
                   justifyContent: isOwn ? 'flex-end' : 'flex-start',
-                  mb: 1.5,
+                  mb: 1,
                 }}
               >
                 <Box
                   sx={{
-                    maxWidth: '70%',
+                    maxWidth: { xs: '84%', sm: '76%' },
+                    minWidth: 'fit-content',
                   }}
                 >
                   {!isOwn && (
                     <Typography
                       variant='caption'
                       color='text.secondary'
-                      sx={{ ml: 1 }}
+                      sx={{ ml: 1.25, mb: 0.25, display: 'block', fontWeight: 500 }}
                     >
                       {msg.senderName}
                     </Typography>
                   )}
                   <Paper
-                    elevation={1}
+                    elevation={0}
                     sx={{
-                      p: 1.5,
+                      px: 1.5,
+                      py: 1,
                       bgcolor: isOwn ? 'primary.main' : 'white',
                       color: isOwn ? 'white' : 'text.primary',
-                      borderRadius: 2,
+                      border: isOwn ? 'none' : '1px solid',
+                      borderColor: 'grey.200',
+                      borderRadius: isOwn ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                      boxShadow: isOwn
+                        ? '0 4px 10px rgba(25, 118, 210, 0.25)'
+                        : '0 1px 6px rgba(15, 23, 42, 0.08)',
                     }}
                   >
                     <Typography
                       variant='body2'
-                      sx={{ wordBreak: 'break-word' }}
+                      sx={{
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'anywhere',
+                        lineHeight: 1.45,
+                      }}
                     >
                       {msg.message}
                     </Typography>
@@ -241,18 +365,43 @@ export default function ChatWindow({
                       variant='caption'
                       sx={{
                         display: 'block',
-                        mt: 0.5,
-                        opacity: 0.7,
+                        mt: 0.75,
+                        opacity: isOwn ? 0.88 : 0.62,
                         fontSize: '0.7rem',
+                        textAlign: 'right',
                       }}
                     >
                       {formatTimestamp(msg.createdAt)}
                     </Typography>
                   </Paper>
+                  {isOwn && msg.id === lastOwnMessageId && (
+                    <Typography
+                      variant='caption'
+                      color='text.secondary'
+                      sx={{
+                        mt: 0.35,
+                        mr: 0.75,
+                        display: 'block',
+                        textAlign: 'right',
+                        fontWeight: msg.read ? 600 : 500,
+                      }}
+                    >
+                      {msg.read ? 'Đã xem' : 'Đã gửi'}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             );
           })
+        )}
+        {isOtherUserTyping && (
+          <Typography
+            variant='caption'
+            color='text.secondary'
+            sx={{ display: 'block', mt: 1 }}
+          >
+            {(conversationLive?.typingUserName || 'Người dùng') + ' đang nhập...'}
+          </Typography>
         )}
         <div ref={messagesEndRef} />
       </Box>
@@ -280,7 +429,7 @@ export default function ChatWindow({
               size='small'
               placeholder='Nhập tin nhắn...'
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               onKeyPress={handleKeyPress}
               disabled={sending}
               multiline

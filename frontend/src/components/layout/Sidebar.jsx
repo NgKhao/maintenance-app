@@ -27,6 +27,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const DRAWER_WIDTH = 240;
+const DESKTOP_DRAWER_BREAKPOINT = 'lg';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
   const navigate = useNavigate();
@@ -148,7 +149,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
   return (
     <Box
       component='nav'
-      sx={{ width: { sm: DRAWER_WIDTH }, flexShrink: { sm: 0 } }}
+      sx={{
+        width: { [DESKTOP_DRAWER_BREAKPOINT]: DRAWER_WIDTH },
+        flexShrink: { [DESKTOP_DRAWER_BREAKPOINT]: 0 },
+      }}
       aria-label='mailbox folders'
     >
       {/* Mobile drawer */}
@@ -160,7 +164,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
           keepMounted: true, // Better open performance on mobile.
         }}
         sx={{
-          display: { xs: 'block', sm: 'none' },
+          display: { xs: 'block', [DESKTOP_DRAWER_BREAKPOINT]: 'none' },
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: DRAWER_WIDTH,
@@ -174,7 +178,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }) => {
       <Drawer
         variant='permanent'
         sx={{
-          display: { xs: 'none', sm: 'block' },
+          display: { xs: 'none', [DESKTOP_DRAWER_BREAKPOINT]: 'block' },
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: DRAWER_WIDTH,

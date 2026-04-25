@@ -9,6 +9,8 @@ import {
   serverTimestamp,
   doc,
   updateDoc,
+  getDocs,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -38,6 +40,10 @@ export const createConversation = async (
       createdAt: serverTimestamp(),
       lastMessage: null,
       lastMessageAt: null,
+      typingUserId: null,
+      typingUserName: null,
+      typingUserRole: null,
+      typingAt: null,
     });
 
     return conversationRef.id;
@@ -106,6 +112,103 @@ export const subscribeToMessages = (conversationId, callback) => {
     }));
     callback(messages);
   });
+};
+
+/**
+ * Subscribe realtime cho 1 conversation
+ * @param {string} conversationId - ID cuộc trò chuyện
+ * @param {function} callback - Callback khi conversation thay đổi
+ */
+export const subscribeToConversation = (conversationId, callback) => {
+  const conversationRef = doc(db, 'conversations', conversationId);
+
+  return onSnapshot(conversationRef, (snapshot) => {
+    if (!snapshot.exists()) {
+      callback(null);
+      return;
+    }
+
+    callback({
+      id: snapshot.id,
+      ...snapshot.data(),
+    });
+  });
+};
+
+/**
+ * Đánh dấu các tin nhắn của người còn lại là đã đọc
+ * @param {string} conversationId - ID cuộc trò chuyện
+ * @param {number} currentUserId - ID user hiện tại
+ */
+export const markMessagesAsRead = async (conversationId, currentUserId) => {
+  try {
+    const messagesRef = collection(
+      db,
+      'conversations',
+      conversationId,
+      'messages'
+    );
+    const unreadQuery = query(messagesRef, where('read', '==', false));
+    const unreadSnapshot = await getDocs(unreadQuery);
+
+    if (unreadSnapshot.empty) {
+      return;
+    }
+
+    const batch = writeBatch(db);
+    let hasUpdates = false;
+
+    unreadSnapshot.docs.forEach((messageDoc) => {
+      const data = messageDoc.data();
+
+      if (data.senderId !== currentUserId) {
+        hasUpdates = true;
+        batch.update(messageDoc.ref, {
+          read: true,
+          readAt: serverTimestamp(),
+          readBy: currentUserId,
+        });
+      }
+    });
+
+    if (hasUpdates) {
+      await batch.commit();
+    }
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+    throw error;
+  }
+};
+
+/**
+ * Cập nhật trạng thái typing cho conversation
+ * @param {string} conversationId - ID cuộc trò chuyện
+ * @param {object} payload - Dữ liệu typing
+ */
+export const setTypingStatus = async (conversationId, payload) => {
+  try {
+    const conversationRef = doc(db, 'conversations', conversationId);
+
+    if (payload.isTyping) {
+      await updateDoc(conversationRef, {
+        typingUserId: payload.userId,
+        typingUserName: payload.userName,
+        typingUserRole: payload.userRole,
+        typingAt: serverTimestamp(),
+      });
+      return;
+    }
+
+    await updateDoc(conversationRef, {
+      typingUserId: null,
+      typingUserName: null,
+      typingUserRole: null,
+      typingAt: null,
+    });
+  } catch (error) {
+    console.error('Error updating typing status:', error);
+    throw error;
+  }
 };
 
 /**

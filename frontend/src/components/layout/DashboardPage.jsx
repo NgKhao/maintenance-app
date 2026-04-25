@@ -334,9 +334,10 @@ const DashboardPage = ({ role }) => {
               flex: {
                 xs: '1 1 100%', // Mobile: full width
                 sm: '1 1 calc(50% - 12px)', // Tablet: 2 per row
-                md: '1 1 calc(25% - 18px)', // Desktop: 4 per row
+                md: '1 1 calc(50% - 12px)', // Split-screen: keep 2 per row
+                lg: '1 1 calc(25% - 18px)', // Desktop rộng: 4 per row
               },
-              minWidth: '200px',
+              minWidth: 0,
             }}
           >
             <Card sx={{ height: '100%' }}>
